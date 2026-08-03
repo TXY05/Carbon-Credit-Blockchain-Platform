@@ -1,1 +1,1 @@
-# BlockChain-Asg
+# Decentralized Blue Carbon Registry and Offset Marketplace
