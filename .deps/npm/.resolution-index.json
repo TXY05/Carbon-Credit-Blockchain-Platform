@@ -1,5 +1,27 @@
 {
-  "contracts/BlueCarbonMarket.sol": {
+  "contracts/Buyer.sol": {
     "__sources__": {}
+  },
+  "contracts/Developer.sol": {
+    "__sources__": {}
+  },
+  "contracts/Admin.sol": {
+    "__sources__": {}
+  },
+  "contracts/UserRegistry.sol": {
+    "__sources__": {
+      "contracts/UserRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.19;\r\n\r\ncontract UserRegistry{\r\n    struct Buyer {\r\n        string role;\r\n        string firstName;\r\n        string lastName;\r\n        string email;\r\n        string phoneNumber;\r\n        string country;\r\n        string password;\r\n    }\r\n\r\n    \r\n}",
+        "file": "contracts/UserRegistry.sol"
+      }
+    }
+  },
+  "contracts/BlueCarbonMarket.sol": {
+    "__sources__": {
+      "contracts/BlueCarbonMarket.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.19;\n\ncontract BlueCarbonMarket {\n    struct Project {\n        string name;\n        uint256 startDate;\n        string location;\n        string country;\n        string projectType;\n        uint256 auditDeadline;\n        Status status;\n        address verifier;\n        address owner;\n        uint256 projectID;\n        uint256 totalCredits;\n        uint256 availableCredit;\n        uint256 createdAt;\n    }\n\n    enum Status {\n        Pending,\n        Verified,\n        Suspended,\n        Expired\n    }\n\n    struct tradeHistory{\n        uint256 price;\n        address buyer;\n        address seller;\n        uint256 timestamp;\n        uint256 projectID;\n        uint256 amount;\n        uint256 tokenID;\n    }\n\n}\n",
+        "file": "contracts/BlueCarbonMarket.sol"
+      }
+    }
   }
 }
