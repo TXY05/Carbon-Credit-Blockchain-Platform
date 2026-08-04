@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/BlueCarbonMarket.sol": "BlueCarbonMarket"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/BlueCarbonMarket.sol": {
+			"keccak256": "0x1a1f621494efe678a9cd14bb10179e1e8a9b0bb3badd9e6ff1847beb491cf89a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://64247c4ded3b6d433f47056fbe4dd9b1d520657d0e39aed52eec3d1cadf75d14",
+				"dweb:/ipfs/QmRfNdkSVNFaLppw79Cwu75grZCZ8MQjnHSYg2NEy1i16q"
+			]
+		}
+	},
+	"version": 1
+}
