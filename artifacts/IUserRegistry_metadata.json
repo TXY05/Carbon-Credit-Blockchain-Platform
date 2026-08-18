@@ -1,0 +1,73 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isApprovedUser",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/BlueCarbonMarket.sol": "IUserRegistry"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/BlueCarbonMarket.sol": {
+			"keccak256": "0xab81130b3d5ed70ee27fafd6191d882030c2f63a6b23a99b70c184bcf486161a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://3299368719191eb2325d772e586b7abea017a728b16203833f42f8c805b54b6f",
+				"dweb:/ipfs/QmXc9PKeWPHAmufAjaFYqPUTba8zE6CV1v8oW8yBZKmEBJ"
+			]
+		},
+		"contracts/UserRegistry.sol": {
+			"keccak256": "0x1d464279d9fd3d8e953c9ed9a7a50a45047332efce19a66baa96eac7066d0877",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a9919f2d5fc3115151ecdc9864b4e1c948491c5278fd0f07339f78f6a9f86748",
+				"dweb:/ipfs/Qme6x6RF8SfYG9EyU8tq6od5jnAr7VW19o4nf5tMp399BF"
+			]
+		}
+	},
+	"version": 1
+}

@@ -32,13 +32,7 @@ contract UserRegistry {
         require(msg.sender == admin, "Only admin can perform this action");
         _;
     }
-    modifier onlyApprovedUser() {
-        require(
-            buyers[msg.sender].status == UserStatus.Approved,
-            "User is not approved"
-        );
-        _;
-    }
+    
 
     constructor() {
         admin = msg.sender;
@@ -81,25 +75,14 @@ contract UserRegistry {
         emit RegistrationRequested(msg.sender);
     }
 
+    function isApprovedUser(address user)external view returns (bool)
+    {
+        return buyers[user].status == UserStatus.Approved;
+    }
+
     function approveUser(address _user) public onlyAdmin {}
 
     function rejectUser(address _user) public onlyAdmin {}
 
-    function purchaseCredits(uint256 _amount) public onlyApprovedUser {
-        require(_amount > 0, "Amount must be greater than zero");
-    }
-
-    function transferCredits(
-        address _to,
-        uint256 _amount
-    ) public onlyApprovedUser {
-        require(
-            buyers[_to].status == UserStatus.Approved,
-            "Recipient is not approved"
-        );
-
-        require(_amount > 0, "Amount must be greater than zero");
-
-        
-    }
+    
 }
