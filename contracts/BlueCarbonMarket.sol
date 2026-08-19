@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
-import "contracts/UserRegistry.sol";
 
 interface IUserRegistry {
     function isApprovedUser(address user) external view returns (bool);
@@ -18,6 +17,7 @@ contract BlueCarbonMarket {
         address verifier;
         address owner;
         uint256 projectID;
+        uint256 totalCarbon;
         uint256 totalCredits;
         uint256 availableCredit;
         uint256 createdAt;
