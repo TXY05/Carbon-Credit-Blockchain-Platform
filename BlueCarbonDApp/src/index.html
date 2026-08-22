@@ -181,15 +181,6 @@
                 <button id="headerSidebarBtn" class="header-menu-btn" onclick="toggleSidebar()">☰</button>
                 <h1 id="pageTitle" style="margin: 0;">Welcome Back</h1>
             </div>
-                <!-- 权限模拟器 -->
-                <div id="roleSimulator" style="border: 2px dashed #ff4757; padding: 8px 15px; border-radius: 8px; display: flex; gap: 10px; align-items: center;">
-                    <span style="font-size: 12px; font-weight: bold; color: #ff4757;">⚙️ 模拟身份:</span>
-                    <button class="sim-btn" id="btn-guest" onclick="switchRole('guest')">未登录</button>
-                    <button class="sim-btn" id="btn-dev" onclick="switchRole('developer')">Developer</button>
-                    <button class="sim-btn" id="btn-admin" onclick="switchRole('admin')">Admin</button>
-                    <button class="sim-btn" id="btn-buyer" onclick="switchRole('buyer')">Buyer</button>
-                </div>
-
                 <!-- 右上角圆形头像 -->
                 <div class="header-actions menu-shared" style="display: none; background: transparent; padding: 0; box-shadow: none;">
                     <!-- 把原来的 avatar-btn 替换成这个 -->
@@ -217,7 +208,7 @@
                         <h2 class="card-title" style="text-align: center;">Welcome Back</h2>
                         <input type="text" id="logUsername" placeholder="Username">
                         <input type="password" id="logPassword" placeholder="Password">
-                        <button class="primary-btn" style="width: 100%;" onclick="handleLogin()">Login System</button>
+                        <button class="primary-btn" style="width: 100%;" onclick="handleLogin()">Login</button>
                     </div>
 
                     <div id="form-register" style="display: none;">
@@ -571,33 +562,31 @@
             }
         }
 
-        // === 2. 角色权限切换逻辑 ===
+        // === 2. 角色权限切换逻辑 (终极纯净版) ===
         function switchRole(role) {
+            // 1. 隐藏所有侧边栏菜单、头像、钱包
             document.querySelectorAll('.nav-item, .header-actions, .sidebar-bottom').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.sim-btn').forEach(el => el.classList.remove('active-sim'));
+            
+            // ❌ 已经彻底删除了所有对 .sim-btn 的 classList 操作！
 
             if (role === 'guest') {
                 document.querySelectorAll('.menu-guest').forEach(el => el.style.display = 'flex');
-                document.getElementById('btn-guest').classList.add('active-sim');
+                // 游客模式默认显示登录页
                 navTo('loginPage', 'Welcome Back');
             } 
             else if (role === 'developer') {
                 document.querySelectorAll('.menu-shared, .menu-dev').forEach(el => el.style.display = 'flex');
-                document.getElementById('btn-dev').classList.add('active-sim');
-                navTo('devDashPage', 'Developer Dashboard');
+                // ❌ 删除了这里的强制 navTo，把跳转权完全交给 app.js 里的 handleLogin！
             } 
             else if (role === 'admin') {
                 document.querySelectorAll('.menu-shared, .menu-admin').forEach(el => el.style.display = 'flex');
-                document.getElementById('btn-admin').classList.add('active-sim');
-                navTo('adminDashPage', 'Admin Dashboard');
+                // ❌ 删除了 btn-admin 的残留代码和强制跳转
             } 
             else if (role === 'buyer') {
                 document.querySelectorAll('.menu-shared, .menu-buyer').forEach(el => el.style.display = 'flex');
-                document.getElementById('btn-buyer').classList.add('active-sim');
-                navTo('buyerPortfolioPage', 'My Portfolio');
+                // ❌ 删除了 btn-buyer 的残留代码和强制跳转
             }
         }
-
         window.onload = function() {
             switchRole('guest'); 
         };

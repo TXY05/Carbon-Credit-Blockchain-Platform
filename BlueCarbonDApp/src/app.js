@@ -77,34 +77,43 @@ window.handleRegister = async function() {
     }
 };
 
-// ==========================================
-// 核心：处理用户登录与状态分发
-// ==========================================
 window.handleLogin = async function() {
-    const user = document.getElementById('logUsername').value;
-    const pass = document.getElementById('logPassword').value;
+    let logUser = document.getElementById("logUsername").value;
+    let logPass = document.getElementById("logPassword").value;
 
-    if (!user || !pass) return alert("请输入账号密码！");
+    if(!logUser || !logPass) {
+        alert("🚨 请填写完整的账号和密码！");
+        return;
+    }
 
     try {
         let response = await fetch(`${SERVER_URL}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: user, password: pass })
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: logUser, password: logPass })
         });
-        let result = await response.json();
 
-        if (result.success) {
-            alert(`🎉 登录成功！欢迎回来, ${result.username}`);
-            // 利用我们之前写的 switchRole 函数，根据后端的 role 自动跳转界面
-            switchRole(result.role); 
-            localStorage.setItem('loggedInUser', logUsername);
+        let result = await response.json();
+        
+        if(result.success) {
+            localStorage.setItem('loggedInUser', result.username);
+            alert("✅ 登录成功！");
+            
+            document.getElementById("logUsername").value = "";
+            document.getElementById("logPassword").value = "";
+            
+            // 1. 根据角色解锁对应的侧边栏菜单
+            switchRole(result.role);
+            if (typeof syncGlobalAvatar === 'function') syncGlobalAvatar();
+
+            // 2. 🔴 完美接入你的真实路由函数！跳转到 Marketplace
+            navTo('marketPage', 'Carbon Marketplace'); 
+            
         } else {
-            // 这里会精准弹出 Node.js 传回的 Pending/Rejected/Wrong 提示
-            alert(result.message); 
+            alert(result.message);
         }
     } catch (error) {
-        console.error("登录请求失败", error);
+        console.error(error);
+        alert("🚨 请求报错，请检查控制台。");
     }
 };
 
@@ -654,16 +663,28 @@ window.switchDashTab = function(tabName) {
 // ==========================================
 window.openProfileModal = async function() {
     document.getElementById('profileModal').classList.add('show');
-    const currentUser = localStorage.getItem('loggedInUser') || 'admin'; 
+    
+    // 获取当前登录的真实用户
+    const currentUser = localStorage.getItem('loggedInUser'); 
+
+    // 🔴 防呆保护：如果没有真实登录，提示去登录
+    if (!currentUser) {
+        document.getElementById('prof-val-user').innerText = "⚠️ 请使用真实账号登录";
+        document.getElementById('prof-val-role').innerText = "-";
+        document.getElementById('prof-val-status').innerText = "-";
+        document.getElementById('prof-val-date').innerText = "-";
+        return;
+    }
 
     try {
-        let response = await fetch(`${SERVER_URL}/user-profile?username=${currentUser}`);
+        // 🔴 加了时间戳 (?t=...) 强行绕过浏览器缓存，保证每次拿到的都是最新资料
+        let response = await fetch(`${SERVER_URL}/user-profile?username=${currentUser}&t=${new Date().getTime()}`);
         let result = await response.json();
 
         if (result.success) {
             let u = result.data;
             
-            // 1. 注入左侧只读名片
+            // 注入左侧只读名片
             document.getElementById('prof-val-user').innerText = u.username;
             document.getElementById('prof-val-role').innerText = u.role || 'Not Set';
             document.getElementById('prof-val-email').innerText = u.email || 'Not Set';
@@ -681,7 +702,11 @@ window.openProfileModal = async function() {
                 statusEl.style.background = '#fff0d4'; statusEl.style.color = '#ff9800';
             }
 
-            // 🔴 读取本地可能保存的专属头像 (模拟数据库)
+            // 注入右侧表单数据
+            document.getElementById('prof-input-email').value = u.email || '';
+            document.getElementById('prof-input-phone').value = u.phone || '';
+
+            // 读取本地头像
             const savedAvatar = localStorage.getItem(`avatar_${u.username}`);
             if (savedAvatar) {
                 document.getElementById('avatarIcon').style.display = 'none';
@@ -690,28 +715,32 @@ window.openProfileModal = async function() {
                 document.getElementById('avatarIcon').style.display = 'block';
                 document.getElementById('avatarPreview').style.backgroundImage = 'none';
             }
-
-            // 2. 注入右侧表单数据 (只保留可修改的字段)
-            document.getElementById('prof-input-email').value = u.email || '';
-            document.getElementById('prof-input-phone').value = u.phone || '';
             
+        } else {
+            document.getElementById('prof-val-user').innerText = "⚠️ 找不到该账号";
         }
-    } catch (error) { console.error("Profile fetch error:", error); }
+    } catch (error) { 
+        console.error("Profile fetch error:", error); 
+        document.getElementById('prof-val-user').innerText = "🚨 网络请求失败";
+    }
 };
 
 window.closeProfileModal = function() {
     document.getElementById('profileModal').classList.remove('show');
 };
 
-// 退出登录逻辑
+// ==========================================
+// 退出登录逻辑 (彻底重置版)
+// ==========================================
 window.handleLogout = function() {
-    if(confirm("⚠️ Are you sure you want to log out?")) {
+    if(confirm("⚠️ 确定要退出登录吗？")) {
+        // 1. 彻底清除本地缓存里的账号记忆
         localStorage.removeItem('loggedInUser');
-        closeProfileModal();
-        switchRole('guest');
+        if (typeof closeProfileModal === 'function') closeProfileModal();
         
-        // 👉 核心：登出时把外面头像恢复原状
-        syncGlobalAvatar();
+        // 2. 🔴 终极大招：强制刷新当前网页
+        // 刷新后，系统检测不到缓存，会自动将所有 UI 和状态完美重置回最初的 Login 界面
+        window.location.reload();
     }
 };
 
@@ -737,43 +766,100 @@ window.switchSubTab = function(tab) {
     document.getElementById(`subcontent-${tab}`).style.display = 'block';
 };
 
-// 🔴 保存普通资料与新头像
+// 🔴 真实保存普通资料与新头像
 window.handleUpdateProfile = async function() {
     let email = document.getElementById('prof-input-email').value;
     let phone = document.getElementById('prof-input-phone').value;
-    const currentUser = localStorage.getItem('loggedInUser') || 'admin'; 
+    const currentUser = localStorage.getItem('loggedInUser'); 
 
-    if (window.pendingAvatarUpdate) {
-        localStorage.setItem(`avatar_${currentUser}`, window.pendingAvatarUpdate);
-        window.pendingAvatarUpdate = null; 
+    if (!currentUser) {
+        alert("❌ 请先正常登录系统！");
+        return;
     }
 
-    // 👉 核心：通知外面的头像立刻跟着变！
-    syncGlobalAvatar(); 
+    try {
+        // 1. 发送真实数据给后端保存
+        let response = await fetch(`${SERVER_URL}/update-profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: currentUser, email: email, phone: phone })
+        });
+        
+        let result = await response.json();
 
-    alert("✅ 资料修改请求已生成！\n头像、Email 和 Phone 数据已准备就绪。");
-    closeProfileModal();
-    setTimeout(() => openProfileModal(), 300);
+        if (result.success) {
+            // 2. 如果后端保存成功，再保存头像到本地
+            if (window.pendingAvatarUpdate) {
+                localStorage.setItem(`avatar_${currentUser}`, window.pendingAvatarUpdate);
+                window.pendingAvatarUpdate = null; 
+            }
+            syncGlobalAvatar(); 
+
+            alert("✅ 资料保存成功！");
+            
+            // 3. 刷新弹窗，让你立刻看到左侧名片更新
+            closeProfileModal();
+            setTimeout(() => openProfileModal(), 300);
+        } else {
+            // 如果邮箱/电话和别人撞了，这里会弹窗报错
+            alert("❌ " + result.message); 
+        }
+    } catch (error) {
+        console.error(error);
+        alert("🚨 网络请求失败，请检查后端是否运行。");
+    }
 };
 
-// 修改密码
+// ==========================================
+// 独立修改密码逻辑 (防呆与直接修改)
+// ==========================================
 window.handleUpdatePassword = async function() {
     let oldPass = document.getElementById('prof-input-oldpass').value;
     let newPass = document.getElementById('prof-input-newpass').value;
     let confPass = document.getElementById('prof-input-confpass').value;
+    const currentUser = localStorage.getItem('loggedInUser');
 
+    // 1. 基础防呆拦截
+    if (!currentUser) return;
     if (!oldPass || !newPass || !confPass) {
-        alert("❌ 请完整填写所有的密码字段！");
+        alert("🚨 请将三个密码框填写完整！");
         return;
     }
     if (newPass !== confPass) {
-        alert("❌ 新密码与确认密码不一致！");
+        alert("🚨 两次输入的新密码不一致，请重新输入！");
         return;
     }
 
-    alert("✅ 密码修改请求已提交！验证通过后需重新登录。");
-};
+    // 2. 发送给专属换密码接口
+    try {
+        let response = await fetch(`${SERVER_URL}/update-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: currentUser,
+                oldPassword: oldPass,
+                newPassword: newPass
+            })
+        });
 
+        let result = await response.json();
+
+        if (result.success) {
+            alert("✅ 密码修改成功！下次登录请使用新密码。");
+            
+            // 修改成功后，把三个输入框清空，假装什么都没发生
+            document.getElementById('prof-input-oldpass').value = "";
+            document.getElementById('prof-input-newpass').value = "";
+            document.getElementById('prof-input-confpass').value = "";
+        } else {
+            // 如果旧密码填错了，后端会在这里拦截
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("🚨 网络请求失败，请检查后端运行状态。");
+    }
+};
 // 🔴 处理头像上传与即时预览
 window.previewAvatar = function(event) {
     const file = event.target.files[0];

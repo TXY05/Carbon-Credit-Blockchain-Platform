@@ -2,10 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const path = require('path'); // 🔴 1. 新增：引入路径模块
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// 🔴 2. 新增：告诉后端，把 src 文件夹里的 index.html 和 JS/CSS 发给浏览器！
+app.use(express.static(path.join(__dirname, 'src')));
 
 // 1. 初始化 SQLite 数据库
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -15,33 +19,50 @@ const db = new sqlite3.Database('./database.db', (err) => {
 
 
 
-// 2. 创建用户表 (自动记录用户名、密码、角色和审核状态)
-// 创建用户表 (新增 createdAt 字段)
-db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT,
-        role TEXT,
-        status TEXT DEFAULT 'pending',
-        createdAt DATETIME DEFAULT (datetime('now', 'localtime'))
-    )
-`);
+// ==========================================
+// 初始化数据库表 (使用 db.serialize 强制按顺序执行)
+// ==========================================
+db.serialize(() => {
+    // 1. 创建用户表
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT,
+            status TEXT DEFAULT 'pending',
+            email TEXT UNIQUE,
+            phone TEXT UNIQUE,
+            createdAt TEXT
+        )
+    `);
 
-// 创建项目表 (新增 createdAt 字段)
-db.run(`
-    CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        projName TEXT,
-        devAddress TEXT,
-        location TEXT,
-        capacity INTEGER,
-        deadline TEXT,
-        carbonVolume INTEGER,
-        status TEXT DEFAULT 'pending',
-        createdAt DATETIME DEFAULT (datetime('now', 'localtime'))
-    )
-`);
+    // 🔴 2. 注入超级管理员账号 (如果不存在的话)
+    // 用户名: admin | 密码: password | 状态: approved 自动通过
+    const adminSql = `
+        INSERT OR IGNORE INTO users (username, password, role, status, createdAt) 
+        VALUES ('admin', 'password', 'admin', 'approved', '2026-08-23 12:00:00')
+    `;
+    db.run(adminSql, (err) => {
+        if (err) console.error("Admin 注入失败:", err);
+        else console.log("👑 超级管理员 (admin / password) 状态正常！");
+    });
+
+    // 3. 创建项目表
+    db.run(`
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projName TEXT,
+            devAddress TEXT,
+            location TEXT,
+            capacity INTEGER,
+            deadline TEXT,
+            carbonVolume INTEGER,
+            status TEXT DEFAULT 'pending',
+            createdAt TEXT
+        )
+    `);
+});
 
 // ================= API 接口 =================
 
@@ -254,14 +275,65 @@ app.get('/admin-stats', (req, res) => {
 // User API: 获取当前登录用户的真实 Profile
 // ==========================================
 app.get('/user-profile', (req, res) => {
-    const { username } = req.query; // 前端传过来的当前用户名
+    const { username } = req.query; 
     if (!username) return res.json({ success: false });
 
-    // 从数据库中抓取该用户的所有真实字段（除了密码）
-    const sql = `SELECT id, username, role, status, createdAt FROM users WHERE username = ?`;
+    // 🔴 核心修复：把 email 和 phone 也一起抓取出来！
+    const sql = `SELECT id, username, role, status, email, phone, createdAt FROM users WHERE username = ?`;
     db.get(sql, [username], (err, row) => {
         if (err || !row) return res.json({ success: false, message: "找不到用户" });
         res.json({ success: true, data: row });
+    });
+});
+
+// ==========================================
+// User API: 更新个人资料 (Email & Phone)
+// ==========================================
+app.post('/update-profile', (req, res) => {
+    const { username, email, phone } = req.body;
+
+    if (!username) return res.json({ success: false, message: "未提供用户名" });
+
+    // 执行 UPDATE 语句，把新资料写进当前用户的行里
+    const sql = `UPDATE users SET email = ?, phone = ? WHERE username = ?`;
+    
+    db.run(sql, [email, phone, username], function(err) {
+        if (err) {
+            // 如果触发了 UNIQUE 约束，说明别人已经用了这个邮箱或电话
+            if (err.message.includes('UNIQUE')) {
+                return res.json({ success: false, message: "该 Email 或 Contact Number 已被其他用户绑定！" });
+            }
+            return res.json({ success: false, message: "数据库更新失败" });
+        }
+        res.json({ success: true });
+    });
+});
+
+// ==========================================
+// User API: 独立修改密码 (无需 Admin 审批)
+// ==========================================
+app.post('/update-password', (req, res) => {
+    const { username, oldPassword, newPassword } = req.body;
+
+    if (!username || !oldPassword || !newPassword) {
+        return res.json({ success: false, message: "请填写完整信息" });
+    }
+
+    // 1. 先去数据库核对“当前密码”是否正确
+    const checkSql = `SELECT * FROM users WHERE username = ? AND password = ?`;
+    db.get(checkSql, [username, oldPassword], (err, row) => {
+        if (err || !row) {
+            return res.json({ success: false, message: "❌ 当前密码错误，无法修改！" });
+        }
+
+        // 2. 如果当前密码正确，直接用新密码覆盖它
+        const updateSql = `UPDATE users SET password = ? WHERE username = ?`;
+        db.run(updateSql, [newPassword, username], function(updateErr) {
+            if (updateErr) return res.json({ success: false, message: "密码更新失败" });
+            
+            console.log(`🔑 用户 ${username} 成功修改了密码`);
+            res.json({ success: true });
+        });
     });
 });
 
