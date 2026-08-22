@@ -158,51 +158,55 @@ if (connectBtn) {
 }
 
 // ==========================================
-// 2. Developer：提交项目逻辑
+// Developer：提交新项目 (修复身份绑定版)
 // ==========================================
-document.getElementById("submitBtn").onclick = async function() {
-    // 抓取刚刚在高级 UI 里新增的 Project Name
-    let pName = document.getElementById("projName") ? document.getElementById("projName").value : "";
-    let address = document.getElementById("devAddress").value;
-    let loc = document.getElementById("location").value;
-    let cap = document.getElementById("capacity").value;
-    let dead = document.getElementById("deadline").value;
+document.getElementById('submitBtn').onclick = async function() {
+    let projName = document.getElementById("projName").value;
+    let location = document.getElementById("location").value;
+    let capacity = document.getElementById("capacity").value;
+    let deadline = document.getElementById("deadline").value;
+    
+    // 🔴 核心修复：直接抓取当前登录的 Username
+    let currentUser = localStorage.getItem('loggedInUser');
 
-    // 基础防呆校验
-    if (!address || !loc || !cap || !dead) {
-        alert("🚨 请填完所有 Developer 资料！(钱包地址必须先点击 Connect MetaMask 获取)");
+    if(!projName || !location || !capacity || !deadline) {
+        alert("🚨 请填写完整所有的项目信息！");
         return;
     }
-
-    const projectData = { 
-        projName: pName, 
-        devAddress: address, 
-        location: loc, 
-        capacity: cap, 
-        deadline: dead 
-    };
 
     try {
         let response = await fetch(`${SERVER_URL}/submit-project`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(projectData)
+            body: JSON.stringify({
+                username: currentUser, // 🔴 把真实用户名发过去
+                projName: projName,
+                devAddress: document.getElementById("devAddress").value, // 钱包地址照旧
+                location: location,
+                capacity: capacity,
+                deadline: deadline
+            })
         });
+
         let result = await response.json();
-        
         if(result.success) {
-            alert("✅ 项目提交成功！已进入 Node.js 待审核队列，请等待 Admin 处理。");
+            alert("✅ 项目提交成功！已进入排队审核。");
             
-            // 提交成功后清空表单（保留钱包地址）
-            if(document.getElementById("projName")) document.getElementById("projName").value = "";
-            document.getElementById("location").value = ""; 
+            // 清空表单
+            document.getElementById("projName").value = "";
+            document.getElementById("location").value = "";
             document.getElementById("capacity").value = "";
+            document.getElementById("deadline").value = "";
+            
+            // 🔴 提交成功后，直接丝滑跳转到 My Projects 页面去欣赏你的成果！
+            navTo('devHistoryPage', 'My Projects');
+            
         } else {
-            alert("❌ 提交失败: " + result.message);
+            alert(result.message);
         }
     } catch (error) {
-        console.error("提交请求崩溃:", error);
-        alert("提交失败，请确保你的终端里正在运行 node server.js ！");
+        console.error(error);
+        alert("🚨 请求报错，请检查控制台。");
     }
 };
 
@@ -926,4 +930,122 @@ window.toggleSidebar = function() {
     } else {
         headerBtn.style.display = 'none';
     }
+};
+
+// ==========================================
+// Developer：加载我名下的所有项目
+// ==========================================
+window.loadMyProjects = async function() {
+    const currentUser = localStorage.getItem('loggedInUser');
+    if (!currentUser) return;
+
+    try {
+        let response = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
+        let result = await response.json();
+
+        if (result.success) {
+            const tbody = document.getElementById('myProjectsTableBody');
+            tbody.innerHTML = ''; // 清空旧数据
+
+            if (result.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">No projects found. Go to "Submit Project" to create one! 🌱</td></tr>`;
+                return;
+            }
+
+            result.data.forEach(p => {
+                // 根据状态生成不同颜色的炫酷 UI 标签
+                let statusHtml = '';
+                if (p.status === 'approved') {
+                    statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>`;
+                } else if (p.status === 'rejected') {
+                    statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
+                } else {
+                    statusHtml = `<span style="background: #fff0d4; color: #ff9800; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">⏳ Pending</span>`;
+                }
+
+                // 组装每一行数据
+                let tr = document.createElement('tr');
+                tr.style.borderBottom = "1px solid #f4f7fe";
+                tr.style.cursor = "pointer"; // 🔴 鼠标放上去变小手
+                // 🔴 加个 hover 效果，并且点击触发查看详情 (把 p.id 传进去)
+                tr.onmouseover = () => tr.style.background = "#f8fafc";
+                tr.onmouseout = () => tr.style.background = "transparent";
+                tr.onclick = () => openProjectModal(p.id);
+                tr.innerHTML = `
+                    <td style="padding: 15px 12px;">
+                        <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projName || 'Unnamed Project'}</div>
+                        <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.id}</div>
+                    </td>
+                    <td style="padding: 15px 12px;">
+                        <div style="font-size: 13px; color: #2b3674;">${p.location || 'Unknown'}</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">${p.capacity} Hectares</div>
+                    </td>
+                    <td style="padding: 15px 12px; font-weight: bold; color: #4318ff; font-size: 15px;">
+                        ${p.carbonVolume}
+                    </td>
+                    <td style="padding: 15px 12px;">
+                        ${statusHtml}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        console.error("加载我的项目失败:", error);
+    }
+};
+
+// ==========================================
+// Developer：打开项目详情，查看额度和买家
+// ==========================================
+window.openProjectModal = async function(projectId) {
+    try {
+        let response = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
+        let result = await response.json();
+
+        if (result.success) {
+            const p = result.project;
+            const stats = result.stats;
+            const sales = result.sales;
+
+            // 填充数据
+            document.getElementById('det-title').innerText = p.projName || 'Unnamed Project';
+            document.getElementById('det-loc').innerText = p.location || 'Unknown';
+            document.getElementById('det-cap').innerText = p.capacity;
+            document.getElementById('det-total').innerText = p.carbonVolume;
+            
+            // 填充剩余和已售
+            document.getElementById('det-avail').innerText = stats.remaining;
+            document.getElementById('det-sold').innerText = stats.sold;
+
+            // 填充销售记录表
+            const tbody = document.getElementById('det-sales-body');
+            tbody.innerHTML = '';
+            
+            if (sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
+            } else {
+                sales.forEach(tx => {
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px; color: #64748b;">${tx.txDate || 'N/A'}</td>
+                            <td style="padding: 10px; font-weight: bold; color: #2b3674;">${tx.buyerName}</td>
+                            <td style="padding: 10px; text-align: right; color: #ff9800; font-weight: bold;">+${tx.amount}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 显示弹窗
+            document.getElementById('projectDetailModal').classList.add('show');
+        } else {
+            alert("无法获s取项目详情");
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+window.closeProjectModal = function() {
+    document.getElementById('projectDetailModal').classList.remove('show');
 };

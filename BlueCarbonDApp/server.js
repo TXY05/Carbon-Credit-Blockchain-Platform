@@ -49,17 +49,30 @@ db.serialize(() => {
     });
 
     // 3. 创建项目表
+    // 创建项目表 (🔴 新增 username 字段)
     db.run(`
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,    /* 🔴 记录是谁交的 */
             projName TEXT,
-            devAddress TEXT,
+            devAddress TEXT,  /* 记录收钱的钱包 */
             location TEXT,
             capacity INTEGER,
             deadline TEXT,
             carbonVolume INTEGER,
             status TEXT DEFAULT 'pending',
             createdAt TEXT
+        )
+    `);
+
+    // 4. 创建交易记录表 (用于追踪 Quota 卖给谁了)
+    db.run(`
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projectId INTEGER,
+            buyerName TEXT,
+            amount INTEGER,
+            txDate TEXT
         )
     `);
 });
@@ -177,16 +190,17 @@ app.post('/delete-user', (req, res) => {
 
 // 1. Developer 提交新项目
 app.post('/submit-project', (req, res) => {
-    const { projName, devAddress, location, capacity, deadline } = req.body;
+    // 🔴 加上 username
+    const { username, projName, devAddress, location, capacity, deadline } = req.body; 
     
-    // 核心业务逻辑：自动计算碳信用额度。假设 1 公顷 (Capacity) 对应 5 个 BCC 代币。
     const carbonVolume = capacity * 5; 
     
-    const sql = `INSERT INTO projects (projName, devAddress, location, capacity, deadline, carbonVolume, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`;
+    // 🔴 SQL 语句也要加上 username
+    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`;
     
-    db.run(sql, [projName, devAddress, location, capacity, deadline, carbonVolume], function(err) {
+    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume], function(err) {
         if (err) return res.status(500).json({ success: false, message: "数据库写入失败" });
-        console.log(`🌱 新项目提交: ${projName || location} - 等待 Admin 审核`);
+        console.log(`🌱 新项目提交: ${projName} - 提交者: ${username}`);
         res.json({ success: true });
     });
 });
@@ -333,6 +347,51 @@ app.post('/update-password', (req, res) => {
             
             console.log(`🔑 用户 ${username} 成功修改了密码`);
             res.json({ success: true });
+        });
+    });
+});
+
+// ==========================================
+// Developer API: 获取我提交的所有历史项目
+// ==========================================
+app.get('/my-projects', (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.json({ success: false });
+
+    // 🔴 精准匹配真正的提交者！
+    const sql = `SELECT * FROM projects WHERE username = ? ORDER BY id DESC`;
+    
+    db.all(sql, [username], (err, rows) => {
+        if (err) return res.status(500).json({ success: false });
+        res.json({ success: true, data: rows });
+    });
+});
+
+// ==========================================
+// Developer API: 查看项目详情与销售记录
+// ==========================================
+app.get('/project-details', (req, res) => {
+    const { id } = req.query;
+    if (!id) return res.json({ success: false, message: "Missing ID" });
+
+    // 1. 先查出这个项目的基本信息
+    db.get(`SELECT * FROM projects WHERE id = ?`, [id], (err, project) => {
+        if (err || !project) return res.json({ success: false, message: "找不到项目" });
+
+        // 2. 再去交易表里，把这个项目所有的被买记录翻出来
+        db.all(`SELECT * FROM transactions WHERE projectId = ? ORDER BY id DESC`, [id], (err, txs) => {
+            const transactions = txs || [];
+            
+            // 3. 计算数学题：总共卖了多少？还剩多少？
+            const totalSold = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+            const remainingQuota = project.carbonVolume - totalSold;
+
+            res.json({
+                success: true,
+                project: project,
+                sales: transactions,
+                stats: { sold: totalSold, remaining: remainingQuota }
+            });
         });
     });
 });
