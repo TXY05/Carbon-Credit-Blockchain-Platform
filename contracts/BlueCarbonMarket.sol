@@ -47,26 +47,6 @@ contract BlueCarbonMarket {
     }
 
     
-    modifier onlyApprovedUser() {
-    require(userRegistry.isApprovedUser(msg.sender),
-        "User is not approved");
-    _;
-}
+    
 
-    function purchaseCredits(uint256 _amount) public onlyApprovedUser {
-        require(_amount > 0, "Amount must be greater than zero");
-    }
-
-    function transferCredits(
-    address _to,
-    uint256 _amount
-    ) public onlyApprovedUser {
-        require(
-            userRegistry.isApprovedUser(_to),
-            "Recipient is not approved"
-        );
-
-        require(_amount > 0, "Amount must be greater than zero");
-        
-    }
 }
