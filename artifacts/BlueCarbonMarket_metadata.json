@@ -6,15 +6,22 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
 					{
 						"internalType": "address",
-						"name": "_userRegistry",
+						"name": "",
 						"type": "address"
 					}
 				],
-				"stateMutability": "nonpayable",
-				"type": "constructor"
+				"stateMutability": "view",
+				"type": "function"
 			},
 			{
 				"inputs": [],
@@ -58,11 +65,11 @@
 	},
 	"sources": {
 		"contracts/BlueCarbonMarket.sol": {
-			"keccak256": "0x00e9fa6cf4f4a27d75f10333e80c65a1568314abffd479c60e56e1c586cb5203",
+			"keccak256": "0x0cca6f9071ece77db6f1f9432252b3524222aeadf20245ede60b852b46ec5a26",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4adbcaaa6b4b5994581e3ba027676ae981e0c52bd258ac36fbc2752c0f959820",
-				"dweb:/ipfs/QmccMpVRLNQ1kvnXCQZfDt6P6hS3XksMyzokFWRp6Aj4Mp"
+				"bzz-raw://ceb6f4edbc6ce55bf49d6106aaa456c2198673df913b8b9a22f1e3316b1338d8",
+				"dweb:/ipfs/QmSNZQgbNLd5wadH1hpk8Mx9YMHaY8HMFDaPd7BwCDDTqQ"
 			]
 		}
 	},

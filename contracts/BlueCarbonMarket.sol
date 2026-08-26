@@ -41,10 +41,14 @@ contract BlueCarbonMarket {
     }
 
     IUserRegistry public userRegistry;
+    address public owner;
 
-    constructor(address _userRegistry) {
-        userRegistry = IUserRegistry(_userRegistry);
+    constructor() {
+       owner = msg.sender;
     }
+
+    
+
 
     
     

@@ -182,13 +182,32 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "to",
+						"name": "",
 						"type": "address"
-					},
+					}
+				],
+				"name": "buyers",
+				"outputs": [
 					{
 						"internalType": "uint256",
-						"name": "amount",
+						"name": "",
 						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
 					}
 				],
 				"name": "mintTokens",
@@ -199,6 +218,32 @@
 						"type": "bool"
 					}
 				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "projectRegistry",
+				"outputs": [
+					{
+						"internalType": "contract IProjectRegistry",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "purchaseCredits",
+				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -243,6 +288,24 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "_to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "transferCredits",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "_from",
 						"type": "address"
 					},
@@ -266,6 +329,19 @@
 					}
 				],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "userRegistry",
+				"outputs": [
+					{
+						"internalType": "contract IUserRegistry",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			}
 		],
@@ -297,11 +373,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0xb3902f8b3d50b87b00f2153cd00ad8b199fb3222a440e92e717d0c4a673b095e",
+			"keccak256": "0xbd922ed0404ebd78ec59c71329af6460282957930d35620339313b190dc01999",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://ee1faea77d2c04b7724aeca588ab9b1dab7a58fd1fa7173fc65abc6758585bef",
-				"dweb:/ipfs/QmPBUjqVy2bruJrWYYN397mxYkPwc1HBRdWrpajk2AC9xY"
+				"bzz-raw://3c65aa4191e7a43da9887e4b98a20b352ba9abaf7ff79e5df6121a7cf640a28c",
+				"dweb:/ipfs/QmXJY6Pnb7w9a3Dvq96xU3uBtLMJLdmxm2g4V6QDfBMbJP"
 			]
 		}
 	},

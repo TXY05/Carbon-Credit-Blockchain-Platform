@@ -1,0 +1,99 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "isMinted",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "mintStatus",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "projects",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "projectName",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "capacity",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "minted",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/ProjectRegistry.sol": "ProjectRegistry"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/ProjectRegistry.sol": {
+			"keccak256": "0x9c6676d473d9d0bccdf76c36f5a19cec5a9fa67ec43e42f490066103a1c8aae1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://4a7ef30517a0b3c3175806603b26127ff78e94ba2847f932e7d64aa91b08e348",
+				"dweb:/ipfs/QmaoVXMaCzD5hNPjPQBaAU1UxR431TueZvT6HBh3oc6fXk"
+			]
+		}
+	},
+	"version": 1
+}

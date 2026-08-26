@@ -23,6 +23,44 @@
 				],
 				"stateMutability": "view",
 				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isDeveloper",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
 			}
 		],
 		"devdoc": {
@@ -38,7 +76,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/BlueCarbonMarket.sol": "IUserRegistry"
+			"contracts/CarbonToken.sol": "IUserRegistry"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -52,12 +90,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/BlueCarbonMarket.sol": {
-			"keccak256": "0x00e9fa6cf4f4a27d75f10333e80c65a1568314abffd479c60e56e1c586cb5203",
+		"contracts/CarbonToken.sol": {
+			"keccak256": "0xbd922ed0404ebd78ec59c71329af6460282957930d35620339313b190dc01999",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4adbcaaa6b4b5994581e3ba027676ae981e0c52bd258ac36fbc2752c0f959820",
-				"dweb:/ipfs/QmccMpVRLNQ1kvnXCQZfDt6P6hS3XksMyzokFWRp6Aj4Mp"
+				"bzz-raw://3c65aa4191e7a43da9887e4b98a20b352ba9abaf7ff79e5df6121a7cf640a28c",
+				"dweb:/ipfs/QmXJY6Pnb7w9a3Dvq96xU3uBtLMJLdmxm2g4V6QDfBMbJP"
 			]
 		}
 	},

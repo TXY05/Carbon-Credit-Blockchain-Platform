@@ -11,6 +11,32 @@
 				"type": "constructor"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "RegistrationRequested",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "UserApproved",
+				"type": "event"
+			},
+			{
 				"inputs": [],
 				"name": "admin",
 				"outputs": [
@@ -27,6 +53,19 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "_user",
+						"type": "address"
+					}
+				],
+				"name": "approveUser",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "",
 						"type": "address"
 					}
@@ -34,9 +73,9 @@
 				"name": "buyers",
 				"outputs": [
 					{
-						"internalType": "string",
+						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
-						"type": "string"
+						"type": "uint8"
 					},
 					{
 						"internalType": "string",
@@ -90,6 +129,89 @@
 				],
 				"stateMutability": "view",
 				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "purchaseTokens",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "_role",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "_firstName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_lastName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_email",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_phoneNumber",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_country",
+						"type": "string"
+					}
+				],
+				"name": "registerUser",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_user",
+						"type": "address"
+					}
+				],
+				"name": "rejectUser",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
 			}
 		],
 		"devdoc": {
@@ -120,11 +242,11 @@
 	},
 	"sources": {
 		"contracts/UserRegistry.sol": {
-			"keccak256": "0x86007b182389911b762b73334b2f8cd002fe3892ca016019b79925bc8d246ad4",
+			"keccak256": "0xb25c3f732ff1f36d4b7a459dca745a60e739561595cc420ff8ba92a4bcae9e91",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://60840f9b9c72505be8c1829a829b01d922548976e62af27b623a6f830e2a222e",
-				"dweb:/ipfs/QmXjvxotCC99QsTNkzEQtTonNGhQSZwAai3J9BnsFR9Jy4"
+				"bzz-raw://a7becade03045cdb231559100adcb3c79553a5a75ddd4fb6cd6eb13fd0e4e02b",
+				"dweb:/ipfs/QmYSWnTTYB3qgwFaxJMNpWhMa9mhpRy8QHdHAmEzNyNboj"
 			]
 		}
 	},
