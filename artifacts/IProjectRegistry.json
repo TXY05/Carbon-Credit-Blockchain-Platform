@@ -38,7 +38,9 @@
 		"gasEstimates": null,
 		"methodIdentifiers": {
 			"getCapacity(uint256)": "bcd5349f",
-			"isMinted(uint256)": "33c41a90"
+			"isMinted(uint256)": "33c41a90",
+			"removeCapacity(uint256,uint256)": "a1fc2faa",
+			"setMinted(uint256)": "823402f4"
 		}
 	},
 	"abi": [
@@ -70,6 +72,49 @@
 				}
 			],
 			"name": "isMinted",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "projectID",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_amount",
+					"type": "uint256"
+				}
+			],
+			"name": "removeCapacity",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "projectID",
+					"type": "uint256"
+				}
+			],
+			"name": "setMinted",
 			"outputs": [
 				{
 					"internalType": "bool",

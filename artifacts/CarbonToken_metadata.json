@@ -6,6 +6,17 @@
 	"output": {
 		"abi": [
 			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_IProjectRegistry",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
 				"anonymous": false,
 				"inputs": [
 					{
@@ -181,25 +192,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"name": "buyers",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
 						"internalType": "uint256",
 						"name": "projectID",
 						"type": "uint256"
@@ -236,6 +228,11 @@
 			},
 			{
 				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
 					{
 						"internalType": "uint256",
 						"name": "_amount",
@@ -330,19 +327,6 @@
 				],
 				"stateMutability": "nonpayable",
 				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "userRegistry",
-				"outputs": [
-					{
-						"internalType": "contract IUserRegistry",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
 			}
 		],
 		"devdoc": {
@@ -373,11 +357,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0xbd922ed0404ebd78ec59c71329af6460282957930d35620339313b190dc01999",
+			"keccak256": "0x277baa7331591370750795dbe21d3cd7964bcd1dd153acd8d4f3f8fe49090f97",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3c65aa4191e7a43da9887e4b98a20b352ba9abaf7ff79e5df6121a7cf640a28c",
-				"dweb:/ipfs/QmXJY6Pnb7w9a3Dvq96xU3uBtLMJLdmxm2g4V6QDfBMbJP"
+				"bzz-raw://74cabbeedb7bdedce7637a1722a0301d9781654263028d456cf6a24366af8be5",
+				"dweb:/ipfs/QmbULk8keajfhKNQRMYKyVkXU6o37sjAikpNPhqdjXwVXF"
 			]
 		}
 	},

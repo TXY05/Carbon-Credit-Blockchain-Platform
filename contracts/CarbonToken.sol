@@ -1,23 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-interface IUserRegistry {
-    function isApprovedUser(address user) external view returns (bool);
-    function isBuyer(address user) external view returns (bool);
-    function isDeveloper(address user) external view returns (bool);
-}
-
 interface IProjectRegistry {
     function isMinted(uint256 projectID) external view returns (bool);
     function getCapacity(
         uint256 projectID
     ) external view returns (uint256 capacity);
+    function setMinted(uint256 projectID) external view returns (bool);
+    function removeCapacity(uint256 projectID,uint256 _amount) external view returns (bool);
 }
 
 contract CarbonToken {
+    constructor(address _IProjectRegistry) {
+        projectRegistry = IProjectRegistry(_IProjectRegistry);
+    }
+
     uint256 private constant MAX_UINT256 = 2 ** 256 - 1;
 
-    mapping(address => uint256) public buyers;
     mapping(address => uint256) public balances;
     mapping(address => mapping(address => uint256)) public allowed;
     uint256 public totalSupply;
@@ -26,38 +25,9 @@ contract CarbonToken {
     event Transfer(address from, address to, uint256 value);
     event Approval(address from, address to, uint256 value);
 
-    IUserRegistry public userRegistry;
     IProjectRegistry public projectRegistry;
 
-    enum Status {
-        Pending,
-        Verified,
-        Suspended,
-        Expired
-    }
-
-    modifier onlyApprovedUser() {
-        require(
-            userRegistry.isApprovedUser(msg.sender),
-            "User is not Approved"
-        );
-        _;
-    }
-
-    modifier onlyBuyer() {
-        require(userRegistry.isBuyer(msg.sender), "User is not Buyer");
-        _;
-    }
-
-    modifier onlyDeveloper() {
-        require(userRegistry.isDeveloper(msg.sender), "User is not Developer");
-        _;
-    }
-
-    function mintTokens(
-        uint256 projectID,
-        address to
-    ) public onlyDeveloper returns (bool) {
+    function mintTokens(uint256 projectID, address to) public returns (bool) {
         require(
             projectRegistry.isMinted(projectID) != true,
             "Project is minted!"
@@ -67,6 +37,7 @@ contract CarbonToken {
 
         balances[to] += capacity;
         totalSupply += capacity;
+        projectRegistry.setMinted(projectID);
         return true;
     }
 
@@ -123,16 +94,20 @@ contract CarbonToken {
         return allowed[_owner][_spender];
     }
 
-    //need from project if not can unlimited mint
-    function purchaseCredits(uint256 _amount) public onlyBuyer {
+    function purchaseCredits(uint256 projectID, uint256 _amount) public {
         require(_amount > 0, "Amount must be greater than zero");
+        require(
+            projectRegistry.getCapacity(projectID) >= _amount,
+            "Token is not enough!"
+        );
+
         balances[msg.sender] += _amount;
-        totalSupply += _amount;
+        projectRegistry.removeCapacity(projectID,_amount);
+
         emit Transfer(address(0), msg.sender, _amount);
     }
 
-    function transferCredits(address _to, uint256 _amount) public onlyBuyer {
-        require(userRegistry.isApprovedUser(_to), "Recipient is not approved");
+    function transferCredits(address _to, uint256 _amount) public {
         require(_amount > 0, "Amount must be greater than zero");
         require(balances[msg.sender] >= _amount, "Insufficient balance");
         balances[msg.sender] -= _amount;

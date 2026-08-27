@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-interface IUserRegistry {
-    function isApprovedUser(address user) external view returns (bool);
-}
 
 contract BlueCarbonMarket {
     struct Project {
@@ -40,7 +37,6 @@ contract BlueCarbonMarket {
         uint256 tokenID;
     }
 
-    IUserRegistry public userRegistry;
     address public owner;
 
     constructor() {
