@@ -3,8 +3,7 @@ pragma solidity ^0.8.19;
 
 contract UserRegistry {
     address public owner;
-    mapping(address => User) buyers;
-    mapping(address => User) developers;
+    mapping(address => User) private users;
 
     constructor() {
         owner = msg.sender;
@@ -15,35 +14,46 @@ contract UserRegistry {
         _;
     }
 
+    event UserRegistered(address indexed user, UserRole role);
+
     struct User {
         UserRole role;
-        string firstName;
-        string lastName;
-        string email;
-        string phoneNumber;
-        string country;
     }
 
     enum UserRole {
+        None,
         Buyer,
         Developer
     }
 
     function registerUser(
-        address _user,
+        address user,
         UserRole role
-    ) public onlyOwner returns (bool) {
-        if (role == UserRole.Buyer) {
-            buyers[_user].role = role;
-        } else {
-            developers[_user].role = role;
-        }
+    ) external onlyOwner returns (bool) {
+        require(user != address(0), "Invalid address");
+        require(users[user].role == UserRole.None, "User already registered");
+        require(role != UserRole.None, "Invalid role");
+
+        users[user] = User({role: role});
+
+        emit UserRegistered(user, role);
+
         return true;
     }
 
-    function removeUser(address user) public onlyOwner returns (bool) {
-        delete buyers[user];
+    function isRegistered(address user) external view returns (bool) {
+        return users[user].role != UserRole.None;
+    }
 
-        return true;
+    function getUserRole(address user) external view returns (UserRole role) {
+        return users[user].role;
+    }
+
+    function isBuyer(address user) external view returns (bool) {
+        return users[user].role == UserRole.Buyer;
+    }
+
+    function isDeveloper(address user) external view returns (bool) {
+        return users[user].role == UserRole.Developer;
     }
 }

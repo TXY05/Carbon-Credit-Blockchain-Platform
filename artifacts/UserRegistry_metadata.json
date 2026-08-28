@@ -11,6 +11,101 @@
 				"type": "constructor"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
+					}
+				],
+				"name": "UserRegistered",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "getUserRole",
+				"outputs": [
+					{
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isDeveloper",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isRegistered",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "owner",
 				"outputs": [
@@ -27,7 +122,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_user",
+						"name": "user",
 						"type": "address"
 					},
 					{
@@ -37,25 +132,6 @@
 					}
 				],
 				"name": "registerUser",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					}
-				],
-				"name": "removeUser",
 				"outputs": [
 					{
 						"internalType": "bool",
@@ -95,11 +171,11 @@
 	},
 	"sources": {
 		"contracts/UserRegistry.sol": {
-			"keccak256": "0x90c08f23b087f63865c99499882b791fc9aa8003e45fe591068f1489b877b1e1",
+			"keccak256": "0xc4aa5857c5ff4643370150bdd5a79f369231827f580078825de05e01871c2459",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4bf93663bfb4564be8a849c8b4ff6124abd0480a3eb1420cefb676fe5beb07d1",
-				"dweb:/ipfs/QmXARpVdZSBppn23BFsMFWMFuVqFY9R77SqwQzAZQfxxGp"
+				"bzz-raw://a2ff4c2bb36f733b7b1e73aeea82faa90c00f9bf4a91c7326033a281be55badb",
+				"dweb:/ipfs/QmatYMPCBJmKz73mEsa5Es7bnXkwfVgKNsUFdkMDmSvQ6K"
 			]
 		}
 	},
