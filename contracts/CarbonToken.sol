@@ -8,15 +8,18 @@ interface IUserRegistry {
 
 interface IProjectRegistry {
     function isMinted(uint256 projectID) external view returns (bool);
-    function getCapacity(
-        uint256 projectID
-    ) external view returns (uint256 availableCapacity);
-    function setMinted(uint256 projectID) external view returns (bool);
+
+    function getCapacity(uint256 projectID) external view returns (uint256);
+
+    function setMinted(uint256 projectID) external;
+
     function reduceAvailableCapacity(
         uint256 projectID,
-        uint256 _amount
-    ) external view returns (bool);
+        uint256 amount
+    ) external;
+
     function getDeveloper(uint256 projectID) external view returns (address);
+
     function getPricePerToken(
         uint256 projectID
     ) external view returns (uint256);
@@ -115,7 +118,7 @@ contract CarbonToken {
         uint256 projectID,
         address _to,
         uint256 _value
-    ) public returns (bool success) {
+    ) external  returns (bool success) {
         require(
             projectBalances[msg.sender][projectID] >= _value,
             "token balance is lower than the value requested"
