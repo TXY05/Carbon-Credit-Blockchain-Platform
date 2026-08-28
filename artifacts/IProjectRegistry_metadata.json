@@ -94,7 +94,7 @@
 						"type": "uint256"
 					}
 				],
-				"name": "removeCapacity",
+				"name": "reduceAvailableCapacity",
 				"outputs": [
 					{
 						"internalType": "bool",
@@ -153,11 +153,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0xb25a53150f55b292e1c7f87327cbc5bf20e880be987ff72b0f12567e14b52738",
+			"keccak256": "0x8596ade3b145ee66eb6eb8c5a65810a277f6596e866c57a5191cbabbf624ea4a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5bb3cc8875f8afd4729255b5dd9046eb42f57ec15147e023f02b597139046add",
-				"dweb:/ipfs/QmYo9gVh2mGCf6ao5rDTNwjHEoDDJqGcFe6Ggrz1Znng6S"
+				"bzz-raw://dd48d4e29c58319e863cd75061341cc49fd6a00fb2a966c72c8537d37baf68a8",
+				"dweb:/ipfs/QmcjMMiNVNC4Dy88iFnDmZ14Nf1Hu1iHenCcF1cWzp5NYb"
 			]
 		}
 	},

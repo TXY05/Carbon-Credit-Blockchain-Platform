@@ -13,25 +13,6 @@
 						"type": "address"
 					}
 				],
-				"name": "isBuyer",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					}
-				],
 				"name": "isDeveloper",
 				"outputs": [
 					{
@@ -57,7 +38,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/CarbonToken.sol": "IUserRegistry"
+			"contracts/ProjectRegistry.sol": "IUserRegistry"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -71,12 +52,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/CarbonToken.sol": {
-			"keccak256": "0xb25a53150f55b292e1c7f87327cbc5bf20e880be987ff72b0f12567e14b52738",
+		"contracts/ProjectRegistry.sol": {
+			"keccak256": "0x2188ff4475140099db100ee3190283c13badfbdf6f72af30a7d75b2e7c86944f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5bb3cc8875f8afd4729255b5dd9046eb42f57ec15147e023f02b597139046add",
-				"dweb:/ipfs/QmYo9gVh2mGCf6ao5rDTNwjHEoDDJqGcFe6Ggrz1Znng6S"
+				"bzz-raw://bf1fcc905ab488a83c8365c3c5c1df9d768da68f4e099413aebc963a01b605f5",
+				"dweb:/ipfs/QmX1hUa2zUi9yzoSk8zduUAbXtk8xqBhAZyTbd31WusHTj"
 			]
 		}
 	},

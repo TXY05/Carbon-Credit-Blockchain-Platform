@@ -68,6 +68,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "carbonToken",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -96,17 +109,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "capacity",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalSupply",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "auditDeadline",
+						"name": "availableCapacity",
 						"type": "uint256"
 					}
 				],
@@ -133,7 +136,7 @@
 				"outputs": [
 					{
 						"internalType": "uint256",
-						"name": "capacity",
+						"name": "",
 						"type": "uint256"
 					}
 				],
@@ -190,7 +193,7 @@
 				"outputs": [
 					{
 						"internalType": "bool",
-						"name": "mintStatus",
+						"name": "",
 						"type": "bool"
 					}
 				],
@@ -252,17 +255,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "capacity",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalSupply",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "auditDeadline",
+						"name": "availableCapacity",
 						"type": "uint256"
 					},
 					{
@@ -272,6 +265,50 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "reduceAvailableCapacity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_carbonToken",
+						"type": "address"
+					}
+				],
+				"name": "setCarbonToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "setMinted",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -316,11 +353,11 @@
 	},
 	"sources": {
 		"contracts/ProjectRegistry.sol": {
-			"keccak256": "0x45958fb3f4f43a4e27be5d7d65c8937e5403647daa4711f328ddb029f038c7c0",
+			"keccak256": "0x2188ff4475140099db100ee3190283c13badfbdf6f72af30a7d75b2e7c86944f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0027ae641e34f37def3783e4a358b4fa14478a7710e6e830326b86073b1623f9",
-				"dweb:/ipfs/QmTs3g2hxNCzwmFcBfXaErFdFSmtesvm279SsT6odGSehg"
+				"bzz-raw://bf1fcc905ab488a83c8365c3c5c1df9d768da68f4e099413aebc963a01b605f5",
+				"dweb:/ipfs/QmX1hUa2zUi9yzoSk8zduUAbXtk8xqBhAZyTbd31WusHTj"
 			]
 		}
 	},

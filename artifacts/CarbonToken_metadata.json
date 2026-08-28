@@ -25,16 +25,22 @@
 				"anonymous": false,
 				"inputs": [
 					{
-						"indexed": false,
+						"indexed": true,
 						"internalType": "address",
-						"name": "from",
+						"name": "owner",
 						"type": "address"
 					},
 					{
-						"indexed": false,
+						"indexed": true,
 						"internalType": "address",
-						"name": "to",
+						"name": "spender",
 						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
 					},
 					{
 						"indexed": false,
@@ -150,6 +156,11 @@
 						"internalType": "address",
 						"name": "_spender",
 						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
 					}
 				],
 				"name": "allowance",
@@ -174,6 +185,11 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"name": "allowed",
@@ -197,6 +213,11 @@
 					{
 						"internalType": "uint256",
 						"name": "_value",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "projectID",
 						"type": "uint256"
 					}
 				],
@@ -286,6 +307,25 @@
 						"internalType": "contract IProjectRegistry",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "projectRetired",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -507,11 +547,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0xb25a53150f55b292e1c7f87327cbc5bf20e880be987ff72b0f12567e14b52738",
+			"keccak256": "0x8596ade3b145ee66eb6eb8c5a65810a277f6596e866c57a5191cbabbf624ea4a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5bb3cc8875f8afd4729255b5dd9046eb42f57ec15147e023f02b597139046add",
-				"dweb:/ipfs/QmYo9gVh2mGCf6ao5rDTNwjHEoDDJqGcFe6Ggrz1Znng6S"
+				"bzz-raw://dd48d4e29c58319e863cd75061341cc49fd6a00fb2a966c72c8537d37baf68a8",
+				"dweb:/ipfs/QmcjMMiNVNC4Dy88iFnDmZ14Nf1Hu1iHenCcF1cWzp5NYb"
 			]
 		}
 	},

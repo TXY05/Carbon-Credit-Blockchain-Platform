@@ -41,7 +41,7 @@
 			"getDeveloper(uint256)": "7a276bb6",
 			"getPricePerToken(uint256)": "b8bfdf9f",
 			"isMinted(uint256)": "33c41a90",
-			"removeCapacity(uint256,uint256)": "a1fc2faa",
+			"reduceAvailableCapacity(uint256,uint256)": "fc9ff96d",
 			"setMinted(uint256)": "823402f4"
 		}
 	},
@@ -135,7 +135,7 @@
 					"type": "uint256"
 				}
 			],
-			"name": "removeCapacity",
+			"name": "reduceAvailableCapacity",
 			"outputs": [
 				{
 					"internalType": "bool",

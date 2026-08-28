@@ -10,9 +10,9 @@ interface IProjectRegistry {
     function isMinted(uint256 projectID) external view returns (bool);
     function getCapacity(
         uint256 projectID
-    ) external view returns (uint256 capacity);
+    ) external view returns (uint256 availableCapacity);
     function setMinted(uint256 projectID) external view returns (bool);
-    function removeCapacity(
+    function reduceAvailableCapacity(
         uint256 projectID,
         uint256 _amount
     ) external view returns (bool);
@@ -200,7 +200,7 @@ contract CarbonToken {
         projectBalances[developer][projectID] -= amount;
         projectBalances[msg.sender][projectID] += amount;
 
-        projectRegistry.removeCapacity(projectID, amount);
+        projectRegistry.reduceAvailableCapacity(projectID, amount);
 
         emit TokensPurchased(
             projectID,
