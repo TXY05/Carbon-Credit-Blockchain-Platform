@@ -32,6 +32,44 @@
 						"type": "uint256"
 					}
 				],
+				"name": "getDeveloper",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "getPricePerToken",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
 				"name": "isMinted",
 				"outputs": [
 					{
@@ -115,11 +153,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0x277baa7331591370750795dbe21d3cd7964bcd1dd153acd8d4f3f8fe49090f97",
+			"keccak256": "0xb25a53150f55b292e1c7f87327cbc5bf20e880be987ff72b0f12567e14b52738",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://74cabbeedb7bdedce7637a1722a0301d9781654263028d456cf6a24366af8be5",
-				"dweb:/ipfs/QmbULk8keajfhKNQRMYKyVkXU6o37sjAikpNPhqdjXwVXF"
+				"bzz-raw://5bb3cc8875f8afd4729255b5dd9046eb42f57ec15147e023f02b597139046add",
+				"dweb:/ipfs/QmYo9gVh2mGCf6ao5rDTNwjHEoDDJqGcFe6Ggrz1Znng6S"
 			]
 		}
 	},

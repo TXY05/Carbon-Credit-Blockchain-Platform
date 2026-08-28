@@ -6,9 +6,120 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_userRegistry",
+						"type": "address"
+					}
+				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "developer",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "projectName",
+						"type": "string"
+					}
+				],
+				"name": "ProjectCreated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "ProjectMinted",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "TONNES_PER_TOKEN",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "projectName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "ecosystemType",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pricePerToken",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "capacity",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalSupply",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "auditDeadline",
+						"type": "uint256"
+					}
+				],
+				"name": "createProject",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
 			},
 			{
 				"inputs": [
@@ -23,6 +134,44 @@
 					{
 						"internalType": "uint256",
 						"name": "capacity",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "getDeveloper",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "getPricePerToken",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
 						"type": "uint256"
 					}
 				],
@@ -77,9 +226,29 @@
 						"type": "uint256"
 					},
 					{
+						"internalType": "address",
+						"name": "developer",
+						"type": "address"
+					},
+					{
 						"internalType": "string",
 						"name": "projectName",
 						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "ecosystemType",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pricePerToken",
+						"type": "uint256"
 					},
 					{
 						"internalType": "uint256",
@@ -92,60 +261,30 @@
 						"type": "uint256"
 					},
 					{
+						"internalType": "uint256",
+						"name": "auditDeadline",
+						"type": "uint256"
+					},
+					{
 						"internalType": "bool",
 						"name": "minted",
 						"type": "bool"
-					},
-					{
-						"internalType": "enum ProjectRegistry.Status",
-						"name": "status",
-						"type": "uint8"
 					}
 				],
 				"stateMutability": "view",
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "projectID",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "removeCapacity",
+				"inputs": [],
+				"name": "userRegistry",
 				"outputs": [
 					{
-						"internalType": "bool",
+						"internalType": "contract IUserRegistry",
 						"name": "",
-						"type": "bool"
+						"type": "address"
 					}
 				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "projectID",
-						"type": "uint256"
-					}
-				],
-				"name": "setMinted",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "view",
 				"type": "function"
 			}
 		],
@@ -177,11 +316,11 @@
 	},
 	"sources": {
 		"contracts/ProjectRegistry.sol": {
-			"keccak256": "0xec13c46d4f490a873f3cdeacc5fef04275c58955ed1f9305a350b50746ecd660",
+			"keccak256": "0x45958fb3f4f43a4e27be5d7d65c8937e5403647daa4711f328ddb029f038c7c0",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e62f151be35cfad80db1bf06559be067d00701be8e0b34048ec6aba6edc320f5",
-				"dweb:/ipfs/QmXL5F8FgWBX5DQ6bzZE5SAxB8gidRTvayXqHFBsZHyWHV"
+				"bzz-raw://0027ae641e34f37def3783e4a358b4fa14478a7710e6e830326b86073b1623f9",
+				"dweb:/ipfs/QmTs3g2hxNCzwmFcBfXaErFdFSmtesvm279SsT6odGSehg"
 			]
 		}
 	},

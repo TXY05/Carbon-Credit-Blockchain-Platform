@@ -13,25 +13,6 @@
 						"type": "address"
 					}
 				],
-				"name": "isApprovedUser",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					}
-				],
 				"name": "isBuyer",
 				"outputs": [
 					{
@@ -91,11 +72,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0xbd922ed0404ebd78ec59c71329af6460282957930d35620339313b190dc01999",
+			"keccak256": "0xb25a53150f55b292e1c7f87327cbc5bf20e880be987ff72b0f12567e14b52738",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3c65aa4191e7a43da9887e4b98a20b352ba9abaf7ff79e5df6121a7cf640a28c",
-				"dweb:/ipfs/QmXJY6Pnb7w9a3Dvq96xU3uBtLMJLdmxm2g4V6QDfBMbJP"
+				"bzz-raw://5bb3cc8875f8afd4729255b5dd9046eb42f57ec15147e023f02b597139046add",
+				"dweb:/ipfs/QmYo9gVh2mGCf6ao5rDTNwjHEoDDJqGcFe6Ggrz1Znng6S"
 			]
 		}
 	},

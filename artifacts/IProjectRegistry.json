@@ -38,6 +38,8 @@
 		"gasEstimates": null,
 		"methodIdentifiers": {
 			"getCapacity(uint256)": "bcd5349f",
+			"getDeveloper(uint256)": "7a276bb6",
+			"getPricePerToken(uint256)": "b8bfdf9f",
 			"isMinted(uint256)": "33c41a90",
 			"removeCapacity(uint256,uint256)": "a1fc2faa",
 			"setMinted(uint256)": "823402f4"
@@ -57,6 +59,44 @@
 				{
 					"internalType": "uint256",
 					"name": "capacity",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "projectID",
+					"type": "uint256"
+				}
+			],
+			"name": "getDeveloper",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "projectID",
+					"type": "uint256"
+				}
+			],
+			"name": "getPricePerToken",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
 					"type": "uint256"
 				}
 			],
