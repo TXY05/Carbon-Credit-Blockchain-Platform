@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.34+commit.80d5c536"
+		"version": "0.8.19+commit.7dd6d404"
 	},
 	"language": "Solidity",
 	"output": {
@@ -534,7 +534,7 @@
 		"compilationTarget": {
 			"contracts/CarbonToken.sol": "CarbonToken"
 		},
-		"evmVersion": "osaka",
+		"evmVersion": "paris",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -547,11 +547,11 @@
 	},
 	"sources": {
 		"contracts/CarbonToken.sol": {
-			"keccak256": "0x8596ade3b145ee66eb6eb8c5a65810a277f6596e866c57a5191cbabbf624ea4a",
+			"keccak256": "0x48886c34874d3217aaac348cf19b6eb8a216f9bc79779057b25c7e3e745a607e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://dd48d4e29c58319e863cd75061341cc49fd6a00fb2a966c72c8537d37baf68a8",
-				"dweb:/ipfs/QmcjMMiNVNC4Dy88iFnDmZ14Nf1Hu1iHenCcF1cWzp5NYb"
+				"bzz-raw://48cb62d5c6dd6ea159ac0d7b5ffeca6dd91c023f26db8f4e671a646e6d2150f1",
+				"dweb:/ipfs/QmbWDhwRCWQA3K7iiszixnPvc43HTvngRCAJW5rXnqPEfe"
 			]
 		}
 	},

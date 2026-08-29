@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.34+commit.80d5c536"
+		"version": "0.8.19+commit.7dd6d404"
 	},
 	"language": "Solidity",
 	"output": {
@@ -340,7 +340,7 @@
 		"compilationTarget": {
 			"contracts/ProjectRegistry.sol": "ProjectRegistry"
 		},
-		"evmVersion": "osaka",
+		"evmVersion": "paris",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -353,11 +353,11 @@
 	},
 	"sources": {
 		"contracts/ProjectRegistry.sol": {
-			"keccak256": "0x2188ff4475140099db100ee3190283c13badfbdf6f72af30a7d75b2e7c86944f",
+			"keccak256": "0x182129174b5b1213b5874f26792ea0db0e359fcff3dfa3c051ffb304042cd7f9",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://bf1fcc905ab488a83c8365c3c5c1df9d768da68f4e099413aebc963a01b605f5",
-				"dweb:/ipfs/QmX1hUa2zUi9yzoSk8zduUAbXtk8xqBhAZyTbd31WusHTj"
+				"bzz-raw://b2ab5e092440d7741e38d3f881287042f48aabc0d11e0d1d01755cdd5856005a",
+				"dweb:/ipfs/QmSEXk67AaNob2m6zHP5EFWdtoqgNdyNCPQkTCdNjCfevz"
 			]
 		}
 	},

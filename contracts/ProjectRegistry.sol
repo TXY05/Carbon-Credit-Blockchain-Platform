@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 interface IUserRegistry {
     function isDeveloper(address user) external view returns (bool);
+    function isAdmin(address user) external view returns (bool);
 }
 
 contract ProjectRegistry {
@@ -30,8 +31,8 @@ contract ProjectRegistry {
         _;
     }
 
-    modifier onlyOwner() {
-        require(owner == msg.sender, "User is not owner");
+modifier onlyAdmin() {
+        require(userRegistry.isAdmin(msg.sender), "Only admin");
         _;
     }
 
@@ -146,7 +147,7 @@ contract ProjectRegistry {
         return projects[projectID].pricePerToken;
     }
 
-    function setCarbonToken(address _carbonToken) external onlyOwner {
+    function setCarbonToken(address _carbonToken) external onlyAdmin {
         require(_carbonToken != address(0), "Invalid CarbonToken");
 
         require(carbonToken == address(0), "Already set");

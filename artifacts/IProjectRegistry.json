@@ -58,7 +58,7 @@
 			"outputs": [
 				{
 					"internalType": "uint256",
-					"name": "capacity",
+					"name": "",
 					"type": "uint256"
 				}
 			],
@@ -131,19 +131,13 @@
 				},
 				{
 					"internalType": "uint256",
-					"name": "_amount",
+					"name": "amount",
 					"type": "uint256"
 				}
 			],
 			"name": "reduceAvailableCapacity",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -155,14 +149,8 @@
 				}
 			],
 			"name": "setMinted",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		}
 	]

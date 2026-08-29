@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.34+commit.80d5c536"
+		"version": "0.8.19+commit.7dd6d404"
 	},
 	"language": "Solidity",
 	"output": {
@@ -33,6 +33,19 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "addAdmin",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "user",
 						"type": "address"
 					}
@@ -43,6 +56,25 @@
 						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
 						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isAdmin",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -158,7 +190,7 @@
 		"compilationTarget": {
 			"contracts/UserRegistry.sol": "UserRegistry"
 		},
-		"evmVersion": "osaka",
+		"evmVersion": "paris",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -171,11 +203,11 @@
 	},
 	"sources": {
 		"contracts/UserRegistry.sol": {
-			"keccak256": "0xc4aa5857c5ff4643370150bdd5a79f369231827f580078825de05e01871c2459",
+			"keccak256": "0xe791ad9becf0364ee3d25199760e0c7a27189b303afab31f5683893d72ef73e3",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://a2ff4c2bb36f733b7b1e73aeea82faa90c00f9bf4a91c7326033a281be55badb",
-				"dweb:/ipfs/QmatYMPCBJmKz73mEsa5Es7bnXkwfVgKNsUFdkMDmSvQ6K"
+				"bzz-raw://71fddae08ed83df9621433cf4672b828951d8fa725cad4ef1c68ae3dc2da7fc2",
+				"dweb:/ipfs/QmdHT9FyJLT98EdzkzRidfgC1Pcjbe3ecu6NGNetWAg2f3"
 			]
 		}
 	},
