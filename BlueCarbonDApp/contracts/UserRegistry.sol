@@ -2,87 +2,73 @@
 pragma solidity ^0.8.19;
 
 contract UserRegistry {
-    address public admin;
-
-    struct Buyer {
-        string role;
-        string firstName;
-        string lastName;
-        string email;
-        string phoneNumber;
-        string country;
-        string password;
-        uint256 tokens;
-        uint256 credits;
-        UserStatus status;
-    }
-
-    enum UserStatus {
-        None,
-        Pending,
-        Approved,
-        Rejected
-    }
-
-    mapping(address => Buyer) public buyers;
-
-    event RegistrationRequested(address indexed user);
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can perform this action");
-        _;
-    }
-    
+    address public owner;
+    mapping(address => User) private users;
+    mapping(address => bool) private admins;
 
     constructor() {
-        admin = msg.sender;
+        owner = msg.sender;
+        admins[msg.sender] = true;
     }
 
-    function purchaseTokens(uint256 _amount) public {}
+    modifier onlyOwner(){
+        require(owner==msg.sender,"Not owner");
+        _;
+    }
+
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "Not admin");
+        _;
+    }
+
+    function addAdmin(address account) external onlyOwner {
+        admins[account] = true;
+    }
+
+    event UserRegistered(address indexed user, UserRole role);
+
+    struct User {
+        UserRole role;
+    }
+
+    enum UserRole {
+        None,
+        Buyer,
+        Developer
+    }
 
     function registerUser(
-        string memory _role,
-        string memory _firstName,
-        string memory _lastName,
-        string memory _email,
-        string memory _phoneNumber,
-        string memory _country,
-        string memory _password
-    ) public {
-        require(
-            buyers[msg.sender].status != UserStatus.Pending,
-            "Registration already pending"
-        );
+        address user,
+        UserRole role
+    ) external onlyAdmin returns (bool) {
+        require(user != address(0), "Invalid address");
+        require(users[user].role == UserRole.None, "User already registered");
+        require(role != UserRole.None, "Invalid role");
 
-        require(
-            buyers[msg.sender].status != UserStatus.Approved,
-            "User already approved"
-        );
+        users[user] = User({role: role});
 
-        buyers[msg.sender] = Buyer({
-            role: _role,
-            firstName: _firstName,
-            lastName: _lastName,
-            email: _email,
-            phoneNumber: _phoneNumber,
-            country: _country,
-            status: UserStatus.Pending,
-            password: _password,
-            tokens: 0,
-            credits: 0
-        });
+        emit UserRegistered(user, role);
 
-        emit RegistrationRequested(msg.sender);
+        return true;
     }
 
-    function isApprovedUser(address user)external view returns (bool)
-    {
-        return buyers[user].status == UserStatus.Approved;
+    function isRegistered(address user) external view returns (bool) {
+        return users[user].role != UserRole.None;
     }
 
-    function approveUser(address _user) public onlyAdmin {}
+    function isAdmin(address user) external view returns (bool) {
+        return admins[user];
+    }
 
-    function rejectUser(address _user) public onlyAdmin {}
+    function getUserRole(address user) external view returns (UserRole role) {
+        return users[user].role;
+    }
 
-    
+    function isBuyer(address user) external view returns (bool) {
+        return users[user].role == UserRole.Buyer;
+    }
+
+    function isDeveloper(address user) external view returns (bool) {
+        return users[user].role == UserRole.Developer;
+    }
 }
