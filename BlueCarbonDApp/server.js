@@ -95,7 +95,8 @@ app.post('/register', (req, res) => {
     const createdAt = now.toISOString().replace('T', ' ').substring(0, 19);
 
     // 显式地把 createdAt 塞进 INSERT 语句里！
-    const sql = `INSERT INTO users (username, password, role, status, createdAt) VALUES (?, ?, ?, 'pending', ?)`;
+    const sql = `INSERT INTO users (username, password, role, status, createdAt) 
+    VALUES (?, ?, ?, 'pending', ?)`;
     
     db.run(sql, [username, password, role, createdAt], function(err) {
         if (err) {

@@ -2,19 +2,1055 @@ let web3;
 let currentAccount;
 
 // 【请确保这里是你在 Remix 部署的真实合约地址】
-const contractAddress = "0xF0CF4f8656B5A5BE0F700D76eaA7699cEceDcd1d"; 
-const contractABI = [
+const USER_REGISTRY_ADDRESS = "0xCAeC5026E7aA66fdd6Bb09A4814783a016eF42Ea";
+const PROJECT_REGISTRY_ADDRESS = "0x9901d0bdb6Ce731931a1805236d6ec6BDFA7e7E2";
+const CARBON_TOKEN_ADDRESS = "0xDDb8c9AC1289bfC33f4C90a2BE4f7Cd54747794C";
+
+const USER_REGISTRY_ABI = [
     {
         "inputs": [
-            { "internalType": "address", "name": "to", "type": "address" },
-            { "internalType": "uint256", "name": "amount", "type": "uint256" }
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
         ],
-        "name": "mint",
+        "name": "addAdmin",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "internalType": "enum UserRegistry.UserRole",
+                "name": "role",
+                "type": "uint8"
+            }
+        ],
+        "name": "registerUser",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "enum UserRegistry.UserRole",
+                "name": "role",
+                "type": "uint8"
+            }
+        ],
+        "name": "UserRegistered",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "getUserRole",
+        "outputs": [
+            {
+                "internalType": "enum UserRegistry.UserRole",
+                "name": "role",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "isAdmin",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "isBuyer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "isDeveloper",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "isRegistered",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     }
 ];
+
+const PROJECT_REGISTRY_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ecosystemType",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pricePerToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableCapacity",
+        "type": "uint256"
+      }
+    ],
+    "name": "createProject",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userRegistry",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      }
+    ],
+    "name": "ProjectCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectMinted",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "reduceAvailableCapacity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_carbonToken",
+        "type": "address"
+      }
+    ],
+    "name": "setCarbonToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinted",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "carbonToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCapacity",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getDeveloper",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPricePerToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isMinted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projects",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ecosystemType",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pricePerToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableCapacity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "minted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TONNES_PER_TOKEN",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "userRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IUserRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+const CARBON_TOKEN_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_IProjectRegistry",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_IUserRegistry",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "mintTokens",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "purchaseCredits",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "retire",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokensPurchased",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokensRetired",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "remaining",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allowed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projectBalances",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "projectRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IProjectRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projectRetired",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "retired",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalMinted",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalRetired",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "userRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IUserRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+let userRegistryContract = null;
+let projectRegistryContract = null;
+let carbonTokenContract = null;
+
+function blockchainAddressesConfigured() {
+    return (
+        USER_REGISTRY_ADDRESS.startsWith("0x") &&
+        PROJECT_REGISTRY_ADDRESS.startsWith("0x") &&
+        CARBON_TOKEN_ADDRESS.startsWith("0x")
+    );
+}
+
+function initializeBlockchainContracts() {
+    if (!web3 || !blockchainAddressesConfigured()) {
+        return false;
+    }
+
+    userRegistryContract = new web3.eth.Contract(
+        USER_REGISTRY_ABI,
+        USER_REGISTRY_ADDRESS
+    );
+
+    projectRegistryContract = new web3.eth.Contract(
+        PROJECT_REGISTRY_ABI,
+        PROJECT_REGISTRY_ADDRESS
+    );
+
+    carbonTokenContract = new web3.eth.Contract(
+        CARBON_TOKEN_ABI,
+        CARBON_TOKEN_ADDRESS
+    );
+
+    return true;
+}
+
 
 // Node.js 后端服务器地址
 const SERVER_URL = "http://localhost:3000";
@@ -22,7 +1058,7 @@ const SERVER_URL = "http://localhost:3000";
 // ==========================================
 // UI 逻辑：切换 Login 和 Register 面板
 // ==========================================
-window.toggleAuthMode = function(mode) {
+window.toggleAuthMode = function (mode) {
     if (mode === 'login') {
         document.getElementById('form-login').style.display = 'block';
         document.getElementById('form-register').style.display = 'none';
@@ -43,13 +1079,13 @@ window.toggleAuthMode = function(mode) {
 // ==========================================
 // 注册逻辑
 // ==========================================
-window.handleRegister = async function() {
+window.handleRegister = async function () {
     let rRole = document.getElementById("regRole").value;
     let rUser = document.getElementById("regUsername").value;
     let rPass = document.getElementById("regPassword").value;
 
-    if(!rUser || !rPass) {
-        alert("🚨 请填写完整账号和密码！");
+    if (!rUser || !rPass) {
+        // alert("🚨 请填写完整账号和密码！");
         return;
     }
 
@@ -60,29 +1096,29 @@ window.handleRegister = async function() {
         });
 
         let result = await response.json();
-        
-        if(result.success) {
+
+        if (result.success) {
             // 🔴 防呆保护：如果后端给了 message 就用后端的，没给就用默认的
-            alert(result.message || "✅ 注册成功！请等待 Admin 审核。");
-            
+            // alert(result.message || "✅ 注册成功！请等待 Admin 审核。");
+
             // 注册成功后清空输入框
             document.getElementById("regUsername").value = "";
             document.getElementById("regPassword").value = "";
         } else {
-            alert("❌ 注册失败: " + result.message);
+            // alert("❌ 注册失败: " + result.message);
         }
     } catch (error) {
         console.error(error);
-        alert("🚨 请求报错，请确保 node server.js 正在运行！");
+        // alert("🚨 请求报错，请确保 node server.js 正在运行！");
     }
 };
 
-window.handleLogin = async function() {
+window.handleLogin = async function () {
     let logUser = document.getElementById("logUsername").value;
     let logPass = document.getElementById("logPassword").value;
 
-    if(!logUser || !logPass) {
-        alert("🚨 请填写完整的账号和密码！");
+    if (!logUser || !logPass) {
+        // alert("🚨 请填写完整的账号和密码！");
         return;
     }
 
@@ -93,27 +1129,27 @@ window.handleLogin = async function() {
         });
 
         let result = await response.json();
-        
-        if(result.success) {
+
+        if (result.success) {
             localStorage.setItem('loggedInUser', result.username);
-            alert("✅ 登录成功！");
-            
+            // alert("✅ 登录成功！");
+
             document.getElementById("logUsername").value = "";
             document.getElementById("logPassword").value = "";
-            
+
             // 1. 根据角色解锁对应的侧边栏菜单
             switchRole(result.role);
             if (typeof syncGlobalAvatar === 'function') syncGlobalAvatar();
 
             // 2. 🔴 完美接入你的真实路由函数！跳转到 Marketplace
-            navTo('marketPage', 'Carbon Marketplace'); 
-            
+            navTo('marketPage', 'Carbon Marketplace');
+
         } else {
-            alert(result.message);
+            // alert(result.message);
         }
     } catch (error) {
         console.error(error);
-        alert("🚨 请求报错，请检查控制台。");
+        // alert("🚨 请求报错，请检查控制台。");
     }
 };
 
@@ -123,7 +1159,7 @@ window.handleLogin = async function() {
 const connectBtn = document.getElementById("connectWalletBtn");
 
 if (connectBtn) {
-    connectBtn.onclick = async function() {
+    connectBtn.onclick = async function () {
         // 检查浏览器有没有安装 MetaMask
         if (typeof window.ethereum !== 'undefined') {
             web3 = new Web3(window.ethereum);
@@ -131,10 +1167,10 @@ if (connectBtn) {
                 // 唤醒 MetaMask 请求授权
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 currentAccount = accounts[0];
-                
+
                 // 酷炫细节 1：改变左下角按钮的文字和颜色，变成绿色已连接状态
-                connectBtn.innerHTML = `✅ ${currentAccount.substring(0,6)}...${currentAccount.substring(38)}`;
-                connectBtn.style.background = "#28a745"; 
+                connectBtn.innerHTML = `✅ ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)}`;
+                connectBtn.style.background = "#28a745";
                 connectBtn.style.borderColor = "#28a745";
 
                 // 酷炫细节 2：如果当前在 Developer 页面，自动把地址填入表单
@@ -143,14 +1179,14 @@ if (connectBtn) {
                     devAddressInput.value = currentAccount;
                     devAddressInput.style.color = "#5640fa";
                 }
-                
-                alert(`🎉 钱包连接成功！\n链上身份已确认为: ${currentAccount}`);
+
+                // alert(`🎉 钱包连接成功！\n链上身份已确认为: ${currentAccount}`);
             } catch (error) {
                 console.error("用户拒绝了连接", error);
-                alert("❌ 连接失败：你可能在 MetaMask 弹窗里点击了拒绝。");
+                // alert("❌ 连接失败：你可能在 MetaMask 弹窗里点击了拒绝。");
             }
         } else {
-            alert("🚨 未检测到 Web3 环境！请确保你的浏览器安装了 MetaMask (小狐狸) 插件。");
+            // alert("🚨 未检测到 Web3 环境！请确保你的浏览器安装了 MetaMask (小狐狸) 插件。");
         }
     };
 } else {
@@ -160,17 +1196,17 @@ if (connectBtn) {
 // ==========================================
 // Developer：提交新项目 (修复身份绑定版)
 // ==========================================
-document.getElementById('submitBtn').onclick = async function() {
+document.getElementById('submitBtn').onclick = async function () {
     let projName = document.getElementById("projName").value;
     let location = document.getElementById("location").value;
     let capacity = document.getElementById("capacity").value;
     let deadline = document.getElementById("deadline").value;
-    
+
     // 🔴 核心修复：直接抓取当前登录的 Username
     let currentUser = localStorage.getItem('loggedInUser');
 
-    if(!projName || !location || !capacity || !deadline) {
-        alert("🚨 请填写完整所有的项目信息！");
+    if (!projName || !location || !capacity || !deadline) {
+        // alert("🚨 请填写完整所有的项目信息！");
         return;
     }
 
@@ -189,31 +1225,31 @@ document.getElementById('submitBtn').onclick = async function() {
         });
 
         let result = await response.json();
-        if(result.success) {
-            alert("✅ 项目提交成功！已进入排队审核。");
-            
+        if (result.success) {
+            // alert("✅ 项目提交成功！已进入排队审核。");
+
             // 清空表单
             document.getElementById("projName").value = "";
             document.getElementById("location").value = "";
             document.getElementById("capacity").value = "";
             document.getElementById("deadline").value = "";
-            
+
             // 🔴 提交成功后，直接丝滑跳转到 My Projects 页面去欣赏你的成果！
             navTo('devHistoryPage', 'My Projects');
-            
+
         } else {
-            alert(result.message);
+            // alert(result.message);
         }
     } catch (error) {
         console.error(error);
-        alert("🚨 请求报错，请检查控制台。");
+        // alert("🚨 请求报错，请检查控制台。");
     }
 };
 
 // ==========================================
 // Admin：项目管理 (Tab切换逻辑)
 // ==========================================
-window.switchProjectTab = function(tab) {
+window.switchProjectTab = function (tab) {
     if (tab === 'pending') {
         document.getElementById('panel-pending-projects').style.display = 'block';
         document.getElementById('panel-all-projects').style.display = 'none';
@@ -236,14 +1272,14 @@ window.switchProjectTab = function(tab) {
 // ==========================================
 // 渲染待审核项目 (Pending)
 // ==========================================
-window.loadPendingProjects = async function() {
+window.loadPendingProjects = async function () {
     try {
         let response = await fetch(`${SERVER_URL}/pending-projects`);
         let pendingProjects = await response.json();
-        
+
         let tbody = document.getElementById("tableBody");
-        if (!tbody) return; 
-        tbody.innerHTML = ""; 
+        if (!tbody) return;
+        tbody.innerHTML = "";
 
         if (pendingProjects.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 目前没有需要审核的项目</td></tr>`;
@@ -278,17 +1314,17 @@ window.loadPendingProjects = async function() {
 // ==========================================
 // 审批与驳回 (绝对防闪回)
 // ==========================================
-window.approveAndMint = async function(projectId, devAddress, volume) {
+window.approveAndMint = async function (projectId, devAddress, volume) {
     try {
         if (typeof web3 === 'undefined' || !currentAccount) {
-            alert("🚨 请先点击左下角连接 MetaMask 钱包！");
+            // alert("🚨 请先点击左下角连接 MetaMask 钱包！");
             return;
         }
 
         const contract = new web3.eth.Contract(contractABI, contractAddress);
         let amountInWei = web3.utils.toWei(volume.toString(), 'ether');
 
-        alert("⚠️ 准备唤醒 MetaMask 支付 Gas 费...");
+        // alert("⚠️ 准备唤醒 MetaMask 支付 Gas 费...");
         await contract.methods.mint(devAddress, amountInWei).send({ from: currentAccount });
 
         let response = await fetch(`${SERVER_URL}/approve-project`, {
@@ -296,27 +1332,27 @@ window.approveAndMint = async function(projectId, devAddress, volume) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: projectId })
         });
-        
+
         let result = await response.json();
-        if(result.success) {
-            alert("🎉 发币成功！状态已更新。");
+        if (result.success) {
+            // alert("🎉 发币成功！状态已更新。");
             loadPendingProjects(); // 🔴 原地局部刷新，保留当前页面
         }
     } catch (error) {
         console.error(error);
-        alert("❌ 发币失败！请检查控制台报错。");
+        // alert("❌ 发币失败！请检查控制台报错。");
     }
 };
 
-window.rejectProject = async function(projectId) {
-    if(!confirm("⚠️ 确定要驳回该项目吗？")) return;
+window.rejectProject = async function (projectId) {
+    if (!confirm("⚠️ 确定要驳回该项目吗？")) return;
     try {
         let response = await fetch(`${SERVER_URL}/reject-project`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: projectId })
         });
-        if((await response.json()).success) {
-            alert("🚫 项目已驳回。");
+        if ((await response.json()).success) {
+            // alert("🚫 项目已驳回。");
             loadPendingProjects(); // 🔴 原地局部刷新
         }
     } catch (error) { console.error(error); }
@@ -327,32 +1363,32 @@ window.rejectProject = async function(projectId) {
 // ==========================================
 let allProjectsData = [];
 
-window.loadAllProjects = async function() {
+window.loadAllProjects = async function () {
     try {
         let response = await fetch(`${SERVER_URL}/all-projects`);
-        
+
         // 核心防呆：如果后端没有这个接口，立刻拦截并弹窗警告
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         allProjectsData = await response.json();
         applyProjectFilters();
-        
-    } catch (error) { 
-        console.error("加载大名单失败:", error); 
-        alert("🚨 数据拉取失败！\n请确保你在 server.js 里加上了 /all-projects 接口，并且已经用 Ctrl+C 停止并重新启动了 node server.js！");
+
+    } catch (error) {
+        console.error("加载大名单失败:", error);
+        // alert("🚨 数据拉取失败！\n请确保你在 server.js 里加上了 /all-projects 接口，并且已经用 Ctrl+C 停止并重新启动了 node server.js！");
     }
 };
 
-window.applyProjectFilters = function() {
+window.applyProjectFilters = function () {
     const statusFilter = document.getElementById('filterProjectStatus').value;
     const startDate = document.getElementById('projDateStart').value;
     const endDate = document.getElementById('projDateEnd').value;
 
     let filtered = allProjectsData.filter(p => {
         let matchStatus = (statusFilter === 'all') || (p.status === statusFilter);
-        
+
         // 日期比对逻辑
         let matchDate = true;
         if (p.createdAt) {
@@ -362,13 +1398,13 @@ window.applyProjectFilters = function() {
         } else {
             if (startDate || endDate) matchDate = false;
         }
-        
+
         return matchStatus && matchDate;
     });
 
     let tbody = document.getElementById("allProjectsTableBody");
-    if(!tbody) return;
-    tbody.innerHTML = ""; 
+    if (!tbody) return;
+    tbody.innerHTML = "";
 
     filtered.forEach((p) => {
         let statusColor = p.status === 'approved' ? '#28a745' : (p.status === 'rejected' ? '#dc3545' : '#ff9800');
@@ -388,18 +1424,18 @@ window.applyProjectFilters = function() {
 };
 
 // 🔴 新增：驳回项目逻辑
-window.rejectProject = async function(projectId) {
-    if(!confirm("⚠️ 确定要无情驳回该项目吗？")) return;
-    
+window.rejectProject = async function (projectId) {
+    if (!confirm("⚠️ 确定要无情驳回该项目吗？")) return;
+
     try {
         let response = await fetch(`${SERVER_URL}/reject-project`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: projectId })
         });
-        
+
         let result = await response.json();
-        if(result.success) {
-            alert("🚫 项目已被驳回。");
+        if (result.success) {
+            // alert("🚫 项目已被驳回。");
             loadPendingProjects(); // 刷新表格，该项目会从 pending 列表中消失
         }
     } catch (error) {
@@ -410,7 +1446,7 @@ window.rejectProject = async function(projectId) {
 // ==========================================
 // Admin：用户管理 (Tab切换逻辑)
 // ==========================================
-window.switchUserTab = function(tab) {
+window.switchUserTab = function (tab) {
     if (tab === 'pending') {
         document.getElementById('panel-pending-users').style.display = 'block';
         document.getElementById('panel-all-users').style.display = 'none';
@@ -433,14 +1469,14 @@ window.switchUserTab = function(tab) {
 // ==========================================
 // 渲染待审核用户 (加入 type="button" 终极防刷新)
 // ==========================================
-window.loadPendingUsers = async function() {
+window.loadPendingUsers = async function () {
     try {
         let response = await fetch(`${SERVER_URL}/pending-users`);
         let pendingUsers = await response.json();
-        
+
         let tbody = document.getElementById("userTableBody");
-        if (!tbody) return; 
-        tbody.innerHTML = ""; 
+        if (!tbody) return;
+        tbody.innerHTML = "";
 
         if (pendingUsers.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 目前没有需要审核的用户</td></tr>`;
@@ -468,30 +1504,30 @@ window.loadPendingUsers = async function() {
 // ==========================================
 // 审批/驳回用户 (局部刷新，绝不跳出)
 // ==========================================
-window.approveUser = async function(userId) {
+window.approveUser = async function (userId) {
     try {
         let response = await fetch(`${SERVER_URL}/approve-user`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: userId })
         });
-        
-        if((await response.json()).success) {
-            alert("✅ 用户已批准！");
+
+        if ((await response.json()).success) {
+            // alert("✅ 用户已批准！");
             loadPendingUsers(); // 🔴 原地刷新当前表格，绝对不跳转页面！
         }
     } catch (error) { console.error(error); }
 };
 
-window.rejectUser = async function(userId) {
-    if(!confirm("⚠️ 确定要驳回该用户的申请吗？")) return;
+window.rejectUser = async function (userId) {
+    if (!confirm("⚠️ 确定要驳回该用户的申请吗？")) return;
     try {
         let response = await fetch(`${SERVER_URL}/reject-user`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: userId })
         });
-        
-        if((await response.json()).success) {
-            alert("🚫 用户已被驳回。");
+
+        if ((await response.json()).success) {
+            // alert("🚫 用户已被驳回。");
             loadPendingUsers(); // 🔴 原地刷新当前表格
         }
     } catch (error) { console.error(error); }
@@ -502,19 +1538,19 @@ window.rejectUser = async function(userId) {
 // ==========================================
 let allUsersData = []; // 缓存在前端的数据池
 
-window.loadAllUsers = async function() {
+window.loadAllUsers = async function () {
     try {
         let response = await fetch(`${SERVER_URL}/all-users`);
         allUsersData = await response.json();
-        
+
         // 🔴 加上这句！它会在浏览器的控制台里打印出所有的原始数据
-        console.log("🔥 后端传来的用户数据: ", allUsersData); 
-        
+        console.log("🔥 后端传来的用户数据: ", allUsersData);
+
         applyUserFilters();
     } catch (error) { console.error(error); }
 };
 
-window.applyUserFilters = function() {
+window.applyUserFilters = function () {
     const roleFilter = document.getElementById('filterRole').value;
     const statusFilter = document.getElementById('filterStatus').value;
     const startDate = document.getElementById('userDateStart').value;
@@ -523,7 +1559,7 @@ window.applyUserFilters = function() {
     let filtered = allUsersData.filter(u => {
         let matchRole = (roleFilter === 'all') || (u.role === roleFilter);
         let matchStatus = (statusFilter === 'all') || (u.status === statusFilter);
-        
+
         // 日期比对逻辑
         let matchDate = true;
         if (u.createdAt) {
@@ -533,20 +1569,20 @@ window.applyUserFilters = function() {
         } else {
             if (startDate || endDate) matchDate = false; // 旧数据没有日期，如有过滤则不显示
         }
-        
+
         return matchRole && matchStatus && matchDate;
     });
 
     let tbody = document.getElementById("allUserTableBody");
-    tbody.innerHTML = ""; 
+    tbody.innerHTML = "";
 
     filtered.forEach((u) => {
         let statusColor = u.status === 'approved' ? '#28a745' : (u.status === 'rejected' ? '#dc3545' : '#ff9800');
         let statusBg = u.status === 'approved' ? '#e6f4ea' : (u.status === 'rejected' ? '#fce8e6' : '#fff0d4');
         let displayDate = u.createdAt ? u.createdAt.split(' ')[0] : 'N/A';
-        
-        let actionHtml = u.status === 'rejected' 
-            ? `<button class="primary-btn" onclick="deleteUser(${u.id})" style="padding: 4px 10px; font-size: 12px; background-color: #6c757d;">Delete</button>` 
+
+        let actionHtml = u.status === 'rejected'
+            ? `<button class="primary-btn" onclick="deleteUser(${u.id})" style="padding: 4px 10px; font-size: 12px; background-color: #6c757d;">Delete</button>`
             : `<span style="color: #ccc;">-</span>`;
 
         let row = `<tr>
@@ -563,26 +1599,26 @@ window.applyUserFilters = function() {
 // ==========================================
 // Admin：物理注销用户
 // ==========================================
-window.deleteUser = async function(userId) {
-    if(!confirm("⚠️ 确定要彻底注销该账号吗？注销后，任何人都可以重新使用这个 Username 进行注册。")) return;
-    
+window.deleteUser = async function (userId) {
+    if (!confirm("⚠️ 确定要彻底注销该账号吗？注销后，任何人都可以重新使用这个 Username 进行注册。")) return;
+
     try {
         let response = await fetch(`${SERVER_URL}/delete-user`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: userId })
         });
-        
+
         let result = await response.json();
-        
-        if(result.success) { 
-            alert("🗑️ 账号已注销！该 Username 现在自由了。"); 
+
+        if (result.success) {
+            // alert("🗑️ 账号已注销！该 Username 现在自由了。"); 
             loadAllUsers(); // 瞬间刷新表格
         } else {
-            alert("❌ 注销失败：" + result.message);
+            // alert("❌ 注销失败：" + result.message);
         }
-    } catch (error) { 
+    } catch (error) {
         console.error("注销请求报错:", error);
-        alert("🚨 请求失败！请检查你的 VS Code 终端：\n1. 是否已经按 Ctrl+C 停止了旧的服务器？\n2. 是否已经重新输入 node server.js 启动了最新的代码？"); 
+        // alert("🚨 请求失败！请检查你的 VS Code 终端：\n1. 是否已经按 Ctrl+C 停止了旧的服务器？\n2. 是否已经重新输入 node server.js 启动了最新的代码？"); 
     }
 };
 
@@ -591,11 +1627,11 @@ window.deleteUser = async function(userId) {
 // ==========================================
 let dashChartQueue = null; // 用来存储甜甜圈图的实例，防止重复创建报错
 
-window.loadAdminDashboard = async function() {
+window.loadAdminDashboard = async function () {
     try {
         let response = await fetch(`${SERVER_URL}/admin-stats`);
         let stats = await response.json();
-        
+
         if (stats.success) {
             // 1. 注入文本数字
             document.getElementById('dash-minted').innerText = stats.totalMinted.toLocaleString();
@@ -603,15 +1639,15 @@ window.loadAdminDashboard = async function() {
             document.getElementById('dash-pending-proj').innerText = stats.pendingProjects + " 个";
             document.getElementById('dash-pending-users').innerText = stats.pendingUsers + " 个";
             document.getElementById('dash-rejections').innerText = stats.totalRejections + " 次";
-            
+
             // 2. 计算供需比和进度条
             let dCount = stats.devCount;
             let bCount = stats.buyerCount;
             let totalActive = dCount + bCount;
-            
-            let ratioText = bCount === 0 ? `${dCount} : 0` : `${(dCount/bCount).toFixed(2)} : 1`;
+
+            let ratioText = bCount === 0 ? `${dCount} : 0` : `${(dCount / bCount).toFixed(2)} : 1`;
             document.getElementById('dash-ratio').innerText = ratioText;
-            
+
             if (totalActive > 0) {
                 let dPercent = Math.round((dCount / totalActive) * 100);
                 document.getElementById('bar-dev').style.width = dPercent + '%';
@@ -622,16 +1658,16 @@ window.loadAdminDashboard = async function() {
             const ctxQueue = document.getElementById('queueChart');
             if (ctxQueue) {
                 // 如果图表已经存在，先销毁它，不然画笔会重叠打架
-                if (dashChartQueue) dashChartQueue.destroy(); 
-                
+                if (dashChartQueue) dashChartQueue.destroy();
+
                 dashChartQueue = new Chart(ctxQueue, {
                     type: 'doughnut',
                     data: {
                         labels: ['项目审批', '用户审批'],
-                        datasets: [{ 
+                        datasets: [{
                             data: [stats.pendingProjects, stats.pendingUsers], // 🔴 真实的动态数据！
-                            backgroundColor: ['#4318ff', '#ff9800'], 
-                            borderWidth: 0 
+                            backgroundColor: ['#4318ff', '#ff9800'],
+                            borderWidth: 0
                         }]
                     },
                     options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
@@ -646,17 +1682,17 @@ window.loadAdminDashboard = async function() {
 // ==========================================
 // Admin Dashboard Tab 切换逻辑
 // ==========================================
-window.switchDashTab = function(tabName) {
+window.switchDashTab = function (tabName) {
     // 1. 隐藏所有 Dashboard 模块
     document.getElementById('dash-section-market').style.display = 'none';
     document.getElementById('dash-section-queue').style.display = 'none';
     document.getElementById('dash-section-eco').style.display = 'none';
-    
+
     // 2. 移除所有按钮的 active 状态 (变成浅色)
     document.getElementById('dash-btn-market').classList.remove('active');
     document.getElementById('dash-btn-queue').classList.remove('active');
     document.getElementById('dash-btn-eco').classList.remove('active');
-    
+
     // 3. 显示被点击的模块，并让对应按钮变成深紫色 active 状态
     document.getElementById(`dash-section-${tabName}`).style.display = 'block';
     document.getElementById(`dash-btn-${tabName}`).classList.add('active');
@@ -665,11 +1701,11 @@ window.switchDashTab = function(tabName) {
 // ==========================================
 // Profile Modal (个人信息弹窗) 终极逻辑
 // ==========================================
-window.openProfileModal = async function() {
+window.openProfileModal = async function () {
     document.getElementById('profileModal').classList.add('show');
-    
+
     // 获取当前登录的真实用户
-    const currentUser = localStorage.getItem('loggedInUser'); 
+    const currentUser = localStorage.getItem('loggedInUser');
 
     // 🔴 防呆保护：如果没有真实登录，提示去登录
     if (!currentUser) {
@@ -687,7 +1723,7 @@ window.openProfileModal = async function() {
 
         if (result.success) {
             let u = result.data;
-            
+
             // 注入左侧只读名片
             document.getElementById('prof-val-user').innerText = u.username;
             document.getElementById('prof-val-role').innerText = u.role || 'Not Set';
@@ -695,7 +1731,7 @@ window.openProfileModal = async function() {
             document.getElementById('prof-val-phone').innerText = u.phone || 'Not Set';
             document.getElementById('prof-val-status').innerText = u.status;
             document.getElementById('prof-val-date').innerText = u.createdAt ? u.createdAt : 'N/A';
-            
+
             // 状态颜色逻辑
             let statusEl = document.getElementById('prof-val-status');
             if (u.status === 'approved') {
@@ -719,29 +1755,29 @@ window.openProfileModal = async function() {
                 document.getElementById('avatarIcon').style.display = 'block';
                 document.getElementById('avatarPreview').style.backgroundImage = 'none';
             }
-            
+
         } else {
             document.getElementById('prof-val-user').innerText = "⚠️ 找不到该账号";
         }
-    } catch (error) { 
-        console.error("Profile fetch error:", error); 
+    } catch (error) {
+        console.error("Profile fetch error:", error);
         document.getElementById('prof-val-user').innerText = "🚨 网络请求失败";
     }
 };
 
-window.closeProfileModal = function() {
+window.closeProfileModal = function () {
     document.getElementById('profileModal').classList.remove('show');
 };
 
 // ==========================================
 // 退出登录逻辑 (彻底重置版)
 // ==========================================
-window.handleLogout = function() {
-    if(confirm("⚠️ 确定要退出登录吗？")) {
+window.handleLogout = function () {
+    if (confirm("Confirm Logout?")) {
         // 1. 彻底清除本地缓存里的账号记忆
         localStorage.removeItem('loggedInUser');
         if (typeof closeProfileModal === 'function') closeProfileModal();
-        
+
         // 2. 🔴 终极大招：强制刷新当前网页
         // 刷新后，系统检测不到缓存，会自动将所有 UI 和状态完美重置回最初的 Login 界面
         window.location.reload();
@@ -749,7 +1785,7 @@ window.handleLogout = function() {
 };
 
 // 主菜单切换
-window.switchProfTab = function(tab) {
+window.switchProfTab = function (tab) {
     document.getElementById('ptab-settings').classList.remove('active');
     document.getElementById('ptab-prefs').classList.remove('active');
     document.getElementById('pcontent-settings').style.display = 'none';
@@ -760,7 +1796,7 @@ window.switchProfTab = function(tab) {
 };
 
 // 子菜单切换
-window.switchSubTab = function(tab) {
+window.switchSubTab = function (tab) {
     document.getElementById('subtab-profile').classList.remove('active');
     document.getElementById('subtab-security').classList.remove('active');
     document.getElementById('subcontent-profile').style.display = 'none';
@@ -771,13 +1807,13 @@ window.switchSubTab = function(tab) {
 };
 
 // 🔴 真实保存普通资料与新头像
-window.handleUpdateProfile = async function() {
+window.handleUpdateProfile = async function () {
     let email = document.getElementById('prof-input-email').value;
     let phone = document.getElementById('prof-input-phone').value;
-    const currentUser = localStorage.getItem('loggedInUser'); 
+    const currentUser = localStorage.getItem('loggedInUser');
 
     if (!currentUser) {
-        alert("❌ 请先正常登录系统！");
+        // alert("❌ 请先正常登录系统！");
         return;
     }
 
@@ -788,36 +1824,36 @@ window.handleUpdateProfile = async function() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: currentUser, email: email, phone: phone })
         });
-        
+
         let result = await response.json();
 
         if (result.success) {
             // 2. 如果后端保存成功，再保存头像到本地
             if (window.pendingAvatarUpdate) {
                 localStorage.setItem(`avatar_${currentUser}`, window.pendingAvatarUpdate);
-                window.pendingAvatarUpdate = null; 
+                window.pendingAvatarUpdate = null;
             }
-            syncGlobalAvatar(); 
+            syncGlobalAvatar();
 
-            alert("✅ 资料保存成功！");
-            
+            // alert("✅ 资料保存成功！");
+
             // 3. 刷新弹窗，让你立刻看到左侧名片更新
             closeProfileModal();
             setTimeout(() => openProfileModal(), 300);
         } else {
             // 如果邮箱/电话和别人撞了，这里会弹窗报错
-            alert("❌ " + result.message); 
+            // alert("❌ " + result.message); 
         }
     } catch (error) {
         console.error(error);
-        alert("🚨 网络请求失败，请检查后端是否运行。");
+        // alert("🚨 网络请求失败，请检查后端是否运行。");
     }
 };
 
 // ==========================================
 // 独立修改密码逻辑 (防呆与直接修改)
 // ==========================================
-window.handleUpdatePassword = async function() {
+window.handleUpdatePassword = async function () {
     let oldPass = document.getElementById('prof-input-oldpass').value;
     let newPass = document.getElementById('prof-input-newpass').value;
     let confPass = document.getElementById('prof-input-confpass').value;
@@ -826,11 +1862,11 @@ window.handleUpdatePassword = async function() {
     // 1. 基础防呆拦截
     if (!currentUser) return;
     if (!oldPass || !newPass || !confPass) {
-        alert("🚨 请将三个密码框填写完整！");
+        // alert("🚨 请将三个密码框填写完整！");
         return;
     }
     if (newPass !== confPass) {
-        alert("🚨 两次输入的新密码不一致，请重新输入！");
+        // alert("🚨 两次输入的新密码不一致，请重新输入！");
         return;
     }
 
@@ -849,32 +1885,32 @@ window.handleUpdatePassword = async function() {
         let result = await response.json();
 
         if (result.success) {
-            alert("✅ 密码修改成功！下次登录请使用新密码。");
-            
+            // alert("✅ 密码修改成功！下次登录请使用新密码。");
+
             // 修改成功后，把三个输入框清空，假装什么都没发生
             document.getElementById('prof-input-oldpass').value = "";
             document.getElementById('prof-input-newpass').value = "";
             document.getElementById('prof-input-confpass').value = "";
         } else {
             // 如果旧密码填错了，后端会在这里拦截
-            alert(result.message);
+            // alert(result.message);
         }
     } catch (error) {
         console.error(error);
-        alert("🚨 网络请求失败，请检查后端运行状态。");
+        // alert("🚨 网络请求失败，请检查后端运行状态。");
     }
 };
 // 🔴 处理头像上传与即时预览
-window.previewAvatar = function(event) {
+window.previewAvatar = function (event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const avatarBase64 = e.target.result;
             // 隐藏默认的 👤 图标，设置背景图
             document.getElementById('avatarIcon').style.display = 'none';
             document.getElementById('avatarPreview').style.backgroundImage = `url(${avatarBase64})`;
-            
+
             // 把图片数据暂存到全局变量，等待用户点击 Update Profile 保存
             window.pendingAvatarUpdate = avatarBase64;
         };
@@ -885,11 +1921,11 @@ window.previewAvatar = function(event) {
 // ==========================================
 // 全局头像同步逻辑
 // ==========================================
-window.syncGlobalAvatar = function() {
+window.syncGlobalAvatar = function () {
     const currentUser = localStorage.getItem('loggedInUser');
     const globalBtn = document.getElementById('globalAvatarBtn');
     const globalIcon = document.getElementById('globalAvatarIcon');
-    
+
     if (!globalBtn || !globalIcon) return;
 
     if (currentUser) {
@@ -901,7 +1937,7 @@ window.syncGlobalAvatar = function() {
             return;
         }
     }
-    
+
     // 如果没找到照片，或者没登录，恢复默认小人
     globalBtn.style.backgroundImage = 'none';
     globalIcon.style.display = 'block';
@@ -915,7 +1951,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 // 侧边栏折叠与展开逻辑
 // ==========================================
-window.toggleSidebar = function() {
+window.toggleSidebar = function () {
     const sidebar = document.getElementById('mainSidebar');
     const mainContent = document.getElementById('mainContent');
     const headerBtn = document.getElementById('headerSidebarBtn');
@@ -935,7 +1971,7 @@ window.toggleSidebar = function() {
 // ==========================================
 // Developer：加载我名下的所有项目
 // ==========================================
-window.loadMyProjects = async function() {
+window.loadMyProjects = async function () {
     const currentUser = localStorage.getItem('loggedInUser');
     if (!currentUser) return;
 
@@ -998,7 +2034,7 @@ window.loadMyProjects = async function() {
 // ==========================================
 // Developer：打开项目详情，查看额度和买家
 // ==========================================
-window.openProjectModal = async function(projectId) {
+window.openProjectModal = async function (projectId) {
     try {
         let response = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
         let result = await response.json();
@@ -1013,7 +2049,7 @@ window.openProjectModal = async function(projectId) {
             document.getElementById('det-loc').innerText = p.location || 'Unknown';
             document.getElementById('det-cap').innerText = p.capacity;
             document.getElementById('det-total').innerText = p.carbonVolume;
-            
+
             // 填充剩余和已售
             document.getElementById('det-avail').innerText = stats.remaining;
             document.getElementById('det-sold').innerText = stats.sold;
@@ -1021,7 +2057,7 @@ window.openProjectModal = async function(projectId) {
             // 填充销售记录表
             const tbody = document.getElementById('det-sales-body');
             tbody.innerHTML = '';
-            
+
             if (sales.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
             } else {
@@ -1039,13 +2075,1518 @@ window.openProjectModal = async function(projectId) {
             // 显示弹窗
             document.getElementById('projectDetailModal').classList.add('show');
         } else {
-            alert("无法获s取项目详情");
+            // alert("无法获s取项目详情");
         }
     } catch (error) {
         console.error(error);
     }
 };
 
-window.closeProjectModal = function() {
+window.closeProjectModal = function () {
     document.getElementById('projectDetailModal').classList.remove('show');
+};
+
+function isBuyerRole(role) {
+
+    return (
+        Number(role) === 1
+    );
+}
+
+
+
+async function ensureBuyerWallet() {
+
+    const walletAddress =
+        await ensureWalletConnected();
+
+
+    const contracts =
+        await ensureContractsReady();
+
+
+    const isBuyer =
+        await contracts.userRegistry
+            .methods
+            .isBuyer(walletAddress)
+            .call();
+
+
+    if (!isBuyer) {
+
+        throw new Error(
+            "Connected wallet is not an approved Buyer."
+        );
+    }
+
+
+    return walletAddress;
+}
+
+
+window.loadMarketplace =
+    async function() {
+
+    const grid =
+        document.getElementById(
+            "marketplaceGrid"
+        );
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    grid.innerHTML =
+        `<div style="
+            color: #a3aed1;
+            padding: 30px;
+            text-align: center;
+        ">
+            Loading marketplace...
+        </div>`;
+
+
+    try {
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        const response =
+            await fetch(
+                `${SERVER_URL}/all-projects`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+
+        const projects =
+            await response.json();
+
+
+        const approvedProjects =
+            projects.filter(
+                project =>
+                    project.status ===
+                    "approved"
+            );
+
+
+        if (
+            approvedProjects.length === 0
+        ) {
+
+            grid.innerHTML =
+                `<div style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 50px;
+                    color: #a3aed1;
+                ">
+                    🌱 No approved projects available.
+                </div>`;
+
+            return;
+        }
+
+
+        grid.innerHTML = "";
+
+
+        for (
+            const project of
+            approvedProjects
+        ) {
+
+            let projectID =
+                project.id;
+
+
+
+            let blockchainProject;
+
+
+            try {
+
+                blockchainProject =
+                    await contracts.projectRegistry
+                        .methods
+                        .projects(projectID)
+                        .call();
+
+            } catch (error) {
+
+                console.error(
+                    `Unable to read project #${projectID}`,
+                    error
+                );
+
+                continue;
+            }
+
+
+            // If project doesn't exist
+            // on blockchain, skip it.
+
+            if (
+                Number(
+                    blockchainProject.projectID
+                ) === 0
+            ) {
+                continue;
+            }
+
+
+            const minted =
+                await contracts.projectRegistry
+                    .methods
+                    .isMinted(projectID)
+                    .call();
+
+
+            // Marketplace should only sell
+            // minted projects.
+
+            if (!minted) {
+                continue;
+            }
+
+
+            const capacity =
+                await contracts.projectRegistry
+                    .methods
+                    .getCapacity(projectID)
+                    .call();
+
+
+            const price =
+                await contracts.projectRegistry
+                    .methods
+                    .getPricePerToken(projectID)
+                    .call();
+
+
+            const developer =
+                await contracts.projectRegistry
+                    .methods
+                    .getDeveloper(projectID)
+                    .call();
+
+
+            // ==================================
+            // Create card
+            // ==================================
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+                border: 1px solid #f0f2f8;
+            `;
+
+
+            card.innerHTML = `
+
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 15px;
+                ">
+
+                    <div>
+
+                        <h3 style="
+                            margin: 0;
+                            color: #2b3674;
+                            font-size: 17px;
+                        ">
+                            ${
+                                project.projName ||
+                                blockchainProject.projectName ||
+                                "Unnamed Project"
+                            }
+                        </h3>
+
+                        <div style="
+                            color: #a3aed1;
+                            font-size: 12px;
+                            margin-top: 5px;
+                        ">
+                            Project #${projectID}
+                        </div>
+
+                    </div>
+
+                    <span style="
+                        background: #e6f9f0;
+                        color: #05cd99;
+                        padding: 5px 8px;
+                        border-radius: 6px;
+                        font-size: 11px;
+                        font-weight: bold;
+                    ">
+                        VERIFIED
+                    </span>
+
+                </div>
+
+
+                <div style="
+                    margin-bottom: 15px;
+                    font-size: 13px;
+                    color: #64748b;
+                    line-height: 1.8;
+                ">
+
+                    <div>
+                        📍
+                        ${
+                            project.location ||
+                            blockchainProject.location ||
+                            "Unknown"
+                        }
+                    </div>
+
+                    <div>
+                        🌱
+                        ${
+                            blockchainProject.ecosystemType ||
+                            "Blue Carbon"
+                        }
+                    </div>
+
+                    <div>
+                        📐
+                        ${
+                            project.capacity ||
+                            blockchainProject.availableCapacity
+                        }
+                        Hectares
+                    </div>
+
+                </div>
+
+
+                <div style="
+                    background: #f8fafc;
+                    border-radius: 10px;
+                    padding: 12px;
+                    margin-bottom: 15px;
+                ">
+
+                    <div style="
+                        font-size: 11px;
+                        color: #a3aed1;
+                    ">
+                        Available BCC
+                    </div>
+
+                    <div style="
+                        font-size: 21px;
+                        font-weight: 800;
+                        color: #4318ff;
+                    ">
+                        ${capacity}
+                    </div>
+
+                </div>
+
+
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                ">
+
+                    <div>
+
+                        <div style="
+                            font-size: 11px;
+                            color: #a3aed1;
+                        ">
+                            Price per BCC
+                        </div>
+
+                        <div style="
+                            font-weight: 800;
+                            color: #2b3674;
+                        ">
+                            ${formatEthPrice(price)}
+                        </div>
+
+                    </div>
+
+                    <div style="
+                        font-size: 11px;
+                        color: #a3aed1;
+                        text-align: right;
+                        max-width: 120px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    ">
+                        ${developer}
+                    </div>
+
+                </div>
+
+
+                <input
+                    type="number"
+                    id="marketAmount-${projectID}"
+                    min="1"
+                    max="${capacity}"
+                    value="1"
+                    placeholder="Amount"
+                    style="
+                        width: 100%;
+                        box-sizing: border-box;
+                        margin-bottom: 10px;
+                    "
+                >
+
+
+                <button
+                    class="primary-btn"
+                    onclick="
+                        purchaseMarketplaceCredits(
+                            ${projectID}
+                        )
+                    "
+                    style="
+                        width: 100%;
+                        background: #4318ff;
+                    "
+                >
+                    🛒 Buy BCC
+                </button>
+
+            `;
+
+
+            grid.appendChild(card);
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Marketplace loading failed:",
+            error
+        );
+
+
+        grid.innerHTML =
+            `<div style="
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 40px;
+                color: #ee5d50;
+            ">
+                Unable to load marketplace.
+            </div>`;
+    }
+};
+
+function formatEthPrice(
+    weiPrice
+) {
+
+    try {
+
+        return (
+            Web3.utils.fromWei(
+                String(weiPrice),
+                "ether"
+            )
+            + " ETH"
+        );
+
+    } catch (error) {
+
+        return (
+            String(weiPrice) +
+            " Wei"
+        );
+    }
+}
+
+window.purchaseMarketplaceCredits =
+    async function(projectID) {
+
+    try {
+
+        const amountInput =
+            document.getElementById(
+                `marketAmount-${projectID}`
+            );
+
+
+        if (!amountInput) {
+
+            throw new Error(
+                "Amount input not found."
+            );
+        }
+
+
+        const amount =
+            amountInput.value;
+
+
+        if (
+            !amount ||
+            Number(amount) <= 0
+        ) {
+
+            console.error(
+                "Enter a valid amount."
+            );
+
+            return;
+        }
+
+
+        // ==================================
+        // Connect Buyer
+        // ==================================
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+
+        // ==================================
+        // Load contracts
+        // ==================================
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        // ==================================
+        // Check project
+        // ==================================
+
+        const minted =
+            await contracts.projectRegistry
+                .methods
+                .isMinted(projectID)
+                .call();
+
+
+        if (!minted) {
+
+            throw new Error(
+                "Project has not been minted yet."
+            );
+        }
+
+
+        // ==================================
+        // Check available capacity
+        // ==================================
+
+        const capacity =
+            await contracts.projectRegistry
+                .methods
+                .getCapacity(projectID)
+                .call();
+
+
+        if (
+            BigInt(amount) >
+            BigInt(capacity)
+        ) {
+
+            throw new Error(
+                "Not enough BCC available."
+            );
+        }
+
+
+        // ==================================
+        // Get price
+        // ==================================
+
+        const pricePerToken =
+            await contracts.projectRegistry
+                .methods
+                .getPricePerToken(
+                    projectID
+                )
+                .call();
+
+
+        // ==================================
+        // Calculate total ETH
+        // ==================================
+
+        const totalPrice =
+            BigInt(amount) *
+            BigInt(pricePerToken);
+
+
+        console.log(
+            "Buyer:",
+            buyerAddress
+        );
+
+        console.log(
+            "Project:",
+            projectID
+        );
+
+        console.log(
+            "Amount:",
+            amount
+        );
+
+        console.log(
+            "Price:",
+            totalPrice.toString()
+        );
+
+
+        // ==================================
+        // Purchase
+        // ==================================
+
+        await contracts.carbonToken
+            .methods
+            .purchaseCredits(
+                projectID,
+                amount
+            )
+            .send({
+                from: buyerAddress,
+                value: totalPrice.toString()
+            });
+
+
+        console.log(
+            "BCC purchase successful."
+        );
+
+
+        // ==================================
+        // Refresh everything
+        // ==================================
+
+        loadMarketplace();
+
+        loadBuyerPortfolio();
+
+        loadBuyerTransactions();
+
+
+    } catch (error) {
+
+        console.error(
+            "BCC purchase failed:",
+            error
+        );
+    }
+};
+
+// ==========================================
+// BUYER PORTFOLIO
+// ==========================================
+
+window.loadBuyerPortfolio =
+    async function() {
+
+    const tbody =
+        document.getElementById(
+            "buyerPortfolioBody"
+        );
+
+
+    if (!tbody) {
+        return;
+    }
+
+
+    tbody.innerHTML =
+        `<tr>
+            <td
+                colspan="5"
+                style="
+                    text-align: center;
+                    padding: 30px;
+                    color: #a3aed1;
+                "
+            >
+                Loading portfolio...
+            </td>
+        </tr>`;
+
+
+    try {
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        const response =
+            await fetch(
+                `${SERVER_URL}/all-projects`
+            );
+
+
+        const projects =
+            await response.json();
+
+
+        let totalBalance =
+            BigInt(0);
+
+
+        tbody.innerHTML = "";
+
+
+        for (
+            const project of projects
+        ) {
+
+            if (
+                project.status !==
+                "approved"
+            ) {
+                continue;
+            }
+
+
+            const projectID =
+                project.id;
+
+
+            let balance;
+
+
+            try {
+
+                balance =
+                    await contracts.carbonToken
+                        .methods
+                        .balanceOf(
+                            buyerAddress,
+                            projectID
+                        )
+                        .call();
+
+            } catch (error) {
+
+                continue;
+            }
+
+
+            if (
+                BigInt(balance) ===
+                BigInt(0)
+            ) {
+                continue;
+            }
+
+
+            totalBalance +=
+                BigInt(balance);
+
+
+            let price = "N/A";
+
+
+            try {
+
+                price =
+                    await contracts.projectRegistry
+                        .methods
+                        .getPricePerToken(
+                            projectID
+                        )
+                        .call();
+
+            } catch (error) {
+
+                console.error(error);
+            }
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.style.borderBottom =
+                "1px solid #f4f7fe";
+
+
+            row.innerHTML = `
+
+                <td style="padding: 15px 12px;">
+
+                    <strong style="
+                        color: #2b3674;
+                    ">
+                        ${
+                            project.projName ||
+                            "Unnamed Project"
+                        }
+                    </strong>
+
+                    <div style="
+                        color: #a3aed1;
+                        font-size: 11px;
+                        margin-top: 3px;
+                    ">
+                        #${projectID}
+                    </div>
+
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    color: #64748b;
+                ">
+                    ${
+                        project.location ||
+                        "Unknown"
+                    }
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    color: #2b3674;
+                ">
+                    ${formatEthPrice(price)}
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    font-weight: 800;
+                    color: #4318ff;
+                ">
+                    ${balance} BCC
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                ">
+
+                    <button
+                        class="primary-btn"
+                        onclick="
+                            openOffsetForProject(
+                                ${projectID},
+                                ${balance}
+                            )
+                        "
+                        style="
+                            padding: 6px 10px;
+                            font-size: 12px;
+                            background: #e94560;
+                        "
+                    >
+                        🔥 Retire
+                    </button>
+
+                </td>
+
+            `;
+
+
+            tbody.appendChild(
+                row
+            );
+        }
+
+
+        document.getElementById(
+            "buyerTotalBalance"
+        ).innerText =
+            totalBalance.toString();
+
+
+    } catch (error) {
+
+        console.error(
+            "Portfolio loading failed:",
+            error
+        );
+
+
+        tbody.innerHTML =
+            `<tr>
+                <td
+                    colspan="5"
+                    style="
+                        text-align: center;
+                        padding: 30px;
+                        color: #ee5d50;
+                    "
+                >
+                    Unable to load portfolio.
+                </td>
+            </tr>`;
+    }
+};
+
+// ==========================================
+// Load projects into Offset dropdown
+// ==========================================
+
+window.loadOffsetProjects =
+    async function() {
+
+    const select =
+        document.getElementById(
+            "offsetProjectSelect"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    try {
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        const response =
+            await fetch(
+                `${SERVER_URL}/all-projects`
+            );
+
+
+        const projects =
+            await response.json();
+
+
+        select.innerHTML =
+            `<option value="">
+                Select a project
+            </option>`;
+
+
+        for (
+            const project of projects
+        ) {
+
+            if (
+                project.status !==
+                "approved"
+            ) {
+                continue;
+            }
+
+
+            const balance =
+                await contracts.carbonToken
+                    .methods
+                    .balanceOf(
+                        buyerAddress,
+                        project.id
+                    )
+                    .call();
+
+
+            if (
+                BigInt(balance) ===
+                BigInt(0)
+            ) {
+                continue;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                project.id;
+
+
+            option.textContent =
+                `${
+                    project.projName ||
+                    "Project #" + project.id
+                } — ${balance} BCC`;
+
+
+            select.appendChild(
+                option
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load offset projects:",
+            error
+        );
+    }
+};
+
+
+// ==========================================
+// Quick button from Portfolio
+// ==========================================
+
+window.openOffsetForProject =
+    function(
+        projectID,
+        balance
+    ) {
+
+    navTo(
+        "buyerOffsetPage",
+        "Offset & Claim"
+    );
+
+
+    setTimeout(
+        async () => {
+
+            await loadOffsetProjects();
+
+
+            const select =
+                document.getElementById(
+                    "offsetProjectSelect"
+                );
+
+
+            const amount =
+                document.getElementById(
+                    "offsetAmount"
+                );
+
+
+            if (select) {
+
+                select.value =
+                    projectID;
+            }
+
+
+            if (amount) {
+
+                amount.max =
+                    balance;
+            }
+
+        },
+        100
+    );
+};
+
+
+// ==========================================
+// Retire BCC
+// ==========================================
+
+window.retireBuyerCredits =
+    async function() {
+
+    try {
+
+        const projectID =
+            document.getElementById(
+                "offsetProjectSelect"
+            ).value;
+
+
+        const amount =
+            document.getElementById(
+                "offsetAmount"
+            ).value;
+
+
+        if (!projectID) {
+
+            console.error(
+                "Please select a project."
+            );
+
+            return;
+        }
+
+
+        if (
+            !amount ||
+            Number(amount) <= 0
+        ) {
+
+            console.error(
+                "Enter a valid amount."
+            );
+
+            return;
+        }
+
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        // ==================================
+        // Check balance
+        // ==================================
+
+        const balance =
+            await contracts.carbonToken
+                .methods
+                .balanceOf(
+                    buyerAddress,
+                    projectID
+                )
+                .call();
+
+
+        if (
+            BigInt(amount) >
+            BigInt(balance)
+        ) {
+
+            throw new Error(
+                "Insufficient BCC balance."
+            );
+        }
+
+
+        // ==================================
+        // Retire
+        // ==================================
+
+        await contracts.carbonToken
+            .methods
+            .retire(
+                projectID,
+                amount
+            )
+            .send({
+                from: buyerAddress
+            });
+
+
+        console.log(
+            "BCC retired successfully."
+        );
+
+
+        // ==================================
+        // Refresh
+        // ==================================
+
+        loadBuyerPortfolio();
+
+        loadOffsetProjects();
+
+        loadBuyerTransactions();
+
+
+        document.getElementById(
+            "offsetAmount"
+        ).value = "";
+
+
+    } catch (error) {
+
+        console.error(
+            "BCC retirement failed:",
+            error
+        );
+    }
+};
+
+// ==========================================
+// Buyer Transaction History
+//
+// Reads CarbonToken events directly.
+//
+// TokensPurchased
+// TokensRetired
+// ==========================================
+
+window.loadBuyerTransactions =
+    async function() {
+
+    const tbody =
+        document.getElementById(
+            "buyerTxBody"
+        );
+
+
+    if (!tbody) {
+        return;
+    }
+
+
+    tbody.innerHTML =
+        `<tr>
+            <td
+                colspan="5"
+                style="
+                    text-align: center;
+                    padding: 30px;
+                    color: #a3aed1;
+                "
+            >
+                Loading transactions...
+            </td>
+        </tr>`;
+
+
+    try {
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+
+        const contracts =
+            await ensureContractsReady();
+
+
+        // ==================================
+        // Purchased Events
+        // ==================================
+
+        const purchaseEvents =
+            await contracts.carbonToken
+                .getPastEvents(
+                    "TokensPurchased",
+                    {
+                        filter: {
+                            buyer:
+                                buyerAddress
+                        },
+
+                        fromBlock: 0,
+
+                        toBlock: "latest"
+                    }
+                );
+
+
+        // ==================================
+        // Retired Events
+        // ==================================
+
+        const retiredEvents =
+            await contracts.carbonToken
+                .getPastEvents(
+                    "TokensRetired",
+                    {
+                        filter: {
+                            buyer:
+                                buyerAddress
+                        },
+
+                        fromBlock: 0,
+
+                        toBlock: "latest"
+                    }
+                );
+
+
+        tbody.innerHTML = "";
+
+
+        let transactions = [];
+
+
+        // ==================================
+        // Purchase transactions
+        // ==================================
+
+        for (
+            const event of purchaseEvents
+        ) {
+
+            const values =
+                event.returnValues;
+
+
+            transactions.push({
+
+                type: "Purchase",
+
+                projectID:
+                    values.projectID,
+
+                amount:
+                    values.amount,
+
+                blockNumber:
+                    Number(
+                        event.blockNumber
+                    ),
+
+                status:
+                    "Completed"
+            });
+        }
+
+
+        // ==================================
+        // Retirement transactions
+        // ==================================
+
+        for (
+            const event of retiredEvents
+        ) {
+
+            const values =
+                event.returnValues;
+
+
+            transactions.push({
+
+                type: "Retirement",
+
+                projectID:
+                    values.projectID,
+
+                amount:
+                    values.amount,
+
+                blockNumber:
+                    Number(
+                        event.blockNumber
+                    ),
+
+                status:
+                    "Completed"
+            });
+        }
+
+
+        // ==================================
+        // Newest first
+        // ==================================
+
+        transactions.sort(
+            (
+                a,
+                b
+            ) =>
+                b.blockNumber -
+                a.blockNumber
+        );
+
+
+        if (
+            transactions.length === 0
+        ) {
+
+            tbody.innerHTML =
+                `<tr>
+                    <td
+                        colspan="5"
+                        style="
+                            text-align: center;
+                            padding: 30px;
+                            color: #a3aed1;
+                        "
+                    >
+                        No transactions yet.
+                    </td>
+                </tr>`;
+
+            return;
+        }
+
+
+        // ==================================
+        // Get project names
+        // ==================================
+
+        const response =
+            await fetch(
+                `${SERVER_URL}/all-projects`
+            );
+
+
+        const projects =
+            await response.json();
+
+
+        const projectMap =
+            {};
+
+
+        projects.forEach(
+            project => {
+
+            projectMap[
+                project.id
+            ] =
+                project.projName ||
+                `Project #${project.id}`;
+        });
+
+
+        // ==================================
+        // Render
+        // ==================================
+
+        transactions.forEach(
+            tx => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.style.borderBottom =
+                "1px solid #f4f7fe";
+
+
+            const typeColor =
+                tx.type === "Purchase"
+                    ? "#4318ff"
+                    : "#e94560";
+
+
+            row.innerHTML = `
+
+                <td style="
+                    padding: 15px 12px;
+                    color: #64748b;
+                ">
+                    Block #${tx.blockNumber}
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    font-weight: 700;
+                    color: #2b3674;
+                ">
+                    ${
+                        projectMap[
+                            tx.projectID
+                        ] ||
+                        `Project #${tx.projectID}`
+                    }
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                ">
+
+                    <span style="
+                        background:
+                            ${
+                                tx.type === "Purchase"
+                                    ? "#e9edf7"
+                                    : "#fce8e6"
+                            };
+
+                        color:
+                            ${typeColor};
+
+                        padding: 5px 9px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        font-weight: 700;
+                    ">
+                        ${tx.type}
+                    </span>
+
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    font-weight: 800;
+                    color: ${typeColor};
+                ">
+                    ${
+                        tx.type === "Purchase"
+                            ? "+"
+                            : "-"
+                    }${tx.amount} BCC
+                </td>
+
+
+                <td style="
+                    padding: 15px 12px;
+                    color: #05cd99;
+                    font-weight: 700;
+                ">
+                    ✓ ${tx.status}
+                </td>
+
+            `;
+
+
+            tbody.appendChild(
+                row
+            );
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Transaction history failed:",
+            error
+        );
+
+
+        tbody.innerHTML =
+            `<tr>
+                <td
+                    colspan="5"
+                    style="
+                        text-align: center;
+                        padding: 30px;
+                        color: #ee5d50;
+                    "
+                >
+                    Unable to load transactions.
+                </td>
+            </tr>`;
+    }
 };
