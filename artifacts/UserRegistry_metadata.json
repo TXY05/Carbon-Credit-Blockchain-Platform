@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.34+commit.80d5c536"
+		"version": "0.8.19+commit.7dd6d404"
 	},
 	"language": "Solidity",
 	"output": {
@@ -18,33 +18,26 @@
 						"internalType": "address",
 						"name": "user",
 						"type": "address"
-					}
-				],
-				"name": "RegistrationRequested",
-				"type": "event"
-			},
-			{
-				"inputs": [],
-				"name": "admin",
-				"outputs": [
+					},
 					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
+						"indexed": false,
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
 					}
 				],
-				"stateMutability": "view",
-				"type": "function"
+				"name": "UserRegistered",
+				"type": "event"
 			},
 			{
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_user",
+						"name": "account",
 						"type": "address"
 					}
 				],
-				"name": "approveUser",
+				"name": "addAdmin",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -53,60 +46,15 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "",
+						"name": "user",
 						"type": "address"
 					}
 				],
-				"name": "buyers",
+				"name": "getUserRole",
 				"outputs": [
 					{
-						"internalType": "string",
+						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "firstName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "lastName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "email",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "phoneNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "country",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "password",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokens",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "credits",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum UserRegistry.UserStatus",
-						"name": "status",
 						"type": "uint8"
 					}
 				],
@@ -116,100 +64,113 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
 					}
 				],
-				"name": "purchaseCredits",
-				"outputs": [],
-				"stateMutability": "nonpayable",
+				"name": "isAdmin",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
 					}
 				],
-				"name": "purchaseTokens",
-				"outputs": [],
-				"stateMutability": "nonpayable",
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
-						"internalType": "string",
-						"name": "_role",
-						"type": "string"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isDeveloper",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isRegistered",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
 					},
 					{
-						"internalType": "string",
-						"name": "_firstName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_lastName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_email",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_phoneNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_country",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_password",
-						"type": "string"
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
 					}
 				],
 				"name": "registerUser",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
+				"outputs": [
 					{
-						"internalType": "address",
-						"name": "_user",
-						"type": "address"
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
 					}
 				],
-				"name": "rejectUser",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_to",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "transferCredits",
-				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			}
@@ -229,7 +190,7 @@
 		"compilationTarget": {
 			"contracts/UserRegistry.sol": "UserRegistry"
 		},
-		"evmVersion": "osaka",
+		"evmVersion": "paris",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -242,11 +203,11 @@
 	},
 	"sources": {
 		"contracts/UserRegistry.sol": {
-			"keccak256": "0xef96d2a8514822e5c7ea0ce96419a320e24087e109e5aeafcbdc16e2048256f9",
+			"keccak256": "0xe791ad9becf0364ee3d25199760e0c7a27189b303afab31f5683893d72ef73e3",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0162de374372b1cf414324a23353029c4922e04c3daf92752a30562f2a678593",
-				"dweb:/ipfs/QmVFrTzHAqGxybdQCL8RgDYe1ytm7wpouVqpX9JAmzw9P6"
+				"bzz-raw://71fddae08ed83df9621433cf4672b828951d8fa725cad4ef1c68ae3dc2da7fc2",
+				"dweb:/ipfs/QmdHT9FyJLT98EdzkzRidfgC1Pcjbe3ecu6NGNetWAg2f3"
 			]
 		}
 	},
