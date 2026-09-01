@@ -369,6 +369,8 @@
                 onclick="navTo('buyerPortfolioPage', 'My Portfolio')">💼 My Portfolio</div>
             <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="navTo('buyerOffsetPage', 'Offset & Claim')">
                 🔥 Offset & Claim</div>
+            <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="openBuyerTransfer()">
+                🔥 Transfer BCC</div>
             <div class="nav-item menu-buyer" id="nav-buyerTx" onclick="navTo('buyerTxPage', 'Transaction History')">📜
                 Tx History</div>
         </div>
@@ -1387,6 +1389,28 @@
 
                         </div>
 
+
+                        <div>
+
+                            <div style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Total Retired BCC
+                            </div>
+
+                            <div id="totalBccRetired" style="
+                        font-size: 30px;
+                        font-weight: 800;
+                        color: #ee5d50;
+                        margin-top: 5px;
+                    ">
+                                0
+                            </div>
+
+                        </div>
+
                         <div style="
                 font-size: 40px;
             ">
@@ -1445,6 +1469,46 @@
                         </table>
 
                     </div>
+
+                </div>
+
+            </div>
+
+            <div id="buyerTransferPage" class="page-layer">
+
+                <div class="card">
+
+                    <h2>Transfer BCC</h2>
+
+                    <p>
+                        Transfer your BCC to another registered buyer.
+                    </p>
+
+                    <label>
+                        Recipient Wallet Address
+                    </label>
+
+                    <input type="text" id="transferRecipient" placeholder="0x...">
+
+                    <label>
+                        Project
+                    </label>
+
+                    <select id="transferProjectSelect">
+                        <option value="">
+                            Select a project
+                        </option>
+                    </select>
+
+                    <label>
+                        Amount
+                    </label>
+
+                    <input type="number" id="transferAmount" min="1" step="1" placeholder="Amount of BCC">
+
+                    <button class="primary-btn" onclick="transferBuyerCredits()">
+                        Transfer BCC
+                    </button>
 
                 </div>
 

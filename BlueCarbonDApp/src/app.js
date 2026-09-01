@@ -3820,8 +3820,8 @@ window.loadBuyerPortfolio = async function () {
     console.log("Portfolio blockchain projects:", projects);
 
     tbody.innerHTML = "";
-
     let totalBalance = 0n;
+    let totalRetired = 0n;
     let totalValueWei = 0n;
     let ownedProjects = 0;
 
@@ -3855,6 +3855,21 @@ window.loadBuyerPortfolio = async function () {
         continue;
       }
 
+      let retired;
+
+      try {
+        retired = await carbonToken.methods
+          .retired(buyerAddress, projectID)
+          .call();
+      } catch (error) {
+        console.error(
+          `Unable to read retired amount for project #${projectID}`,
+          error
+        );
+
+        retired = "0";
+      }
+
       // Skip projects the buyer doesn't own
       if (BigInt(balance) === 0n) {
         continue;
@@ -3878,7 +3893,11 @@ window.loadBuyerPortfolio = async function () {
 
       const projectValue = buyerBalance * pricePerToken;
 
+      const buyerRetired = BigInt(retired);
+
       totalBalance += buyerBalance;
+      totalRetired += buyerRetired;
+
 
       totalValueWei += projectValue;
 
@@ -3958,6 +3977,17 @@ window.loadBuyerPortfolio = async function () {
 
                 </td>
 
+                <td style="
+    padding: 15px 12px;
+    font-weight: 800;
+    color: #ee5d50;
+">
+
+    ${buyerRetired.toString()}
+    BCC
+
+</td>
+
 
                 <td style="
                     padding: 15px 12px;
@@ -3974,6 +4004,14 @@ window.loadBuyerPortfolio = async function () {
       tbody.appendChild(row);
     }
 
+    const retiredElement =
+      document.getElementById("totalBccRetired");
+
+    if (retiredElement) {
+      retiredElement.textContent =
+        totalRetired.toString();
+    }
+
     // ==========================================
     // No holdings
     // ==========================================
@@ -3982,7 +4020,7 @@ window.loadBuyerPortfolio = async function () {
       tbody.innerHTML = `
                 <tr>
                     <td
-                        colspan="5"
+                        colspan="6"
                         style="
                             text-align: center;
                             padding: 50px;
@@ -4045,6 +4083,375 @@ window.loadBuyerPortfolio = async function () {
                 </td>
             </tr>
         `;
+  }
+};
+
+window.loadTransferProjects = async function () {
+
+  const select =
+    document.getElementById("transferProjectSelect");
+
+  if (!select) {
+    return;
+  }
+
+  try {
+
+    const buyerAddress =
+      await ensureBuyerWallet();
+
+    const contracts =
+      await ensureContractsReady();
+
+    const registry =
+      contracts.projectRegistry;
+
+    const carbonToken =
+      contracts.carbonToken;
+
+    const projects =
+      await registry.methods
+        .getAllProjects()
+        .call();
+
+    select.innerHTML = `
+            <option value="">
+                Select a project
+            </option>
+        `;
+
+    for (const project of projects) {
+
+      const projectID =
+        project.projectID;
+
+      if (
+        !projectID ||
+        Number(projectID) === 0
+      ) {
+        continue;
+      }
+
+      const balance =
+        await carbonToken.methods
+          .balanceOf(
+            buyerAddress,
+            projectID
+          )
+          .call();
+
+      if (BigInt(balance) === 0n) {
+        continue;
+      }
+
+      const option =
+        document.createElement("option");
+
+      option.value = projectID;
+
+      option.textContent =
+        `${project.projectName || "Project #" + projectID} — ${balance} BCC`;
+
+      select.appendChild(option);
+    }
+
+    if (select.options.length === 1) {
+
+      const option =
+        document.createElement("option");
+
+      option.disabled = true;
+
+      option.textContent =
+        "No BCC available to transfer";
+
+      select.appendChild(option);
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Unable to load transfer projects:",
+      error
+    );
+
+    select.innerHTML = `
+            <option value="">
+                Unable to load projects
+            </option>
+        `;
+  }
+};
+
+window.transferBuyerCredits = async function () {
+
+  try {
+
+    // ==========================================
+    // 1. Get form values
+    // ==========================================
+
+    const recipientInput =
+      document.getElementById(
+        "transferRecipient"
+      );
+
+    const projectSelect =
+      document.getElementById(
+        "transferProjectSelect"
+      );
+
+    const amountInput =
+      document.getElementById(
+        "transferAmount"
+      );
+
+    if (
+      !recipientInput ||
+      !projectSelect ||
+      !amountInput
+    ) {
+      throw new Error(
+        "Transfer form not found."
+      );
+    }
+
+    const recipient =
+      recipientInput.value.trim();
+
+    const projectID =
+      projectSelect.value;
+
+    const amount =
+      amountInput.value.trim();
+
+
+    // ==========================================
+    // 2. Validate recipient
+    // ==========================================
+
+    if (!recipient) {
+
+      throw new Error(
+        "Please enter the recipient wallet address."
+      );
+    }
+
+    if (!web3.utils.isAddress(recipient)) {
+
+      throw new Error(
+        "Invalid recipient wallet address."
+      );
+    }
+
+
+    // ==========================================
+    // 3. Validate project
+    // ==========================================
+
+    if (!projectID) {
+
+      throw new Error(
+        "Please select a project."
+      );
+    }
+
+
+    // ==========================================
+    // 4. Validate amount
+    // ==========================================
+
+    if (
+      !amount ||
+      !/^\d+$/.test(amount) ||
+      BigInt(amount) <= 0n
+    ) {
+
+      throw new Error(
+        "Please enter a valid whole number of BCC."
+      );
+    }
+
+
+    // ==========================================
+    // 5. Get buyer wallet
+    // ==========================================
+
+    const buyerAddress =
+      await ensureBuyerWallet();
+
+
+    // ==========================================
+    // 6. Prevent sending to yourself
+    // ==========================================
+
+    if (
+      recipient.toLowerCase() ===
+      buyerAddress.toLowerCase()
+    ) {
+
+      throw new Error(
+        "You cannot transfer BCC to yourself."
+      );
+    }
+
+
+    // ==========================================
+    // 7. Load contracts
+    // ==========================================
+
+    const contracts =
+      await ensureContractsReady();
+
+    const carbonToken =
+      contracts.carbonToken;
+
+    const userRegistry =
+      contracts.userRegistry;
+
+
+    // ==========================================
+    // 8. Check recipient is registered
+    // ==========================================
+
+    const recipientRole =
+      await userRegistry.methods
+        .getUserRole(recipient)
+        .call();
+
+    if (Number(recipientRole) !== 1) {
+
+      throw new Error(
+        "Recipient is not a registered buyer."
+      );
+    }
+
+
+    // ==========================================
+    // 9. Check sender balance
+    // ==========================================
+
+    const balance =
+      await carbonToken.methods
+        .balanceOf(
+          buyerAddress,
+          projectID
+        )
+        .call();
+
+    if (BigInt(amount) > BigInt(balance)) {
+
+      throw new Error(
+        `You only have ${balance} BCC available for this project.`
+      );
+    }
+
+
+    // ==========================================
+    // 10. Confirm transfer
+    // ==========================================
+
+    const confirmed =
+      window.confirm(
+        `Transfer ${amount} BCC?\n\n` +
+        `Recipient:\n${recipient}\n\n` +
+        `Project ID: ${projectID}\n\n` +
+        `This transfer will be recorded on the blockchain.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    // ==========================================
+    // 11. Send blockchain transaction
+    // ==========================================
+
+    console.log(
+      "Transferring BCC:",
+      {
+        from: buyerAddress,
+        to: recipient,
+        projectID: projectID,
+        amount: amount
+      }
+    );
+
+    const receipt =
+      await carbonToken.methods
+        .transfer(
+          projectID,
+          recipient,
+          amount
+        )
+        .send({
+          from: buyerAddress
+        });
+
+
+    // ==========================================
+    // 12. Success
+    // ==========================================
+
+    console.log(
+      "BCC transfer successful:",
+      receipt.transactionHash
+    );
+
+    alert(
+      `✅ Transfer successful!\n\n` +
+      `${amount} BCC transferred.`
+    );
+
+
+    // ==========================================
+    // 13. Clear form
+    // ==========================================
+
+    recipientInput.value = "";
+    amountInput.value = "";
+
+
+    // ==========================================
+    // 14. Refresh portfolio
+    // ==========================================
+
+    if (
+      typeof loadBuyerPortfolio ===
+      "function"
+    ) {
+
+      await loadBuyerPortfolio();
+    }
+
+
+    // ==========================================
+    // 15. Refresh transfer projects
+    // ==========================================
+
+    await loadTransferProjects();
+
+  } catch (error) {
+
+    console.error(
+      "BCC transfer failed:",
+      error
+    );
+
+    if (error.code === 4001) {
+
+      alert(
+        "Transaction was rejected in MetaMask."
+      );
+
+      return;
+    }
+
+    alert(
+      "❌ Transfer failed:\n\n" +
+      (error.message || error)
+    );
   }
 };
 
@@ -4141,9 +4548,20 @@ window.loadOffsetProjects = async function () {
   }
 };
 
-// ==========================================
-// Quick button from Portfolio
-// ==========================================
+window.openBuyerTransfer = function () {
+
+  navTo(
+    "buyerTransferPage",
+    "Transfer BCC"
+  );
+
+  setTimeout(async () => {
+
+    await loadTransferProjects();
+
+  }, 100);
+
+};
 
 window.openOffsetForProject = function (projectID, balance) {
   navTo("buyerOffsetPage", "Offset & Claim");
@@ -4375,7 +4793,47 @@ window.loadBuyerTransactions = async function () {
     for (const tx of transactions) {
       const project = projectMap[tx.projectID.toString()];
       const projectName = project?.projectName || `Project #${tx.projectID}`;
-      const isPurchase = tx.type === "Purchase";
+      const isPurchase =
+        tx.type === "Purchase";
+
+      const isRetirement =
+        tx.type === "Retirement";
+
+      const isTransferSent =
+        tx.type === "Transfer Sent";
+
+      const isTransferReceived =
+        tx.type === "Transfer Received";
+
+      let transactionLabel;
+      let amountPrefix;
+
+      if (isPurchase) {
+
+        transactionLabel = "Purchase";
+        amountPrefix = "+";
+
+      } else if (isRetirement) {
+
+        transactionLabel = "Retirement";
+        amountPrefix = "-";
+
+      } else if (isTransferSent) {
+
+        transactionLabel = "Transfer Sent";
+        amountPrefix = "-";
+
+      } else if (isTransferReceived) {
+
+        transactionLabel = "Transfer Received";
+        amountPrefix = "+";
+
+      } else {
+
+        transactionLabel = tx.type;
+        amountPrefix = "";
+      }
+
       const amount = BigInt(tx.amount);
       let dateDisplay = "Date unavailable";
       if (tx.timestamp) {
@@ -4389,7 +4847,32 @@ window.loadBuyerTransactions = async function () {
       }
       const row = document.createElement("tr");
       row.style.borderBottom = "1px solid #f4f7fe";
-      row.innerHTML = ` <!-- DATE --> <td style=" padding: 15px 12px; color: #64748b; font-size: 12px; white-space: nowrap; "> ${dateDisplay} </td> <!-- PROJECT --> <td style=" padding: 15px 12px; "> <strong style=" color: #2b3674; "> ${projectName} </strong> <div style=" color: #a3aed1; font-size: 11px; margin-top: 3px; "> Project #${tx.projectID} </div> </td> <!-- TYPE --> <td style=" padding: 15px 12px; "> <span style=" display: inline-block; padding: 5px 9px; border-radius: 6px; background: ${isPurchase ? "#eef2ff" : "#fff4e5"}; color: ${isPurchase ? "#4318ff" : "#ff9f43"}; font-size: 11px; font-weight: 700; "> ${isPurchase ? "Purchase" : "Retirement"} </span> </td> <!-- AMOUNT --> <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? "#4318ff" : "#e94560"}; "> ${isPurchase ? "+" : "-"}${amount.toString()} BCC </td> <!-- STATUS --> <td style=" padding: 15px 12px; "> <span style=" color: #05cd99; font-weight: 700; font-size: 12px; "> ✓ Completed </span> <div style=" margin-top: 5px; "> <a href="https://sepolia.etherscan.io/tx/${tx.transactionHash}" target="_blank" rel="noopener noreferrer" style=" color: #4318ff; font-size: 11px; text-decoration: none; " > View transaction ↗ </a> </div> </td> `;
+      row.innerHTML = ` 
+          <!-- DATE -->
+          <td style=" padding: 15px 12px; 
+                color: #64748b; font-size: 12px; white-space: nowrap; ">
+              ${dateDisplay}
+          </td>
+          <!-- PROJECT -->
+          <td style=" padding: 15px 12px; ">
+              <strong style=" color: #2b3674; ">
+                  ${projectName}
+              </strong>
+              <div style=" color: #a3aed1; font-size: 11px; margin-top: 3px; "> Project #${tx.projectID}
+              </div>
+          </td>
+          <!-- TYPE -->
+          <td style=" padding: 15px 12px; "> <span
+                  style=" display: inline-block; padding: 5px 9px; border-radius: 6px; background: ${isPurchase ? " #eef2ff"
+          : "#fff4e5"}; color: ${isPurchase ? "#4318ff" : "#ff9f43"}; font-size: 11px; font-weight:
+                  700; "> ${transactionLabel} </span> </td> <!-- AMOUNT -->
+          <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? " #4318ff" : "#e94560"}; "> ${amountPrefix}${amount.toString()} BCC </td> <!-- STATUS -->
+          <td style=" padding: 15px 12px; "> <span style=" color: #05cd99; font-weight: 700; font-size: 12px; "> ✓ Completed
+              </span>
+              <div style=" margin-top: 5px; "> <a href="https://sepolia.etherscan.io/tx/${tx.transactionHash}" target="_blank"
+                      rel="noopener noreferrer" style=" color: #4318ff; font-size: 11px; text-decoration: none; "> View
+                      transaction ↗ </a> </div>
+          </td>`;
       tbody.appendChild(row);
     }
 
@@ -4428,7 +4911,8 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
   const currentBlock = Number(await web3.eth.getBlockNumber());
 
-  const TX_SYNC_KEY = `bcc_transaction_sync_${chainId}_${CARBON_TOKEN_ADDRESS.toLowerCase()}_${buyerAddress.toLowerCase()}`;
+  const TX_SYNC_KEY =
+    `bcc_transaction_sync_v2_${chainId}_${CARBON_TOKEN_ADDRESS.toLowerCase()}_${buyerAddress.toLowerCase()}`;
 
   // ==========================================
   // Load saved state
@@ -4530,10 +5014,44 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       toBlock,
     });
 
+    // ======================================
+    // Transfers sent by buyer
+    // ======================================
+
+    const transferSentEvents =
+      await carbonToken.getPastEvents("Transfer", {
+        filter: {
+          from: buyerAddress,
+        },
+
+        fromBlock,
+        toBlock,
+      });
+
+
+    // ======================================
+    // Transfers received by buyer
+    // ======================================
+
+    const transferReceivedEvents =
+      await carbonToken.getPastEvents("Transfer", {
+        filter: {
+          to: buyerAddress,
+        },
+
+        fromBlock,
+        toBlock,
+      });
+
     const newEvents = [];
 
     const blockTimestamps = new Map();
-    const allEvents = [...purchaseEvents, ...retiredEvents];
+    const allEvents = [
+      ...purchaseEvents,
+      ...retiredEvents,
+      ...transferSentEvents,
+      ...transferReceivedEvents
+    ];
 
     for (const event of allEvents) {
       const blockNumber = Number(event.blockNumber);
@@ -4594,6 +5112,109 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
         status: "Completed",
         timestamp: blockTimestamps.get(Number(event.blockNumber)),
+      });
+    }
+
+    // ======================================
+    // Transfer Sent
+    // ======================================
+
+    for (const event of transferSentEvents) {
+
+      newEvents.push({
+        id:
+          `${event.transactionHash}-${event.logIndex}`,
+
+        type:
+          "Transfer Sent",
+
+        projectID:
+          event.returnValues.projectID,
+
+        amount:
+          event.returnValues.value,
+
+        totalPrice:
+          "0",
+
+        from:
+          event.returnValues.from,
+
+        to:
+          event.returnValues.to,
+
+        blockNumber:
+          Number(event.blockNumber),
+
+        transactionHash:
+          event.transactionHash,
+
+        logIndex:
+          Number(event.logIndex),
+
+        status:
+          "Completed",
+
+        timestamp:
+          blockTimestamps.get(
+            Number(event.blockNumber)
+          ),
+      });
+    }
+
+
+    // ======================================
+    // Transfer Received
+    // ======================================
+
+    for (const event of transferReceivedEvents) {
+
+      // Don't add the same transfer twice
+      if (
+        event.returnValues.from.toLowerCase() ===
+        buyerAddress.toLowerCase()
+      ) {
+        continue;
+      }
+
+      newEvents.push({
+        id:
+          `${event.transactionHash}-${event.logIndex}`,
+
+        type:
+          "Transfer Received",
+
+        projectID:
+          event.returnValues.projectID,
+
+        amount:
+          event.returnValues.value,
+
+        totalPrice:
+          "0",
+
+        from:
+          event.returnValues.from,
+
+        to:
+          event.returnValues.to,
+
+        blockNumber:
+          Number(event.blockNumber),
+
+        transactionHash:
+          event.transactionHash,
+
+        logIndex:
+          Number(event.logIndex),
+
+        status:
+          "Completed",
+
+        timestamp:
+          blockTimestamps.get(
+            Number(event.blockNumber)
+          ),
       });
     }
 
