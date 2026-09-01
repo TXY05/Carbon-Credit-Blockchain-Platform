@@ -1180,154 +1180,588 @@ async function ensureContractsReady() {
 const SERVER_URL = "http://localhost:3000";
 
 // ==========================================
-// UI 逻辑：切换 Login 和 Register 面板
+// AUTHENTICATION
+// MetaMask is the ONLY login method
 // ==========================================
+
+let connectedWallet = null;
+
+
+// ==========================================
+// Toggle Login / Register
+// ==========================================
+
 window.toggleAuthMode = function (mode) {
+
+  const loginForm =
+    document.getElementById("form-login");
+
+  const registerForm =
+    document.getElementById("form-register");
+
   if (mode === "login") {
-    document.getElementById("form-login").style.display = "block";
-    document.getElementById("form-register").style.display = "none";
-    document.getElementById("tab-login").style.background = "#5640fa";
-    document.getElementById("tab-login").style.color = "white";
-    document.getElementById("tab-register").style.background = "#f4f7fe";
-    document.getElementById("tab-register").style.color = "#2b3674";
+
+    loginForm.style.display = "block";
+    registerForm.style.display = "none";
+
   } else {
-    document.getElementById("form-login").style.display = "none";
-    document.getElementById("form-register").style.display = "block";
-    document.getElementById("tab-register").style.background = "#5640fa";
-    document.getElementById("tab-register").style.color = "white";
-    document.getElementById("tab-login").style.background = "#f4f7fe";
-    document.getElementById("tab-login").style.color = "#2b3674";
+
+    loginForm.style.display = "none";
+    registerForm.style.display = "block";
+
   }
+
 };
 
-// ==========================================
-// 注册逻辑
-// ==========================================
-window.handleRegister = async function () {
-  let rRole = document.getElementById("regRole").value;
-  let rUser = document.getElementById("regUsername").value;
-  let rPass = document.getElementById("regPassword").value;
 
-  if (!rUser || !rPass) {
-    // alert("🚨 请填写完整账号和密码！");
-    return;
+// ==========================================
+// Connect MetaMask
+// ==========================================
+
+window.connectMetaMask = async function () {
+
+  if (typeof window.ethereum === "undefined") {
+
+    alert(
+      "MetaMask is not installed. Please install MetaMask first."
+    );
+
+    return null;
   }
 
   try {
-    let response = await fetch(`${SERVER_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: rUser, password: rPass, role: rRole }),
-    });
 
-    let result = await response.json();
+    // Ask MetaMask for account
+    const accounts =
+      await window.ethereum.request({
+        method: "eth_requestAccounts"
+      });
 
-    if (result.success) {
-      // 🔴 防呆保护：如果后端给了 message 就用后端的，没给就用默认的
-      // alert(result.message || "✅ 注册成功！请等待 Admin 审核。");
+    if (!accounts || accounts.length === 0) {
 
-      // 注册成功后清空输入框
-      document.getElementById("regUsername").value = "";
-      document.getElementById("regPassword").value = "";
-    } else {
-      // alert("❌ 注册失败: " + result.message);
+      throw new Error(
+        "No MetaMask account was selected."
+      );
+
     }
+
+    connectedWallet = accounts[0];
+
+
+    return connectedWallet;
+
   } catch (error) {
-    console.error(error);
-    // alert("🚨 请求报错，请确保 node server.js 正在运行！");
+
+    console.error(
+      "MetaMask connection failed:",
+      error
+    );
+
+    return null;
   }
+
 };
 
-window.handleLogin = async function () {
-  let logUser = document.getElementById("logUsername").value;
-  let logPass = document.getElementById("logPassword").value;
+// ==========================================
+// Get already connected wallet
+// ==========================================
 
-  if (!logUser || !logPass) {
-    // alert("🚨 请填写完整的账号和密码！");
-    return;
+async function getConnectedWallet() {
+
+  if (connectedWallet) {
+    return connectedWallet;
   }
+
+  if (typeof window.ethereum === "undefined") {
+    return null;
+  }
+
+  const accounts =
+    await window.ethereum.request({
+      method: "eth_accounts"
+    });
+
+  if (!accounts || accounts.length === 0) {
+    return null;
+  }
+
+  connectedWallet = accounts[0];
+
+  return connectedWallet;
+
+};
+
+
+// ==========================================
+// Shorten wallet address
+// ==========================================
+
+function shortenAddress(address) {
+
+  if (!address) return "";
+
+  return (
+    address.substring(0, 6) +
+    "..." +
+    address.substring(address.length - 4)
+  );
+
+}
+
+
+// ==========================================
+// LOGIN
+//
+// MetaMask ONLY
+// ==========================================
+
+window.connectAndLogin = async function () {
 
   try {
-    let response = await fetch(`${SERVER_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: logUser, password: logPass }),
-    });
 
-    let result = await response.json();
+    // ==================================
+    // 1. Connect MetaMask
+    // ==================================
 
-    if (result.success) {
-      localStorage.setItem("loggedInUser", result.username);
-      // alert("✅ 登录成功！");
+    const walletAddress =
+      await connectMetaMask();
 
-      document.getElementById("logUsername").value = "";
-      document.getElementById("logPassword").value = "";
-
-      // 1. 根据角色解锁对应的侧边栏菜单
-      switchRole(result.role);
-      if (typeof syncGlobalAvatar === "function") syncGlobalAvatar();
-
-      // 2. 🔴 完美接入你的真实路由函数！跳转到 Marketplace
-      navTo("marketPage", "Carbon Marketplace");
-    } else {
-      // alert(result.message);
-    }
-  } catch (error) {
-    console.error(error);
-    // alert("🚨 请求报错，请检查控制台。");
-  }
-};
-
-// ==========================================
-// 1. 钱包连接逻辑 (左下角按钮)
-// ==========================================
-const connectBtn = document.getElementById("connectWalletBtn");
-
-if (connectBtn) {
-  connectBtn.onclick = async function () {
-    if (typeof window.ethereum === "undefined") {
-      console.error("MetaMask is not installed.");
+    if (!walletAddress) {
       return;
     }
 
-    try {
-      // Create Web3
-      web3 = new Web3(window.ethereum);
+    console.log(
+      "Connected wallet:",
+      walletAddress
+    );
 
-      // Connect wallet
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
 
-      currentAccount = accounts[0];
+    // ==================================
+    // 2. Load contracts
+    // ==================================
 
-      // Initialize all contracts
-      initializeBlockchainContracts();
+    const contracts =
+      await ensureContractsReady();
 
-      // Update button
-      connectBtn.innerHTML = `✅ ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)}`;
 
-      connectBtn.style.background = "#28a745";
-      connectBtn.style.borderColor = "#28a745";
+    // ==================================
+    // 3. Check Owner
+    // ==================================
 
-      // Developer address
-      const devAddressInput = document.getElementById("devAddress");
+    const owner =
+      await contracts.userRegistry.methods
+        .owner()
+        .call();
 
-      if (devAddressInput) {
-        devAddressInput.value = currentAccount;
-        devAddressInput.style.color = "#5640fa";
-      }
+    const isOwner =
+      owner.toLowerCase() ===
+      walletAddress.toLowerCase();
 
-      console.log("Wallet connected:", currentAccount);
 
-      console.log("ProjectRegistry:", projectRegistryContract);
-    } catch (error) {
-      console.error("Wallet connection failed:", error);
+    // ==================================
+    // 4. Check Admin
+    // ==================================
+
+    const isAdmin =
+      await contracts.userRegistry.methods
+        .isAdmin(walletAddress)
+        .call();
+
+
+    console.log("Contract owner:", owner);
+    console.log("Is owner:", isOwner);
+    console.log("Is admin:", isAdmin);
+
+
+    // ==================================
+    // 5. ADMIN / OWNER LOGIN
+    // ==================================
+
+    if (isOwner || isAdmin) {
+
+      console.log(
+        "✅ Admin/Owner login successful"
+      );
+
+
+      switchRole("admin");
+      navTo("adminDashPage", "Admin Dashboard");
+
+      return;
     }
-  };
-} else {
-  console.error("严重错误：在 HTML 里找不到 id 为 connectWalletBtn 的按钮！");
-}
+
+
+    // ==================================
+    // 6. NORMAL USER
+    // ==================================
+
+    const role =
+      await contracts.userRegistry.methods
+        .getUserRole(walletAddress)
+        .call();
+
+
+    console.log(
+      "Blockchain role:",
+      role
+    );
+
+
+    // ==================================
+    // 7. Not registered on blockchain
+    // ==================================
+
+    if (Number(role) === 0) {
+
+      alert(
+        "This wallet is not registered yet.\n\n" +
+        "Please register first or wait for Admin approval."
+      );
+
+      toggleAuthMode("register");
+
+      return;
+    }
+
+
+    // ==================================
+    // 8. Buyer
+    // ==================================
+
+    if (Number(role) === 1) {
+
+      switchRole("buyer");
+      navTo("marketPage", "Marketplace");
+    }
+
+
+    // ==================================
+    // 9. Developer
+    // ==================================
+
+    else if (Number(role) === 2) {
+
+      switchRole("developer");
+      navTo("devDashPage", "Developer Dashboard");
+
+    }
+
+
+    // ==================================
+    // 10. Unknown role
+    // ==================================
+
+    else {
+
+      throw new Error(
+        "Unknown blockchain role: " + role
+      );
+
+    }
+
+
+    console.log(
+      "✅ User login successful:",
+      walletAddress
+    );
+
+
+
+  } catch (error) {
+
+    console.error(
+      "MetaMask login failed:",
+      error
+    );
+
+    alert(
+      "Login failed:\n" +
+      (error.message || error)
+    );
+
+  }
+
+};
+
+// ==========================================
+// REGISTER - CONNECT WALLET
+// ==========================================
+
+window.connectRegisterWallet = async function () {
+
+  const walletAddress =
+    await connectMetaMask();
+
+  if (!walletAddress) {
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      "registerWalletBtn"
+    );
+
+  const status =
+    document.getElementById(
+      "registerWalletStatus"
+    );
+
+
+  if (button) {
+
+    button.innerText =
+      `✅ ${shortenAddress(walletAddress)}`;
+
+    button.style.background =
+      "#28a745";
+
+  }
+
+
+  if (status) {
+
+    status.innerText =
+      "Connected Wallet:\n" +
+      walletAddress;
+
+    status.style.display =
+      "block";
+
+  }
+
+};
+
+
+// ==========================================
+// REGISTER
+//
+// User fills information FIRST.
+// MetaMask wallet becomes identity.
+// ==========================================
+
+window.handleRegister = async function () {
+
+  try {
+
+    // ----------------------------------
+    // 1. Get form information
+    // ----------------------------------
+
+    const username =
+      document.getElementById(
+        "regUsername"
+      ).value.trim();
+
+    const email =
+      document.getElementById(
+        "regEmail"
+      ).value.trim();
+
+    const phone =
+      document.getElementById(
+        "regPhone"
+      ).value.trim();
+
+    const role =
+      document.getElementById(
+        "regRole"
+      ).value;
+
+
+    // ----------------------------------
+    // 2. Validate form
+    // ----------------------------------
+
+    if (!username) {
+
+      alert("Please enter your username.");
+
+      return;
+    }
+
+    if (!email) {
+
+      alert("Please enter your email.");
+
+      return;
+    }
+
+    if (!phone) {
+
+      alert(
+        "Please enter your contact number."
+      );
+
+      return;
+    }
+
+    if (!role) {
+
+      alert(
+        "Please select an account type."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------
+    // 3. Connect MetaMask
+    // ----------------------------------
+
+    let walletAddress =
+      connectedWallet;
+
+
+    if (!walletAddress) {
+
+      walletAddress =
+        await connectMetaMask();
+
+    }
+
+
+    if (!walletAddress) {
+
+      alert(
+        "Please connect MetaMask first."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------
+    // 4. Initialize blockchain
+    // ----------------------------------
+
+    const contracts =
+      await ensureContractsReady();
+
+
+    // ----------------------------------
+    // 5. Check if wallet already exists
+    // ----------------------------------
+
+    const alreadyRegistered =
+      await contracts.userRegistry.methods
+        .isRegistered(walletAddress)
+        .call();
+
+
+    if (alreadyRegistered) {
+
+      alert(
+        "This MetaMask wallet is already registered.\n\n" +
+        "Please use Login instead."
+      );
+
+      toggleAuthMode("login");
+
+      return;
+    }
+
+
+    // ----------------------------------
+    // 6. Send registration to backend
+    // ----------------------------------
+
+    const response =
+      await fetch(
+        `${SERVER_URL}/register`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            walletAddress:
+              walletAddress,
+
+            username:
+              username,
+
+            email:
+              email,
+
+            phone:
+              phone,
+
+            role:
+              role
+
+          })
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!result.success) {
+
+      throw new Error(
+        result.message ||
+        "Registration failed."
+      );
+
+    }
+
+
+    // ----------------------------------
+    // 7. Registration successful
+    // ----------------------------------
+
+    alert(
+      "✅ Registration submitted!\n\n" +
+      "Your account is now waiting for Admin approval."
+    );
+
+
+    // Clear form
+
+    document.getElementById(
+      "regUsername"
+    ).value = "";
+
+    document.getElementById(
+      "regEmail"
+    ).value = "";
+
+    document.getElementById(
+      "regPhone"
+    ).value = "";
+
+    document.getElementById(
+      "regRole"
+    ).value = "";
+
+
+    // Return login page
+
+    toggleAuthMode("login");
+
+
+  } catch (error) {
+
+    console.error(
+      "Registration failed:",
+      error
+    );
+
+    alert(
+      "Registration failed: " +
+      (error.message || error)
+    );
+
+  }
+
+};
 
 // ==========================================
 // Developer：提交新项目 (修复身份绑定版)
@@ -1647,23 +2081,262 @@ window.loadPendingUsers = async function () {
 };
 
 // ==========================================
-// 审批/驳回用户 (局部刷新，绝不跳出)
+// Admin approves user
+// 1. Register wallet on blockchain
+// 2. Only after success, approve in SQLite
 // ==========================================
-window.approveUser = async function (userId) {
-  try {
-    let response = await fetch(`${SERVER_URL}/approve-user`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: userId }),
-    });
 
-    if ((await response.json()).success) {
-      // alert("✅ 用户已批准！");
-      loadPendingUsers(); // 🔴 原地刷新当前表格，绝对不跳转页面！
+window.approveUser = async function (userId) {
+
+  try {
+
+    // ==================================
+    // 1. Find user information
+    // ==================================
+
+    const response =
+      await fetch(`${SERVER_URL}/all-users`);
+
+    const users =
+      await response.json();
+
+    const user =
+      users.find(
+        u => Number(u.id) === Number(userId)
+      );
+
+
+    if (!user) {
+
+      alert("User not found.");
+
+      return;
     }
+
+
+    console.log(
+      "User to approve:",
+      user
+    );
+
+
+    // ==================================
+    // 2. Check wallet
+    // ==================================
+
+    if (!user.walletAddress) {
+
+      alert(
+        "This user does not have a MetaMask wallet address."
+      );
+
+      return;
+    }
+
+
+    // ==================================
+    // 3. Convert role
+    // ==================================
+
+    let blockchainRole;
+
+    if (user.role === "buyer") {
+
+      blockchainRole = 1;
+
+    } else if (user.role === "developer") {
+
+      blockchainRole = 2;
+
+    } else {
+
+      alert(
+        "Invalid user role: " +
+        user.role
+      );
+
+      return;
+    }
+
+
+    // ==================================
+    // 4. Make sure Admin MetaMask
+    // is connected
+    // ==================================
+
+    const adminWallet =
+      await ensureWalletConnected();
+
+
+    // ==================================
+    // 5. Verify Admin
+    // ==================================
+
+    const contracts =
+      await ensureContractsReady();
+
+
+    const isAdmin =
+      await contracts.userRegistry.methods
+        .isAdmin(adminWallet)
+        .call();
+
+
+    const owner =
+      await contracts.userRegistry.methods
+        .owner()
+        .call();
+
+
+    const isOwner =
+      owner.toLowerCase() ===
+      adminWallet.toLowerCase();
+
+
+    if (!isAdmin && !isOwner) {
+
+      alert(
+        "Connected MetaMask wallet is not an Admin."
+      );
+
+      return;
+    }
+
+
+    // ==================================
+    // 6. Check if already registered
+    // ==================================
+
+    const alreadyRegistered =
+      await contracts.userRegistry.methods
+        .isRegistered(user.walletAddress)
+        .call();
+
+
+    if (alreadyRegistered) {
+
+      alert(
+        "This wallet is already registered on blockchain."
+      );
+
+      return;
+    }
+
+
+    // ==================================
+    // 7. Blockchain registration
+    // ==================================
+
+    console.log(
+      "Registering user on blockchain..."
+    );
+
+    console.log(
+      "Wallet:",
+      user.walletAddress
+    );
+
+    console.log(
+      "Role:",
+      blockchainRole
+    );
+
+
+    const tx =
+      await contracts.userRegistry.methods
+        .registerUser(
+          user.walletAddress,
+          blockchainRole
+        )
+        .send({
+          from: adminWallet
+        });
+
+
+    console.log(
+      "✅ Blockchain registration successful:",
+      tx.transactionHash
+    );
+
+
+    // ==================================
+    // 8. ONLY NOW approve SQLite user
+    // ==================================
+
+    const approveResponse =
+      await fetch(
+        `${SERVER_URL}/approve-user`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            userId: userId
+          })
+        }
+      );
+
+
+    const approveResult =
+      await approveResponse.json();
+
+
+    if (!approveResult.success) {
+
+      throw new Error(
+        "Blockchain registration succeeded, " +
+        "but database approval failed."
+      );
+    }
+
+
+    // ==================================
+    // 9. Success
+    // ==================================
+
+    alert(
+      "✅ User approved successfully!\n\n" +
+      "Wallet has been registered on blockchain."
+    );
+
+
+    // Refresh pending users
+
+    loadPendingUsers();
+
+
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "❌ User approval failed:",
+      error
+    );
+
+
+    // MetaMask rejection
+    if (
+      error.code === 4001
+    ) {
+
+      alert(
+        "Transaction was rejected in MetaMask."
+      );
+
+      return;
+    }
+
+
+    alert(
+      "❌ Approval failed:\n\n" +
+      (error.message || error)
+    );
+
   }
+
 };
 
 window.rejectUser = async function (userId) {
@@ -3049,8 +3722,8 @@ window.purchaseMarketplaceCredits = async function (projectID) {
 
     alert(
       `✅ Purchase successful!\n\n` +
-        `${amount} BCC purchased\n` +
-        `Total paid: ${totalEth} ETH`,
+      `${amount} BCC purchased\n` +
+      `Total paid: ${totalEth} ETH`,
     );
 
     // ==========================================
@@ -3147,8 +3820,8 @@ window.loadBuyerPortfolio = async function () {
     console.log("Portfolio blockchain projects:", projects);
 
     tbody.innerHTML = "";
-
     let totalBalance = 0n;
+    let totalRetired = 0n;
     let totalValueWei = 0n;
     let ownedProjects = 0;
 
@@ -3182,6 +3855,21 @@ window.loadBuyerPortfolio = async function () {
         continue;
       }
 
+      let retired;
+
+      try {
+        retired = await carbonToken.methods
+          .retired(buyerAddress, projectID)
+          .call();
+      } catch (error) {
+        console.error(
+          `Unable to read retired amount for project #${projectID}`,
+          error
+        );
+
+        retired = "0";
+      }
+
       // Skip projects the buyer doesn't own
       if (BigInt(balance) === 0n) {
         continue;
@@ -3205,7 +3893,11 @@ window.loadBuyerPortfolio = async function () {
 
       const projectValue = buyerBalance * pricePerToken;
 
+      const buyerRetired = BigInt(retired);
+
       totalBalance += buyerBalance;
+      totalRetired += buyerRetired;
+
 
       totalValueWei += projectValue;
 
@@ -3285,6 +3977,17 @@ window.loadBuyerPortfolio = async function () {
 
                 </td>
 
+                <td style="
+    padding: 15px 12px;
+    font-weight: 800;
+    color: #ee5d50;
+">
+
+    ${buyerRetired.toString()}
+    BCC
+
+</td>
+
 
                 <td style="
                     padding: 15px 12px;
@@ -3301,6 +4004,14 @@ window.loadBuyerPortfolio = async function () {
       tbody.appendChild(row);
     }
 
+    const retiredElement =
+      document.getElementById("totalBccRetired");
+
+    if (retiredElement) {
+      retiredElement.textContent =
+        totalRetired.toString();
+    }
+
     // ==========================================
     // No holdings
     // ==========================================
@@ -3309,7 +4020,7 @@ window.loadBuyerPortfolio = async function () {
       tbody.innerHTML = `
                 <tr>
                     <td
-                        colspan="5"
+                        colspan="6"
                         style="
                             text-align: center;
                             padding: 50px;
@@ -3372,6 +4083,375 @@ window.loadBuyerPortfolio = async function () {
                 </td>
             </tr>
         `;
+  }
+};
+
+window.loadTransferProjects = async function () {
+
+  const select =
+    document.getElementById("transferProjectSelect");
+
+  if (!select) {
+    return;
+  }
+
+  try {
+
+    const buyerAddress =
+      await ensureBuyerWallet();
+
+    const contracts =
+      await ensureContractsReady();
+
+    const registry =
+      contracts.projectRegistry;
+
+    const carbonToken =
+      contracts.carbonToken;
+
+    const projects =
+      await registry.methods
+        .getAllProjects()
+        .call();
+
+    select.innerHTML = `
+            <option value="">
+                Select a project
+            </option>
+        `;
+
+    for (const project of projects) {
+
+      const projectID =
+        project.projectID;
+
+      if (
+        !projectID ||
+        Number(projectID) === 0
+      ) {
+        continue;
+      }
+
+      const balance =
+        await carbonToken.methods
+          .balanceOf(
+            buyerAddress,
+            projectID
+          )
+          .call();
+
+      if (BigInt(balance) === 0n) {
+        continue;
+      }
+
+      const option =
+        document.createElement("option");
+
+      option.value = projectID;
+
+      option.textContent =
+        `${project.projectName || "Project #" + projectID} — ${balance} BCC`;
+
+      select.appendChild(option);
+    }
+
+    if (select.options.length === 1) {
+
+      const option =
+        document.createElement("option");
+
+      option.disabled = true;
+
+      option.textContent =
+        "No BCC available to transfer";
+
+      select.appendChild(option);
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Unable to load transfer projects:",
+      error
+    );
+
+    select.innerHTML = `
+            <option value="">
+                Unable to load projects
+            </option>
+        `;
+  }
+};
+
+window.transferBuyerCredits = async function () {
+
+  try {
+
+    // ==========================================
+    // 1. Get form values
+    // ==========================================
+
+    const recipientInput =
+      document.getElementById(
+        "transferRecipient"
+      );
+
+    const projectSelect =
+      document.getElementById(
+        "transferProjectSelect"
+      );
+
+    const amountInput =
+      document.getElementById(
+        "transferAmount"
+      );
+
+    if (
+      !recipientInput ||
+      !projectSelect ||
+      !amountInput
+    ) {
+      throw new Error(
+        "Transfer form not found."
+      );
+    }
+
+    const recipient =
+      recipientInput.value.trim();
+
+    const projectID =
+      projectSelect.value;
+
+    const amount =
+      amountInput.value.trim();
+
+
+    // ==========================================
+    // 2. Validate recipient
+    // ==========================================
+
+    if (!recipient) {
+
+      throw new Error(
+        "Please enter the recipient wallet address."
+      );
+    }
+
+    if (!web3.utils.isAddress(recipient)) {
+
+      throw new Error(
+        "Invalid recipient wallet address."
+      );
+    }
+
+
+    // ==========================================
+    // 3. Validate project
+    // ==========================================
+
+    if (!projectID) {
+
+      throw new Error(
+        "Please select a project."
+      );
+    }
+
+
+    // ==========================================
+    // 4. Validate amount
+    // ==========================================
+
+    if (
+      !amount ||
+      !/^\d+$/.test(amount) ||
+      BigInt(amount) <= 0n
+    ) {
+
+      throw new Error(
+        "Please enter a valid whole number of BCC."
+      );
+    }
+
+
+    // ==========================================
+    // 5. Get buyer wallet
+    // ==========================================
+
+    const buyerAddress =
+      await ensureBuyerWallet();
+
+
+    // ==========================================
+    // 6. Prevent sending to yourself
+    // ==========================================
+
+    if (
+      recipient.toLowerCase() ===
+      buyerAddress.toLowerCase()
+    ) {
+
+      throw new Error(
+        "You cannot transfer BCC to yourself."
+      );
+    }
+
+
+    // ==========================================
+    // 7. Load contracts
+    // ==========================================
+
+    const contracts =
+      await ensureContractsReady();
+
+    const carbonToken =
+      contracts.carbonToken;
+
+    const userRegistry =
+      contracts.userRegistry;
+
+
+    // ==========================================
+    // 8. Check recipient is registered
+    // ==========================================
+
+    const recipientRole =
+      await userRegistry.methods
+        .getUserRole(recipient)
+        .call();
+
+    if (Number(recipientRole) !== 1) {
+
+      throw new Error(
+        "Recipient is not a registered buyer."
+      );
+    }
+
+
+    // ==========================================
+    // 9. Check sender balance
+    // ==========================================
+
+    const balance =
+      await carbonToken.methods
+        .balanceOf(
+          buyerAddress,
+          projectID
+        )
+        .call();
+
+    if (BigInt(amount) > BigInt(balance)) {
+
+      throw new Error(
+        `You only have ${balance} BCC available for this project.`
+      );
+    }
+
+
+    // ==========================================
+    // 10. Confirm transfer
+    // ==========================================
+
+    const confirmed =
+      window.confirm(
+        `Transfer ${amount} BCC?\n\n` +
+        `Recipient:\n${recipient}\n\n` +
+        `Project ID: ${projectID}\n\n` +
+        `This transfer will be recorded on the blockchain.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    // ==========================================
+    // 11. Send blockchain transaction
+    // ==========================================
+
+    console.log(
+      "Transferring BCC:",
+      {
+        from: buyerAddress,
+        to: recipient,
+        projectID: projectID,
+        amount: amount
+      }
+    );
+
+    const receipt =
+      await carbonToken.methods
+        .transfer(
+          projectID,
+          recipient,
+          amount
+        )
+        .send({
+          from: buyerAddress
+        });
+
+
+    // ==========================================
+    // 12. Success
+    // ==========================================
+
+    console.log(
+      "BCC transfer successful:",
+      receipt.transactionHash
+    );
+
+    alert(
+      `✅ Transfer successful!\n\n` +
+      `${amount} BCC transferred.`
+    );
+
+
+    // ==========================================
+    // 13. Clear form
+    // ==========================================
+
+    recipientInput.value = "";
+    amountInput.value = "";
+
+
+    // ==========================================
+    // 14. Refresh portfolio
+    // ==========================================
+
+    if (
+      typeof loadBuyerPortfolio ===
+      "function"
+    ) {
+
+      await loadBuyerPortfolio();
+    }
+
+
+    // ==========================================
+    // 15. Refresh transfer projects
+    // ==========================================
+
+    await loadTransferProjects();
+
+  } catch (error) {
+
+    console.error(
+      "BCC transfer failed:",
+      error
+    );
+
+    if (error.code === 4001) {
+
+      alert(
+        "Transaction was rejected in MetaMask."
+      );
+
+      return;
+    }
+
+    alert(
+      "❌ Transfer failed:\n\n" +
+      (error.message || error)
+    );
   }
 };
 
@@ -3438,9 +4518,8 @@ window.loadOffsetProjects = async function () {
 
       option.value = projectID;
 
-      option.textContent = `${
-        project.projectName || "Project #" + projectID
-      } — ${balance} BCC`;
+      option.textContent = `${project.projectName || "Project #" + projectID
+        } — ${balance} BCC`;
 
       select.appendChild(option);
     }
@@ -3469,9 +4548,20 @@ window.loadOffsetProjects = async function () {
   }
 };
 
-// ==========================================
-// Quick button from Portfolio
-// ==========================================
+window.openBuyerTransfer = function () {
+
+  navTo(
+    "buyerTransferPage",
+    "Transfer BCC"
+  );
+
+  setTimeout(async () => {
+
+    await loadTransferProjects();
+
+  }, 100);
+
+};
 
 window.openOffsetForProject = function (projectID, balance) {
   navTo("buyerOffsetPage", "Offset & Claim");
@@ -3566,7 +4656,7 @@ window.retireBuyerCredits = async function () {
 
     const confirmed = window.confirm(
       `Offset ${amount} BCC from "${project.projectName}"?\n\n` +
-        `This will permanently retire these credits.`,
+      `This will permanently retire these credits.`,
     );
 
     if (!confirmed) {
@@ -3591,7 +4681,7 @@ window.retireBuyerCredits = async function () {
 
     alert(
       `✅ Offset successful!\n\n` +
-        `${amount} BCC retired from "${project.projectName}".`,
+      `${amount} BCC retired from "${project.projectName}".`,
     );
 
     // ==========================================
@@ -3703,7 +4793,47 @@ window.loadBuyerTransactions = async function () {
     for (const tx of transactions) {
       const project = projectMap[tx.projectID.toString()];
       const projectName = project?.projectName || `Project #${tx.projectID}`;
-      const isPurchase = tx.type === "Purchase";
+      const isPurchase =
+        tx.type === "Purchase";
+
+      const isRetirement =
+        tx.type === "Retirement";
+
+      const isTransferSent =
+        tx.type === "Transfer Sent";
+
+      const isTransferReceived =
+        tx.type === "Transfer Received";
+
+      let transactionLabel;
+      let amountPrefix;
+
+      if (isPurchase) {
+
+        transactionLabel = "Purchase";
+        amountPrefix = "+";
+
+      } else if (isRetirement) {
+
+        transactionLabel = "Retirement";
+        amountPrefix = "-";
+
+      } else if (isTransferSent) {
+
+        transactionLabel = "Transfer Sent";
+        amountPrefix = "-";
+
+      } else if (isTransferReceived) {
+
+        transactionLabel = "Transfer Received";
+        amountPrefix = "+";
+
+      } else {
+
+        transactionLabel = tx.type;
+        amountPrefix = "";
+      }
+
       const amount = BigInt(tx.amount);
       let dateDisplay = "Date unavailable";
       if (tx.timestamp) {
@@ -3717,7 +4847,32 @@ window.loadBuyerTransactions = async function () {
       }
       const row = document.createElement("tr");
       row.style.borderBottom = "1px solid #f4f7fe";
-      row.innerHTML = ` <!-- DATE --> <td style=" padding: 15px 12px; color: #64748b; font-size: 12px; white-space: nowrap; "> ${dateDisplay} </td> <!-- PROJECT --> <td style=" padding: 15px 12px; "> <strong style=" color: #2b3674; "> ${projectName} </strong> <div style=" color: #a3aed1; font-size: 11px; margin-top: 3px; "> Project #${tx.projectID} </div> </td> <!-- TYPE --> <td style=" padding: 15px 12px; "> <span style=" display: inline-block; padding: 5px 9px; border-radius: 6px; background: ${isPurchase ? "#eef2ff" : "#fff4e5"}; color: ${isPurchase ? "#4318ff" : "#ff9f43"}; font-size: 11px; font-weight: 700; "> ${isPurchase ? "Purchase" : "Retirement"} </span> </td> <!-- AMOUNT --> <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? "#4318ff" : "#e94560"}; "> ${isPurchase ? "+" : "-"}${amount.toString()} BCC </td> <!-- STATUS --> <td style=" padding: 15px 12px; "> <span style=" color: #05cd99; font-weight: 700; font-size: 12px; "> ✓ Completed </span> <div style=" margin-top: 5px; "> <a href="https://sepolia.etherscan.io/tx/${tx.transactionHash}" target="_blank" rel="noopener noreferrer" style=" color: #4318ff; font-size: 11px; text-decoration: none; " > View transaction ↗ </a> </div> </td> `;
+      row.innerHTML = ` 
+          <!-- DATE -->
+          <td style=" padding: 15px 12px; 
+                color: #64748b; font-size: 12px; white-space: nowrap; ">
+              ${dateDisplay}
+          </td>
+          <!-- PROJECT -->
+          <td style=" padding: 15px 12px; ">
+              <strong style=" color: #2b3674; ">
+                  ${projectName}
+              </strong>
+              <div style=" color: #a3aed1; font-size: 11px; margin-top: 3px; "> Project #${tx.projectID}
+              </div>
+          </td>
+          <!-- TYPE -->
+          <td style=" padding: 15px 12px; "> <span
+                  style=" display: inline-block; padding: 5px 9px; border-radius: 6px; background: ${isPurchase ? " #eef2ff"
+          : "#fff4e5"}; color: ${isPurchase ? "#4318ff" : "#ff9f43"}; font-size: 11px; font-weight:
+                  700; "> ${transactionLabel} </span> </td> <!-- AMOUNT -->
+          <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? " #4318ff" : "#e94560"}; "> ${amountPrefix}${amount.toString()} BCC </td> <!-- STATUS -->
+          <td style=" padding: 15px 12px; "> <span style=" color: #05cd99; font-weight: 700; font-size: 12px; "> ✓ Completed
+              </span>
+              <div style=" margin-top: 5px; "> <a href="https://sepolia.etherscan.io/tx/${tx.transactionHash}" target="_blank"
+                      rel="noopener noreferrer" style=" color: #4318ff; font-size: 11px; text-decoration: none; "> View
+                      transaction ↗ </a> </div>
+          </td>`;
       tbody.appendChild(row);
     }
 
@@ -3756,7 +4911,8 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
   const currentBlock = Number(await web3.eth.getBlockNumber());
 
-  const TX_SYNC_KEY = `bcc_transaction_sync_${chainId}_${CARBON_TOKEN_ADDRESS.toLowerCase()}_${buyerAddress.toLowerCase()}`;
+  const TX_SYNC_KEY =
+    `bcc_transaction_sync_v2_${chainId}_${CARBON_TOKEN_ADDRESS.toLowerCase()}_${buyerAddress.toLowerCase()}`;
 
   // ==========================================
   // Load saved state
@@ -3785,7 +4941,7 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
     savedState &&
     Number(savedState.chainId) === chainId &&
     savedState.contractAddress.toLowerCase() ===
-      CARBON_TOKEN_ADDRESS.toLowerCase() &&
+    CARBON_TOKEN_ADDRESS.toLowerCase() &&
     savedState.buyerAddress.toLowerCase() === buyerAddress.toLowerCase();
 
   if (!validState) {
@@ -3858,10 +5014,44 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       toBlock,
     });
 
+    // ======================================
+    // Transfers sent by buyer
+    // ======================================
+
+    const transferSentEvents =
+      await carbonToken.getPastEvents("Transfer", {
+        filter: {
+          from: buyerAddress,
+        },
+
+        fromBlock,
+        toBlock,
+      });
+
+
+    // ======================================
+    // Transfers received by buyer
+    // ======================================
+
+    const transferReceivedEvents =
+      await carbonToken.getPastEvents("Transfer", {
+        filter: {
+          to: buyerAddress,
+        },
+
+        fromBlock,
+        toBlock,
+      });
+
     const newEvents = [];
 
     const blockTimestamps = new Map();
-    const allEvents = [...purchaseEvents, ...retiredEvents];
+    const allEvents = [
+      ...purchaseEvents,
+      ...retiredEvents,
+      ...transferSentEvents,
+      ...transferReceivedEvents
+    ];
 
     for (const event of allEvents) {
       const blockNumber = Number(event.blockNumber);
@@ -3922,6 +5112,109 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
         status: "Completed",
         timestamp: blockTimestamps.get(Number(event.blockNumber)),
+      });
+    }
+
+    // ======================================
+    // Transfer Sent
+    // ======================================
+
+    for (const event of transferSentEvents) {
+
+      newEvents.push({
+        id:
+          `${event.transactionHash}-${event.logIndex}`,
+
+        type:
+          "Transfer Sent",
+
+        projectID:
+          event.returnValues.projectID,
+
+        amount:
+          event.returnValues.value,
+
+        totalPrice:
+          "0",
+
+        from:
+          event.returnValues.from,
+
+        to:
+          event.returnValues.to,
+
+        blockNumber:
+          Number(event.blockNumber),
+
+        transactionHash:
+          event.transactionHash,
+
+        logIndex:
+          Number(event.logIndex),
+
+        status:
+          "Completed",
+
+        timestamp:
+          blockTimestamps.get(
+            Number(event.blockNumber)
+          ),
+      });
+    }
+
+
+    // ======================================
+    // Transfer Received
+    // ======================================
+
+    for (const event of transferReceivedEvents) {
+
+      // Don't add the same transfer twice
+      if (
+        event.returnValues.from.toLowerCase() ===
+        buyerAddress.toLowerCase()
+      ) {
+        continue;
+      }
+
+      newEvents.push({
+        id:
+          `${event.transactionHash}-${event.logIndex}`,
+
+        type:
+          "Transfer Received",
+
+        projectID:
+          event.returnValues.projectID,
+
+        amount:
+          event.returnValues.value,
+
+        totalPrice:
+          "0",
+
+        from:
+          event.returnValues.from,
+
+        to:
+          event.returnValues.to,
+
+        blockNumber:
+          Number(event.blockNumber),
+
+        transactionHash:
+          event.transactionHash,
+
+        logIndex:
+          Number(event.logIndex),
+
+        status:
+          "Completed",
+
+        timestamp:
+          blockTimestamps.get(
+            Number(event.blockNumber)
+          ),
       });
     }
 
