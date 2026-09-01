@@ -65,6 +65,11 @@ db.serialize(() => {
         )
     `);
 
+    // 🔴 新增字段：ecosystemType, pricePerToken, minted
+    db.run(`ALTER TABLE projects ADD COLUMN ecosystemType TEXT`, () => {});
+    db.run(`ALTER TABLE projects ADD COLUMN pricePerToken TEXT`, () => {});
+    db.run(`ALTER TABLE projects ADD COLUMN minted INTEGER DEFAULT 0`, () => {});
+
     // 4. 创建交易记录表 (用于追踪 Quota 卖给谁了)
     db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
@@ -191,15 +196,13 @@ app.post('/delete-user', (req, res) => {
 
 // 1. Developer 提交新项目
 app.post('/submit-project', (req, res) => {
-    // 🔴 加上 username
-    const { username, projName, devAddress, location, capacity, deadline } = req.body; 
+    const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken } = req.body; 
     
     const carbonVolume = capacity * 5; 
     
-    // 🔴 SQL 语句也要加上 username
-    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`;
+    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
     
-    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume], function(err) {
+    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken], function(err) {
         if (err) return res.status(500).json({ success: false, message: "数据库写入失败" });
         console.log(`🌱 新项目提交: ${projName} - 提交者: ${username}`);
         res.json({ success: true });
@@ -232,6 +235,18 @@ app.post('/reject-project', (req, res) => {
     db.run(sql, [id], function(err) {
         if (err) return res.json({ success: false });
         console.log(`🚫 Admin 已驳回项目 ID: ${id}`);
+        res.json({ success: true });
+    });
+});
+
+
+// 5. Dev 完成链上 mint 后，标记数据库状态
+app.post('/mark-project-minted', (req, res) => {
+    const { id } = req.body;
+    const sql = `UPDATE projects SET minted = 1 WHERE id = ?`;
+    db.run(sql, [id], function(err) {
+        if (err) return res.json({ success: false });
+        console.log(`⛏️ 项目 ID ${id} 已标记为 Minted`);
         res.json({ success: true });
     });
 });
