@@ -1337,6 +1337,8 @@ document.getElementById("submitBtn").onclick = async function () {
   let location = document.getElementById("location").value;
   let capacity = document.getElementById("capacity").value;
   let deadline = document.getElementById("deadline").value;
+  let ecosystemType = document.getElementById("ecosystemType").value;
+  let pricePerToken = document.getElementById("pricePerToken").value;
 
   // 🔴 核心修复：直接抓取当前登录的 Username
   let currentUser = localStorage.getItem("loggedInUser");
@@ -1351,12 +1353,14 @@ document.getElementById("submitBtn").onclick = async function () {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: currentUser, // 🔴 把真实用户名发过去
+        username: currentUser,
         projName: projName,
-        devAddress: document.getElementById("devAddress").value, // 钱包地址照旧
+        devAddress: document.getElementById("devAddress").value,
         location: location,
         capacity: capacity,
         deadline: deadline,
+        ecosystemType: ecosystemType,
+        pricePerToken: pricePerToken,
       }),
     });
 
@@ -1432,7 +1436,7 @@ window.loadPendingProjects = async function () {
                 <td><span style="background: #fff0d4; color: #ff9800; padding: 5px 10px; border-radius: 8px; font-size: 13px;">Pending</span></td>
                 <td>
                     <!-- 🔴 重点加上 type="button" -->
-                    <button type="button" class="primary-btn" onclick="approveAndMint(${proj.id}, '${proj.devAddress}', ${proj.carbonVolume})" 
+                    <button type="button" class="primary-btn" onclick="approveProject(${proj.id})"" 
                             style="padding: 6px 12px; font-size: 13px; background-color: #28a745; margin-right: 5px;">
                         Approve
                     </button>
@@ -1453,21 +1457,8 @@ window.loadPendingProjects = async function () {
 // ==========================================
 // 审批与驳回 (绝对防闪回)
 // ==========================================
-window.approveAndMint = async function (projectId, devAddress, volume) {
+window.approveProject = async function (projectId) {
   try {
-    if (typeof web3 === "undefined" || !currentAccount) {
-      // alert("🚨 请先点击左下角连接 MetaMask 钱包！");
-      return;
-    }
-
-    const contract = new web3.eth.Contract(contractABI, contractAddress);
-    let amountInWei = web3.utils.toWei(volume.toString(), "ether");
-
-    // alert("⚠️ 准备唤醒 MetaMask 支付 Gas 费...");
-    await contract.methods
-      .mint(devAddress, amountInWei)
-      .send({ from: currentAccount });
-
     let response = await fetch(`${SERVER_URL}/approve-project`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1476,12 +1467,10 @@ window.approveAndMint = async function (projectId, devAddress, volume) {
 
     let result = await response.json();
     if (result.success) {
-      // alert("🎉 发币成功！状态已更新。");
-      loadPendingProjects(); // 🔴 原地局部刷新，保留当前页面
+      loadPendingProjects(); // 原地局部刷新
     }
   } catch (error) {
     console.error(error);
-    // alert("❌ 发币失败！请检查控制台报错。");
   }
 };
 
@@ -2205,8 +2194,11 @@ window.loadMyProjects = async function () {
       result.data.forEach((p) => {
         // 根据状态生成不同颜色的炫酷 UI 标签
         let statusHtml = "";
-        if (p.status === "approved") {
-          statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>`;
+        if (p.status === "approved" && !p.minted) {
+          statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>
+                        <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" onclick="event.stopPropagation(); mintProjectToken(${p.id})">⛏️ Mint</button>`;
+        } else if (p.status === "approved" && p.minted) {
+          statusHtml = `<span style="background: #e9edf7; color: #4318ff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">🌊 Minted</span>`;
         } else if (p.status === "rejected") {
           statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
         } else {
@@ -2242,6 +2234,180 @@ window.loadMyProjects = async function () {
     }
   } catch (error) {
     console.error("加载我的项目失败:", error);
+  }
+};
+
+// ==========================================
+// Developer Dashboard：核心数据加载
+// ==========================================
+let devPipelineChartInstance = null;
+
+window.loadDevDashboard = async function () {
+  const currentUser = localStorage.getItem("loggedInUser");
+  if (!currentUser) return;
+
+  // ---------- 1. 先从数据库拉取项目列表（不需要钱包） ----------
+  let myProjects = [];
+  try {
+    let res = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
+    let result = await res.json();
+    if (result.success) myProjects = result.data;
+  } catch (error) {
+    console.error("加载 My Projects 失败:", error);
+  }
+
+  const totalProjects = myProjects.length;
+  const pendingCount = myProjects.filter((p) => p.status === "pending").length;
+  const approvedCount = myProjects.filter((p) => p.status === "approved").length;
+  const rejectedCount = myProjects.filter((p) => p.status === "rejected").length;
+  const awaitingMint = myProjects.filter((p) => p.status === "approved" && !p.minted);
+
+  document.getElementById("dev-total-projects").innerText = totalProjects;
+  document.getElementById("dev-pipe-pending").innerText = pendingCount;
+  document.getElementById("dev-pipe-approved").innerText = approvedCount;
+  document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
+
+  // 待铸币提醒横幅
+  const banner = document.getElementById("devActionBanner");
+  const bannerText = document.getElementById("devActionText");
+  const bannerCta = document.getElementById("devActionCta");
+  if (awaitingMint.length > 0) {
+    banner.classList.remove("no-action");
+    bannerText.innerHTML = `⚠️ 您有 <strong>${awaitingMint.length}</strong> 个项目已通过 Admin 审批！点击这里支付 Gas 费并 Mint 您的 BCC 代币。`;
+    bannerCta.innerText = "去 Mint →";
+  } else {
+    banner.classList.add("no-action");
+    bannerText.innerText = "✅ 目前没有待处理的 Mint 任务，所有已批准项目都已铸币。";
+    bannerCta.innerText = "";
+  }
+
+  // 项目管道甜甜圈图
+  const ctxPipe = document.getElementById("devPipelineChart");
+  if (ctxPipe) {
+    if (devPipelineChartInstance) devPipelineChartInstance.destroy();
+    devPipelineChartInstance = new Chart(ctxPipe, {
+      type: "doughnut",
+      data: {
+        labels: ["Pending", "Approved", "Rejected"],
+        datasets: [
+          {
+            data: [pendingCount, approvedCount, rejectedCount],
+            backgroundColor: ["#ff9800", "#05cd99", "#ee5d50"],
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "70%",
+        plugins: { legend: { display: false } },
+      },
+    });
+  }
+
+  // Total BCC Minted：用数据库里已 mint 项目的碳汇总量（和 Admin Dashboard 逻辑一致）
+  const totalMintedFromDb = myProjects
+    .filter((p) => p.minted)
+    .reduce((sum, p) => sum + (p.carbonVolume || 0), 0);
+  document.getElementById("dev-total-minted").innerText = totalMintedFromDb.toLocaleString();
+
+  // ---------- 2. 需要连接钱包才能拉取的真实链上数据 ----------
+  const salesFeedList = document.getElementById("devSalesFeedList");
+
+  try {
+    const devAddress = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
+
+    const registry = contracts.projectRegistry;
+    const carbonToken = contracts.carbonToken;
+
+    const allChainProjects = await registry.methods.getAllProjects().call();
+
+    // 只看属于当前钱包地址的项目
+    const myChainProjects = allChainProjects.filter(
+      (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
+    );
+
+    const projectNameMap = {};
+    myChainProjects.forEach((p) => {
+      projectNameMap[p.projectID.toString()] = p.projectName;
+    });
+
+    // 计算目前手上还持有（尚未卖出）的可用额度
+    let availableQuota = 0n;
+    for (const p of myChainProjects) {
+      try {
+        const bal = await carbonToken.methods.balanceOf(devAddress, p.projectID).call();
+        availableQuota += BigInt(bal);
+      } catch (e) {
+        console.warn("读取项目余额失败:", p.projectID, e);
+      }
+    }
+    document.getElementById("dev-available-quota").innerText = availableQuota.toString();
+
+    // 已卖出数量 + 收入：读取 TokensPurchased 事件（developer 是 indexed 字段，可直接过滤）
+    let totalSold = 0n;
+    let totalRevenueWei = 0n;
+    let salesEvents = [];
+
+    try {
+      const purchaseEvents = await carbonToken.getPastEvents("TokensPurchased", {
+        filter: { developer: devAddress },
+        fromBlock: CARBON_TOKEN_DEPLOYMENT_BLOCK,
+        toBlock: "latest",
+      });
+
+      for (const ev of purchaseEvents) {
+        totalSold += BigInt(ev.returnValues.amount);
+        totalRevenueWei += BigInt(ev.returnValues.totalPrice);
+      }
+
+      salesEvents = purchaseEvents;
+    } catch (e) {
+      console.warn("读取销售事件失败:", e);
+    }
+
+    document.getElementById("dev-total-sold").innerText = totalSold.toString();
+    document.getElementById("dev-revenue").innerText =
+      Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
+
+    // 近期销售动态：按区块号倒序，取最新 5 条
+    salesEvents.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
+    const recentSales = salesEvents.slice(0, 5);
+
+    if (recentSales.length === 0) {
+      salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">暂时还没有任何销售记录。</div>`;
+    } else {
+      salesFeedList.innerHTML = "";
+      for (const ev of recentSales) {
+        let dateDisplay = "";
+        try {
+          const block = await web3.eth.getBlock(ev.blockNumber);
+          dateDisplay = new Date(Number(block.timestamp) * 1000).toLocaleDateString();
+        } catch (e) {
+          dateDisplay = "N/A";
+        }
+        const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
+        const projName = projectNameMap[ev.returnValues.projectID.toString()] || `Project #${ev.returnValues.projectID}`;
+
+        salesFeedList.innerHTML += `
+          <div class="sales-feed-item">
+            <div>
+              <div style="font-weight: 700; color: #2b3674;">${buyerShort}</div>
+              <div style="color: #a3aed1; font-size: 11px; margin-top: 2px;">${projName} · ${dateDisplay}</div>
+            </div>
+            <div style="font-weight: 800; color: #05cd99;">+${ev.returnValues.amount} BCC</div>
+          </div>
+        `;
+      }
+    }
+  } catch (error) {
+    console.warn("链上数据加载失败（可能未连接钱包）:", error);
+    salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 请先连接 MetaMask 查看真实的额度与销售数据。</div>`;
+    document.getElementById("dev-available-quota").innerText = "-";
+    document.getElementById("dev-total-sold").innerText = "-";
+    document.getElementById("dev-revenue").innerText = "-";
   }
 };
 
@@ -2299,6 +2465,65 @@ window.openProjectModal = async function (projectId) {
 
 window.closeProjectModal = function () {
   document.getElementById("projectDetailModal").classList.remove("show");
+};
+
+
+// ==========================================
+// Developer：点击 Mint 按钮，自己付 gas 上链铸币
+// ==========================================
+window.mintProjectToken = async function (projectId) {
+  try {
+    // 1. 拿项目最新详情
+    let res = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
+    let result = await res.json();
+    if (!result.success) throw new Error("找不到项目详情");
+    const p = result.project;
+
+    if (p.status !== "approved") {
+      alert("⚠️ 项目还没被 Admin 批准，不能 mint。");
+      return;
+    }
+    if (p.minted) {
+      alert("✅ 这个项目已经 mint 过了。");
+      return;
+    }
+
+    // 2. 连接 dev 自己的钱包
+    const devAddress = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
+
+    const priceInWei = web3.utils.toWei(String(p.pricePerToken || "0"), "ether");
+
+    // 3. 先在 ProjectRegistry 上注册项目
+    await contracts.projectRegistry.methods
+      .createProject(
+        p.id,
+        p.projName,
+        p.location,
+        p.ecosystemType || "Unspecified",
+        priceInWei,
+        p.carbonVolume
+      )
+      .send({ from: devAddress });
+
+    // 4. 再调用 CarbonToken 的 mintTokens 真正铸币
+    await contracts.carbonToken.methods
+      .mintTokens(p.id)
+      .send({ from: devAddress });
+
+    // 5. 通知后端把 SQLite 状态也标记为 minted
+    await fetch(`${SERVER_URL}/mark-project-minted`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: p.id }),
+    });
+
+    alert("✅ Mint 成功！");
+    loadMyProjects(); // 刷新表格
+  } catch (error) {
+    console.error("Mint failed:", error);
+    alert("❌ Mint 失败：" + (error.message || error));
+  }
 };
 
 function isBuyerRole(role) {
