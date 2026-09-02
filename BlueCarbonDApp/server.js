@@ -25,28 +25,17 @@ const db = new sqlite3.Database('./database.db', (err) => {
 db.serialize(() => {
     // 1. 创建用户表
     db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            role TEXT,
-            status TEXT DEFAULT 'pending',
-            email TEXT UNIQUE,
-            phone TEXT UNIQUE,
-            createdAt TEXT
-        )
-    `);
-
-    // 🔴 2. 注入超级管理员账号 (如果不存在的话)
-    // 用户名: admin | 密码: password | 状态: approved 自动通过
-    const adminSql = `
-        INSERT OR IGNORE INTO users (username, password, role, status, createdAt) 
-        VALUES ('admin', 'password', 'admin', 'approved', '2026-08-23 12:00:00')
-    `;
-    db.run(adminSql, (err) => {
-        if (err) console.error("Admin 注入失败:", err);
-        else console.log("👑 超级管理员 (admin / password) 状态正常！");
-    });
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        walletAddress TEXT UNIQUE NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        role TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT UNIQUE NOT NULL,
+        createdAt TEXT
+    )
+`);
 
     // 3. 创建项目表
     // 创建项目表 (🔴 新增 username 字段)
@@ -65,6 +54,11 @@ db.serialize(() => {
         )
     `);
 
+    // 🔴 新增字段：ecosystemType, pricePerToken, minted
+    db.run(`ALTER TABLE projects ADD COLUMN ecosystemType TEXT`, () => { });
+    db.run(`ALTER TABLE projects ADD COLUMN pricePerToken TEXT`, () => { });
+    db.run(`ALTER TABLE projects ADD COLUMN minted INTEGER DEFAULT 0`, () => { });
+
     // 4. 创建交易记录表 (用于追踪 Quota 卖给谁了)
     db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
@@ -82,55 +76,202 @@ db.serialize(() => {
 // ==========================================
 // User API: 注册新用户 (强制注入精准时间戳)
 // ==========================================
-app.post('/register', (req, res) => {
-    const { username, password, role } = req.body;
+// ==========================================
+// User API: Register
+// MetaMask wallet is the account identity
+// ==========================================
 
-    if (!username || !password || !role) {
-        return res.json({ success: false, message: "请填写完整信息" });
+app.post('/register', (req, res) => {
+
+    const {
+        walletAddress,
+        username,
+        email,
+        phone,
+        role
+    } = req.body;
+
+
+    // ----------------------------------
+    // Validate
+    // ----------------------------------
+
+    if (
+        !walletAddress ||
+        !username ||
+        !email ||
+        !phone ||
+        !role
+    ) {
+
+        return res.json({
+            success: false,
+            message: "Please fill in all registration information."
+        });
+
     }
 
-    // 🔴 核心修复：用 Node.js 抓取当下真实的服务器时间
-    const now = new Date();
-    // 将时间格式化为 YYYY-MM-DD HH:MM:SS 的标准格式
-    const createdAt = now.toISOString().replace('T', ' ').substring(0, 19);
 
-    // 显式地把 createdAt 塞进 INSERT 语句里！
-    const sql = `INSERT INTO users (username, password, role, status, createdAt) 
-    VALUES (?, ?, ?, 'pending', ?)`;
-    
-    db.run(sql, [username, password, role, createdAt], function(err) {
-        if (err) {
-            if (err.message.includes('UNIQUE')) {
-                return res.json({ success: false, message: "该用户名已被注册" });
+    // ----------------------------------
+    // Validate role
+    // ----------------------------------
+
+    if (
+        role !== "buyer" &&
+        role !== "developer"
+    ) {
+
+        return res.json({
+            success: false,
+            message: "Invalid account type."
+        });
+
+    }
+
+
+    // ----------------------------------
+    // Validate wallet
+    // ----------------------------------
+
+    if (
+        !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)
+    ) {
+
+        return res.json({
+            success: false,
+            message: "Invalid MetaMask wallet address."
+        });
+
+    }
+
+
+    // ----------------------------------
+    // Timestamp
+    // ----------------------------------
+
+    const createdAt =
+        new Date()
+            .toISOString()
+            .replace('T', ' ')
+            .substring(0, 19);
+
+
+    // ----------------------------------
+    // Check whether wallet already exists
+    // ----------------------------------
+
+    db.get(
+        `SELECT * FROM users WHERE walletAddress = ?`,
+        [walletAddress],
+        (err, existingWallet) => {
+
+            if (err) {
+
+                console.error(err);
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Database error."
+                });
+
             }
-            return res.status(500).json({ success: false, message: "数据库写入失败" });
-        }
-        console.log(`👤 新用户注册: ${username} (${role}) - 注册时间: ${createdAt}`);
-        res.json({ success: true });
-    });
-});
 
-// 接口 2：处理用户登录与状态拦截
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    
-    const sql = `SELECT * FROM users WHERE username = ? AND password = ?`;
-    db.get(sql, [username, password], (err, row) => {
-        if (err || !row) {
-            return res.json({ success: false, message: "❌ 账号或密码错误！" });
-        }
 
-        // 核心逻辑：根据 status 决定能否放行
-        if (row.status === 'pending') {
-            return res.json({ success: false, message: "⏳ 您的账号正在等待 Admin 审核，请稍后再试。" });
-        } else if (row.status === 'rejected') {
-            return res.json({ success: false, message: "🚫 您的账号注册已被 Admin 拒绝。" });
-        } else if (row.status === 'approved') {
-            // 审核通过，放行并返回角色信息
-            console.log(`✅ 用户登录成功: ${username} (${row.role})`);
-            return res.json({ success: true, role: row.role, username: row.username });
+            if (existingWallet) {
+
+                return res.json({
+                    success: false,
+                    message:
+                        "This MetaMask wallet is already registered."
+                });
+
+            }
+
+
+            // ----------------------------------
+            // Insert user
+            // ----------------------------------
+
+            const sql = `
+                INSERT INTO users
+                (
+                    walletAddress,
+                    username,
+                    role,
+                    status,
+                    email,
+                    phone,
+                    createdAt
+                )
+                VALUES (?, ?, ?, 'pending', ?, ?, ?)
+            `;
+
+
+            db.run(
+                sql,
+                [
+                    walletAddress,
+                    username,
+                    role,
+                    email,
+                    phone,
+                    createdAt
+                ],
+                function (err) {
+
+                    if (err) {
+
+                        console.error(
+                            "Registration database error:",
+                            err
+                        );
+
+
+                        if (
+                            err.message.includes("UNIQUE")
+                        ) {
+
+                            return res.json({
+                                success: false,
+                                message:
+                                    "Username, email, or phone number is already registered."
+                            });
+
+                        }
+
+
+                        return res.status(500).json({
+                            success: false,
+                            message:
+                                "Failed to save registration."
+                        });
+
+                    }
+
+
+                    console.log(
+                        `👤 New registration: ${username}`
+                    );
+
+                    console.log(
+                        `🦊 Wallet: ${walletAddress}`
+                    );
+
+                    console.log(
+                        `Role: ${role}`
+                    );
+
+
+                    return res.json({
+                        success: true
+                    });
+
+                }
+            );
+
         }
-    });
+    );
+
 });
 
 // ================= Admin 专属 API =================
@@ -149,7 +290,7 @@ app.get('/pending-users', (req, res) => {
 app.post('/approve-user', (req, res) => {
     const { userId } = req.body;
     const sql = `UPDATE users SET status = 'approved' WHERE id = ?`;
-    db.run(sql, [userId], function(err) {
+    db.run(sql, [userId], function (err) {
         if (err) return res.json({ success: false, message: "更新状态失败" });
         console.log(`✅ Admin 已批准用户 ID: ${userId}`);
         res.json({ success: true });
@@ -160,7 +301,7 @@ app.post('/approve-user', (req, res) => {
 app.post('/reject-user', (req, res) => {
     const { userId } = req.body;
     const sql = `UPDATE users SET status = 'rejected' WHERE id = ?`;
-    db.run(sql, [userId], function(err) {
+    db.run(sql, [userId], function (err) {
         if (err) return res.json({ success: false, message: "更新状态失败" });
         console.log(`🚫 Admin 已拒绝用户 ID: ${userId}`);
         res.json({ success: true, message: "✅ 注册成功！已进入待审核队列，请等待 Admin 审批。" });
@@ -180,7 +321,7 @@ app.get('/all-users', (req, res) => {
 app.post('/delete-user', (req, res) => {
     const { userId } = req.body;
     const sql = `DELETE FROM users WHERE id = ?`;
-    db.run(sql, [userId], function(err) {
+    db.run(sql, [userId], function (err) {
         if (err) return res.json({ success: false, message: "注销失败" });
         console.log(`🗑️ Admin 已彻底注销并释放用户 ID: ${userId}`);
         res.json({ success: true });
@@ -191,15 +332,13 @@ app.post('/delete-user', (req, res) => {
 
 // 1. Developer 提交新项目
 app.post('/submit-project', (req, res) => {
-    // 🔴 加上 username
-    const { username, projName, devAddress, location, capacity, deadline } = req.body; 
-    
-    const carbonVolume = capacity * 5; 
-    
-    // 🔴 SQL 语句也要加上 username
-    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`;
-    
-    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume], function(err) {
+    const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken } = req.body;
+
+    const carbonVolume = capacity * 5;
+
+    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
+
+    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken], function (err) {
         if (err) return res.status(500).json({ success: false, message: "数据库写入失败" });
         console.log(`🌱 新项目提交: ${projName} - 提交者: ${username}`);
         res.json({ success: true });
@@ -219,7 +358,7 @@ app.get('/pending-projects', (req, res) => {
 app.post('/approve-project', (req, res) => {
     const { id } = req.body;
     const sql = `UPDATE projects SET status = 'approved' WHERE id = ?`;
-    db.run(sql, [id], function(err) {
+    db.run(sql, [id], function (err) {
         if (err) return res.json({ success: false });
         res.json({ success: true });
     });
@@ -229,9 +368,21 @@ app.post('/approve-project', (req, res) => {
 app.post('/reject-project', (req, res) => {
     const { id } = req.body;
     const sql = `UPDATE projects SET status = 'rejected' WHERE id = ?`;
-    db.run(sql, [id], function(err) {
+    db.run(sql, [id], function (err) {
         if (err) return res.json({ success: false });
         console.log(`🚫 Admin 已驳回项目 ID: ${id}`);
+        res.json({ success: true });
+    });
+});
+
+
+// 5. Dev 完成链上 mint 后，标记数据库状态
+app.post('/mark-project-minted', (req, res) => {
+    const { id } = req.body;
+    const sql = `UPDATE projects SET minted = 1 WHERE id = ?`;
+    db.run(sql, [id], function (err) {
+        if (err) return res.json({ success: false });
+        console.log(`⛏️ 项目 ID ${id} 已标记为 Minted`);
         res.json({ success: true });
     });
 });
@@ -270,7 +421,7 @@ app.get('/admin-stats', (req, res) => {
         getStat(`SELECT COUNT(*) FROM users WHERE role = 'buyer' AND status = 'approved'`)
     ]).then(results => {
         const [totalMinted, pendingProj, pendingUsers, rejectedUsers, rejectedProj, devs, buyers] = results;
-        
+
         res.json({
             success: true,
             totalMinted: totalMinted || 0, // 如果还没发过币，就是 0
@@ -289,67 +440,149 @@ app.get('/admin-stats', (req, res) => {
 // ==========================================
 // User API: 获取当前登录用户的真实 Profile
 // ==========================================
+// ==========================================
+// Get current user profile
+// ==========================================
+
 app.get('/user-profile', (req, res) => {
-    const { username } = req.query; 
-    if (!username) return res.json({ success: false });
 
-    // 🔴 核心修复：把 email 和 phone 也一起抓取出来！
-    const sql = `SELECT id, username, role, status, email, phone, createdAt FROM users WHERE username = ?`;
-    db.get(sql, [username], (err, row) => {
-        if (err || !row) return res.json({ success: false, message: "找不到用户" });
-        res.json({ success: true, data: row });
-    });
-});
+    const {
+        walletAddress
+    } = req.query;
 
-// ==========================================
-// User API: 更新个人资料 (Email & Phone)
-// ==========================================
-app.post('/update-profile', (req, res) => {
-    const { username, email, phone } = req.body;
 
-    if (!username) return res.json({ success: false, message: "未提供用户名" });
+    if (!walletAddress) {
 
-    // 执行 UPDATE 语句，把新资料写进当前用户的行里
-    const sql = `UPDATE users SET email = ?, phone = ? WHERE username = ?`;
-    
-    db.run(sql, [email, phone, username], function(err) {
-        if (err) {
-            // 如果触发了 UNIQUE 约束，说明别人已经用了这个邮箱或电话
-            if (err.message.includes('UNIQUE')) {
-                return res.json({ success: false, message: "该 Email 或 Contact Number 已被其他用户绑定！" });
-            }
-            return res.json({ success: false, message: "数据库更新失败" });
-        }
-        res.json({ success: true });
-    });
-});
+        return res.json({
+            success: false,
+            message: "Wallet address is required."
+        });
 
-// ==========================================
-// User API: 独立修改密码 (无需 Admin 审批)
-// ==========================================
-app.post('/update-password', (req, res) => {
-    const { username, oldPassword, newPassword } = req.body;
-
-    if (!username || !oldPassword || !newPassword) {
-        return res.json({ success: false, message: "请填写完整信息" });
     }
 
-    // 1. 先去数据库核对“当前密码”是否正确
-    const checkSql = `SELECT * FROM users WHERE username = ? AND password = ?`;
-    db.get(checkSql, [username, oldPassword], (err, row) => {
-        if (err || !row) {
-            return res.json({ success: false, message: "❌ 当前密码错误，无法修改！" });
-        }
 
-        // 2. 如果当前密码正确，直接用新密码覆盖它
-        const updateSql = `UPDATE users SET password = ? WHERE username = ?`;
-        db.run(updateSql, [newPassword, username], function(updateErr) {
-            if (updateErr) return res.json({ success: false, message: "密码更新失败" });
-            
-            console.log(`🔑 用户 ${username} 成功修改了密码`);
-            res.json({ success: true });
+    const sql = `
+        SELECT
+            id,
+            walletAddress,
+            username,
+            role,
+            status,
+            email,
+            phone,
+            createdAt
+        FROM users
+        WHERE walletAddress = ?
+    `;
+
+
+    db.get(
+        sql,
+        [walletAddress],
+        (err, row) => {
+
+            if (err) {
+
+                console.error(err);
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Database error."
+                });
+
+            }
+
+
+            if (!row) {
+
+                return res.json({
+                    success: false,
+                    message: "User profile not found."
+                });
+
+            }
+
+
+            return res.json({
+                success: true,
+                data: row
+            });
+
+        }
+    );
+
+});
+
+app.get('/user-profile', (req, res) => {
+
+    const { walletAddress } = req.query;
+
+    if (!walletAddress) {
+        return res.json({
+            success: false,
+            message: "Wallet address is required."
         });
-    });
+    }
+
+    const sql = `
+        SELECT
+            id,
+            walletAddress,
+            username,
+            role,
+            status,
+            email,
+            phone,
+            createdAt
+        FROM users
+        WHERE LOWER(walletAddress) = LOWER(?)
+    `;
+
+    db.get(
+        sql,
+        [walletAddress],
+        (err, row) => {
+
+            if (err) {
+
+                console.error(
+                    "User profile database error:",
+                    err
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Database error."
+                });
+            }
+
+            if (!row) {
+
+                console.log(
+                    "Profile not found for wallet:",
+                    walletAddress
+                );
+
+                return res.json({
+                    success: false,
+                    message: "User profile not found."
+                });
+            }
+
+            console.log(
+                "Profile found:",
+                row.username,
+                row.walletAddress
+            );
+
+            return res.json({
+                success: true,
+                data: row
+            });
+
+        }
+    );
+
 });
 
 // ==========================================
@@ -361,7 +594,7 @@ app.get('/my-projects', (req, res) => {
 
     // 🔴 精准匹配真正的提交者！
     const sql = `SELECT * FROM projects WHERE username = ? ORDER BY id DESC`;
-    
+
     db.all(sql, [username], (err, rows) => {
         if (err) return res.status(500).json({ success: false });
         res.json({ success: true, data: rows });
@@ -382,7 +615,7 @@ app.get('/project-details', (req, res) => {
         // 2. 再去交易表里，把这个项目所有的被买记录翻出来
         db.all(`SELECT * FROM transactions WHERE projectId = ? ORDER BY id DESC`, [id], (err, txs) => {
             const transactions = txs || [];
-            
+
             // 3. 计算数学题：总共卖了多少？还剩多少？
             const totalSold = transactions.reduce((sum, tx) => sum + tx.amount, 0);
             const remainingQuota = project.carbonVolume - totalSold;

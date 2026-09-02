@@ -162,6 +162,69 @@
             font-weight: 600;
         }
 
+
+        /* Developer Dashboard 专属样式 */
+        .dash-grid-2 {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 20px;
+        }
+
+        .gradient-kpi-card {
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .gradient-kpi-title {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .gradient-kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .action-banner {
+            background: linear-gradient(90deg, #fff4e5, #fff9ec);
+            border: 1px solid #ffd591;
+            border-radius: 14px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .action-banner:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-banner.no-action {
+            background: #e6f9f0;
+            border-color: #b7ebd3;
+            cursor: default;
+        }
+
+        .sales-feed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f4f7fe;
+            font-size: 13px;
+        }
+
+        .sales-feed-item:last-child {
+            border-bottom: none;
+        }
+
         .chart-card {
             background: white;
             border-radius: 16px;
@@ -306,16 +369,12 @@
                 onclick="navTo('buyerPortfolioPage', 'My Portfolio')">💼 My Portfolio</div>
             <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="navTo('buyerOffsetPage', 'Offset & Claim')">
                 🔥 Offset & Claim</div>
+            <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="openBuyerTransfer()">
+                🔥 Transfer BCC</div>
             <div class="nav-item menu-buyer" id="nav-buyerTx" onclick="navTo('buyerTxPage', 'Transaction History')">📜
                 Tx History</div>
         </div>
 
-        <!-- 左下角 Wallet 按钮 -->
-        <div class="sidebar-bottom menu-shared" style="display: none; margin-top: auto; padding-top: 20px;">
-            <button id="connectWalletBtn" class="wallet-btn">
-                🦊 Connect MetaMask
-            </button>
-        </div>
     </aside>
 
     <!-- 右侧动态内容区 -->
@@ -345,35 +404,318 @@
         </header>
 
         <div class="content-area">
-            <!-- 画布 1: Login & Register -->
+            <!-- ==========================================
+     LOGIN / SIGN UP
+     ========================================== -->
+
             <div id="loginPage" class="page-layer active-page">
-                <div class="card" style="max-width: 400px; margin: 0 auto;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                        <button id="tab-login" onclick="toggleAuthMode('login')"
-                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #5640fa; color: white; border-radius: 8px; cursor: pointer;">Login</button>
-                        <button id="tab-register" onclick="toggleAuthMode('register')"
-                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #f4f7fe; color: #2b3674; border-radius: 8px; cursor: pointer;">Register</button>
+
+                <!-- ================= LOGIN ================= -->
+                <div id="form-login">
+
+                    <div class="card" style="max-width: 420px; margin: 0 auto;">
+
+                        <h2 class="card-title" style="text-align: center;">
+                            Welcome to Blue Carbon Credits
+                        </h2>
+
+                        <p style="
+                text-align: center;
+                color: #a3aed1;
+                font-size: 13px;
+                margin-bottom: 25px;
+            ">
+                            Login securely using your MetaMask wallet.
+                        </p>
+
+                        <button id="loginWalletBtn" class="primary-btn" style="
+                    width: 100%;
+                    background: #f6851b;
+                " onclick="connectAndLogin()">
+                            🦊 Login with MetaMask
+                        </button>
+
+                        <div id="loginWalletStatus" style="
+                    display: none;
+                    margin-top: 15px;
+                    padding: 12px;
+                    border-radius: 8px;
+                    background: #e6f9f0;
+                    color: #05cd99;
+                    text-align: center;
+                    font-size: 12px;
+                    word-break: break-all;
+                "></div>
+
+                        <button type="button" onclick="toggleAuthMode('register')" style="
+                    width: 100%;
+                    margin-top: 15px;
+                    padding: 10px;
+                    border: none;
+                    background: transparent;
+                    color: #5640fa;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                            Don't have an account? Register
+                        </button>
+
                     </div>
 
-                    <div id="form-login">
-                        <h2 class="card-title" style="text-align: center;">Welcome Back</h2>
-                        <input type="text" id="logUsername" placeholder="Username">
-                        <input type="password" id="logPassword" placeholder="Password">
-                        <button class="primary-btn" style="width: 100%;" onclick="handleLogin()">Login</button>
-                    </div>
-
-                    <div id="form-register" style="display: none;">
-                        <h2 class="card-title" style="text-align: center;">Create Account</h2>
-                        <select id="regRole">
-                            <option value="developer">Developer </option>
-                            <option value="buyer">Buyer </option>
-                        </select>
-                        <input type="text" id="regUsername" placeholder="New Username">
-                        <input type="password" id="regPassword" placeholder="New Password">
-                        <button class="primary-btn" style="width: 100%; background: #28a745;"
-                            onclick="handleRegister()">Submit for Admin Review</button>
-                    </div>
                 </div>
+
+
+                <!-- ================= REGISTER ================= -->
+
+                <div id="form-register" style="display: none;">
+
+                    <div class="card" style="max-width: 420px; margin: 0 auto;">
+
+                        <h2 class="card-title" style="text-align: center;">
+                            Create Account
+                        </h2>
+
+                        <p style="
+                text-align: center;
+                color: #a3aed1;
+                font-size: 13px;
+                margin-bottom: 20px;
+            ">
+                            Enter your information first, then connect MetaMask.
+                        </p>
+
+
+                        <!-- Username -->
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Username
+                            </label>
+
+                            <input type="text" id="regUsername" placeholder="Enter your username" style="width: 100%;">
+
+                        </div>
+
+
+                        <!-- Email -->
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Email
+                            </label>
+
+                            <input type="email" id="regEmail" placeholder="example@email.com" style="width: 100%;">
+
+                        </div>
+
+
+                        <!-- Phone -->
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Contact Number
+                            </label>
+
+                            <input type="text" id="regPhone" placeholder="Enter your contact number"
+                                style="width: 100%;">
+
+                        </div>
+
+
+                        <!-- Role -->
+
+                        <div style="margin-bottom: 20px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Account Type
+                            </label>
+
+                            <select id="regRole" style="width: 100%;">
+
+                                <option value="">
+                                    Select account type
+                                </option>
+
+                                <option value="developer">
+                                    Developer
+                                </option>
+
+                                <option value="buyer">
+                                    Buyer
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Wallet -->
+
+                        <div style="
+                    padding: 15px;
+                    background: #f8f9ff;
+                    border-radius: 10px;
+                    margin-bottom: 15px;
+                ">
+
+                            <div style="
+                    font-size: 12px;
+                    color: #64748b;
+                    margin-bottom: 8px;
+                ">
+                                Your MetaMask wallet will be your account identity.
+                            </div>
+
+                            <button id="registerWalletBtn" type="button" class="primary-btn" style="
+                        width: 100%;
+                        background: #f6851b;
+                    " onclick="connectRegisterWallet()">
+                                🦊 Connect MetaMask
+                            </button>
+
+                            <div id="registerWalletStatus" style="
+                        display: none;
+                        margin-top: 10px;
+                        padding: 10px;
+                        border-radius: 8px;
+                        background: #e6f9f0;
+                        color: #05cd99;
+                        font-size: 11px;
+                        word-break: break-all;
+                    "></div>
+
+                        </div>
+
+
+                        <!-- Submit -->
+
+                        <button id="registerSubmitBtn" type="button" class="primary-btn" style="
+                    width: 100%;
+                    background: #28a745;
+                " onclick="handleRegister()">
+                            Submit Registration
+                        </button>
+
+
+                        <!-- Back -->
+
+                        <button type="button" onclick="toggleAuthMode('login')" style="
+                    width: 100%;
+                    margin-top: 15px;
+                    padding: 10px;
+                    border: none;
+                    background: transparent;
+                    color: #5640fa;
+                    cursor: pointer;
+                ">
+                            ← Back to Login
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="form-register" style="display: none;">
+
+                <div class="card" style="max-width: 400px; margin: 0 auto;">
+
+                    <h2 class="card-title" style="text-align: center;">
+                        Create Account
+                    </h2>
+
+                    <p style="
+            text-align: center;
+            color: #a3aed1;
+            font-size: 13px;
+            margin-bottom: 20px;
+        ">
+                        Your MetaMask wallet will be your account identity.
+                    </p>
+
+
+                    <button id="registerWalletBtn" class="primary-btn" style="
+                width: 100%;
+                background: #f6851b;
+                margin-bottom: 15px;
+            " onclick="connectRegisterWallet()">
+                        🦊 Connect MetaMask
+                    </button>
+
+
+                    <div id="registerWalletStatus" style="
+                display: none;
+                margin-bottom: 20px;
+                padding: 12px;
+                border-radius: 8px;
+                background: #e6f9f0;
+                color: #05cd99;
+                text-align: center;
+                font-size: 12px;
+                word-break: break-all;
+            ">
+                    </div>
+
+
+                    <select id="regRole">
+
+                        <option value="developer">
+                            Developer
+                        </option>
+
+                        <option value="buyer">
+                            Buyer
+                        </option>
+
+                    </select>
+
+
+                    <button class="primary-btn" style="
+                width: 100%;
+                background: #28a745;
+            " onclick="handleRegister()">
+                        Submit for Admin Review
+                    </button>
+
+
+                    <button type="button" onclick="toggleAuthMode('login')" style="
+                width: 100%;
+                margin-top: 15px;
+                padding: 10px;
+                border: none;
+                background: transparent;
+                color: #5640fa;
+                cursor: pointer;
+            ">
+                        Back to Login
+                    </button>
+
+                </div>
+
             </div>
 
             <!-- Shared 画布 -->
@@ -437,10 +779,97 @@
 
             <!-- Developer 画布 -->
             <div id="devDashPage" class="page-layer">
-                <div class="card">
-                    <h2 class="card-title">Dev Dashboard</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 5px;">Developer Dashboard</h2>
+                        <p style="color: #a3aed1; font-size: 13px;">Your projects, tokens and sales at a glance</p>
+                    </div>
+                    <button
+                        style="background: white; border: 1px solid #e0e5f2; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: #2b3674; font-weight: 600; font-size: 13px;"
+                        onclick="loadDevDashboard()">
+                        🔄 Refresh Data
+                    </button>
+                </div>
+
+                <!-- KPI 卡片区 -->
+                <div class="dash-grid-4" style="margin-bottom: 20px;">
+                    <div class="gradient-kpi-card" style="background: linear-gradient(135deg, #c471f5, #fa71cd);">
+                        <div class="gradient-kpi-title">Total Projects</div>
+                        <div class="gradient-kpi-value" id="dev-total-projects">0</div>
+                    </div>
+                    <div class="gradient-kpi-card" style="background: linear-gradient(135deg, #12c2e9, #4318ff);">
+                        <div class="gradient-kpi-title">Total BCC Minted</div>
+                        <div class="gradient-kpi-value" id="dev-total-minted">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div>
+                                <div class="kpi-title">Available Quota (BCC)</div>
+                                <div class="kpi-value" id="dev-available-quota">0</div>
+                            </div>
+                            <div class="kpi-icon" style="background: #e6f9f0; color: #05cd99;">🌊</div>
+                        </div>
+                        <div class="kpi-footer"><span>Listed on Marketplace</span></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div>
+                                <div class="kpi-title">Total BCC Sold / Revenue</div>
+                                <div class="kpi-value" id="dev-total-sold">0</div>
+                            </div>
+                            <div class="kpi-icon" style="background: #fff0d4; color: #ff9800;">💰</div>
+                        </div>
+                        <div class="kpi-footer"><span>Revenue</span><span class="trend-up" id="dev-revenue">0 ETH</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 紧急待办警报 -->
+                <div id="devActionBanner" class="action-banner no-action"
+                    onclick="navTo('devHistoryPage', 'My Projects')">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 22px;">✅</span>
+                        <span style="font-weight: 600; color: #2b3674;" id="devActionText">Checking for approved
+                            projects awaiting mint...</span>
+                    </div>
+                    <span style="font-weight: 700; color: #4318ff;" id="devActionCta"></span>
+                </div>
+
+                <!-- 项目管道 + 近期销售 -->
+                <div class="dash-grid-2">
+                    <div class="chart-card">
+                        <div class="kpi-title" style="margin-bottom: 10px;">Project Pipeline</div>
+                        <div style="display: flex; align-items: center; gap: 25px;">
+                            <div style="width: 150px; height: 150px; position: relative;">
+                                <canvas id="devPipelineChart"></canvas>
+                            </div>
+                            <div style="font-size: 13px; color: #2b3674; line-height: 2.2;">
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#ff9800; border-radius:50%; margin-right:8px;"></span>Pending:
+                                    <strong id="dev-pipe-pending">0</strong>
+                                </div>
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#05cd99; border-radius:50%; margin-right:8px;"></span>Approved:
+                                    <strong id="dev-pipe-approved">0</strong>
+                                </div>
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#ee5d50; border-radius:50%; margin-right:8px;"></span>Rejected:
+                                    <strong id="dev-pipe-rejected">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="kpi-title" style="margin-bottom: 10px;">Recent Sales</div>
+                        <div id="devSalesFeedList">
+                            <div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">Connect
+                                your wallet to view sales.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div id="devSubmitPage" class="page-layer">
                 <div class="card" style="max-width: 700px;">
                     <h2 class="card-title">Submit New Project</h2>
@@ -467,6 +896,26 @@
                             Location</label>
                         <input type="text" id="location" placeholder="e.g., Coastal area of Johor / GPS Coordinates"
                             style="margin-bottom: 0;">
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Ecosystem
+                                Type</label>
+                            <select id="ecosystemType" style="margin-bottom: 0;">
+                                <option value="Mangrove">Mangrove</option>
+                                <option value="Seagrass">Seagrass</option>
+                                <option value="Salt Marsh">Salt Marsh</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Price
+                                per BCC (ETH)</label>
+                            <input type="number" id="pricePerToken" step="0.0001" placeholder="e.g., 0.01"
+                                style="margin-bottom: 0;">
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 20px; margin-bottom: 20px;">
@@ -929,10 +1378,32 @@
                                 Total BCC Holdings
                             </div>
 
-                            <div id="buyerTotalBalance" style="
+                            <div id="totalBccHolding" style="
                         font-size: 30px;
                         font-weight: 800;
                         color: #4318ff;
+                        margin-top: 5px;
+                    ">
+                                0
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Total Retired BCC
+                            </div>
+
+                            <div id="totalBccRetired" style="
+                        font-size: 30px;
+                        font-weight: 800;
+                        color: #ee5d50;
                         margin-top: 5px;
                     ">
                                 0
@@ -998,6 +1469,46 @@
                         </table>
 
                     </div>
+
+                </div>
+
+            </div>
+
+            <div id="buyerTransferPage" class="page-layer">
+
+                <div class="card">
+
+                    <h2>Transfer BCC</h2>
+
+                    <p>
+                        Transfer your BCC to another registered buyer.
+                    </p>
+
+                    <label>
+                        Recipient Wallet Address
+                    </label>
+
+                    <input type="text" id="transferRecipient" placeholder="0x...">
+
+                    <label>
+                        Project
+                    </label>
+
+                    <select id="transferProjectSelect">
+                        <option value="">
+                            Select a project
+                        </option>
+                    </select>
+
+                    <label>
+                        Amount
+                    </label>
+
+                    <input type="number" id="transferAmount" min="1" step="1" placeholder="Amount of BCC">
+
+                    <button class="primary-btn" onclick="transferBuyerCredits()">
+                        Transfer BCC
+                    </button>
 
                 </div>
 
@@ -1194,6 +1705,12 @@
                 if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
             }
 
+
+            // 👇 Developer Dashboard 数据拉取触发器
+            if (targetPageId === 'devDashPage') {
+                if (typeof loadDevDashboard === 'function') loadDevDashboard();
+            }
+
             // 👇 补上 User Management 的触发器！进来就默认激活 Pending Tab
             if (targetPageId === 'adminUsersPage') {
                 if (typeof switchUserTab === 'function') {
@@ -1268,31 +1785,48 @@
 
         // === 2. 角色权限切换逻辑 (终极纯净版) ===
         function switchRole(role) {
-            // 1. 隐藏所有侧边栏菜单、头像、钱包
-            document.querySelectorAll('.nav-item, .header-actions, .sidebar-bottom').forEach(el => el.style.display = 'none');
 
-            // ❌ 已经彻底删除了所有对 .sim-btn 的 classList 操作！
+            document.querySelectorAll(
+                '.nav-item, .header-actions, .sidebar-bottom'
+            ).forEach(el => {
+                el.style.display = 'none';
+            });
 
             if (role === 'guest') {
-                document.querySelectorAll('.menu-guest').forEach(el => el.style.display = 'flex');
-                // 游客模式默认显示登录页
+
+                document.querySelectorAll('.menu-guest')
+                    .forEach(el => el.style.display = 'flex');
+
                 navTo('loginPage', 'Welcome Back');
+
             }
             else if (role === 'developer') {
-                document.querySelectorAll('.menu-shared, .menu-dev').forEach(el => el.style.display = 'flex');
-                // ❌ 删除了这里的强制 navTo，把跳转权完全交给 app.js 里的 handleLogin！
+
+                document.querySelectorAll('.menu-shared, .menu-dev')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('devDashPage', 'Developer Dashboard');
+
             }
             else if (role === 'admin') {
-                document.querySelectorAll('.menu-shared, .menu-admin').forEach(el => el.style.display = 'flex');
-                // ❌ 删除了 btn-admin 的残留代码和强制跳转
+
+                document.querySelectorAll('.menu-shared, .menu-admin')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('adminDashPage', 'Admin Dashboard');
+
             }
             else if (role === 'buyer') {
-                document.querySelectorAll('.menu-shared, .menu-buyer').forEach(el => el.style.display = 'flex');
-                // ❌ 删除了 btn-buyer 的残留代码和强制跳转
+
+                document.querySelectorAll('.menu-shared, .menu-buyer')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('buyerPortfolioPage', 'My Portfolio');
             }
         }
         window.onload = function () {
             switchRole('guest');
+            navTo('loginPage', 'Welcome Back');
         };
     </script>
     <script src="app.js"></script>
