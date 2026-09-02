@@ -25,13 +25,14 @@ contract ProjectRegistry {
     }
 
     mapping(uint256 => Project) public projects;
+    uint256[] public projectIDs;
 
     modifier onlyDeveloper() {
         require(userRegistry.isDeveloper(msg.sender), "Only developer");
         _;
     }
 
-modifier onlyAdmin() {
+    modifier onlyAdmin() {
         require(userRegistry.isAdmin(msg.sender), "Only admin");
         _;
     }
@@ -94,9 +95,25 @@ modifier onlyAdmin() {
             minted: false
         });
 
+        projectIDs.push(projectID);
+
         emit ProjectCreated(projectID, msg.sender, projectName);
 
         return true;
+    }
+
+    function getAllProjects() external view returns (Project[] memory) {
+        Project[] memory allProjects = new Project[](projectIDs.length);
+
+        for (uint256 i = 0; i < projectIDs.length; i++) {
+            allProjects[i] = projects[projectIDs[i]];
+        }
+
+        return allProjects;
+    }
+
+    function getProjectCount() external view returns (uint256) {
+        return projectIDs.length;
     }
 
     function isMinted(

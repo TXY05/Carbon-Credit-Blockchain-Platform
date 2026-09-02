@@ -188,7 +188,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/UserRegistry.sol": "UserRegistry"
+			"BlueCarbonDApp/contracts/UserRegistry.sol": "UserRegistry"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -202,12 +202,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/UserRegistry.sol": {
-			"keccak256": "0xe791ad9becf0364ee3d25199760e0c7a27189b303afab31f5683893d72ef73e3",
+		"BlueCarbonDApp/contracts/UserRegistry.sol": {
+			"keccak256": "0x5b977e5849b91d238f752b2596ed241c23e02b26dfebf0b0b0f74e172a66ec10",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://71fddae08ed83df9621433cf4672b828951d8fa725cad4ef1c68ae3dc2da7fc2",
-				"dweb:/ipfs/QmdHT9FyJLT98EdzkzRidfgC1Pcjbe3ecu6NGNetWAg2f3"
+				"bzz-raw://efa51bf9d7469e0445c5487fa064b431d286e6adfed3f8d9cfc636fa61b1d1de",
+				"dweb:/ipfs/QmNUkfUDKEXimV6NbpGAQRAR6eSkHx8ViyzXcnYtUdcEw3"
 			]
 		}
 	},
