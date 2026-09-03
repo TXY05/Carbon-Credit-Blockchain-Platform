@@ -1320,11 +1320,11 @@ window.connectAndLogin = async function () {
   try {
 
     // ==================================
-    // 1. Connect MetaMask
+    // 1. Connect MetaMask (含网络检查)
     // ==================================
 
     const walletAddress =
-      await connectMetaMask();
+      await ensureWalletConnected();
 
     if (!walletAddress) {
       return;
