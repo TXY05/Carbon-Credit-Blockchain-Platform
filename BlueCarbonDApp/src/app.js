@@ -1330,10 +1330,24 @@ window.connectAndLogin = async function () {
       return;
     }
 
+    localStorage.setItem("loggedInWallet", walletAddress);
+
     console.log(
       "Connected wallet:",
       walletAddress
     );
+
+    // 顺便把 username 缓存回 loggedInUser，
+    // 让 My Projects / Submit Project 等旧逻辑继续能用
+    try {
+      const profRes = await fetch(`${SERVER_URL}/user-profile?walletAddress=${walletAddress}`);
+      const profData = await profRes.json();
+      if (profData.success && profData.data && profData.data.username) {
+        localStorage.setItem("loggedInUser", profData.data.username);
+      }
+    } catch (e) {
+      console.warn("无法缓存用户名:", e);
+    }
 
 
     // ==================================
@@ -2560,42 +2574,39 @@ window.switchDashTab = function (tabName) {
 window.openProfileModal = async function () {
   document.getElementById("profileModal").classList.add("show");
 
-  // 获取当前登录的真实用户
-  const currentUser = localStorage.getItem("loggedInUser");
+  const currentWallet =
+    localStorage.getItem("loggedInWallet") ||
+    (await getConnectedWallet());
 
-  // 🔴 防呆保护：如果没有真实登录，提示去登录
-  if (!currentUser) {
-    document.getElementById("prof-val-user").innerText =
-      "⚠️ 请使用真实账号登录";
+  if (!currentWallet) {
+    document.getElementById("prof-val-user").innerText = "⚠️ 请先连接 MetaMask 登录";
+    document.getElementById("prof-val-wallet").innerText = "-";
     document.getElementById("prof-val-role").innerText = "-";
     document.getElementById("prof-val-status").innerText = "-";
     document.getElementById("prof-val-date").innerText = "-";
     return;
   }
 
+  document.getElementById("prof-val-wallet").innerText = currentWallet;
+
   try {
-    // 🔴 加了时间戳 (?t=...) 强行绕过浏览器缓存，保证每次拿到的都是最新资料
     let response = await fetch(
-      `${SERVER_URL}/user-profile?username=${currentUser}&t=${new Date().getTime()}`,
+      `${SERVER_URL}/user-profile?walletAddress=${currentWallet}&t=${new Date().getTime()}`,
     );
     let result = await response.json();
 
     if (result.success) {
       let u = result.data;
 
-      // 注入左侧只读名片
+      localStorage.setItem("loggedInUser", u.username);
+
       document.getElementById("prof-val-user").innerText = u.username;
       document.getElementById("prof-val-role").innerText = u.role || "Not Set";
-      document.getElementById("prof-val-email").innerText =
-        u.email || "Not Set";
-      document.getElementById("prof-val-phone").innerText =
-        u.phone || "Not Set";
+      document.getElementById("prof-val-email").innerText = u.email || "Not Set";
+      document.getElementById("prof-val-phone").innerText = u.phone || "Not Set";
       document.getElementById("prof-val-status").innerText = u.status;
-      document.getElementById("prof-val-date").innerText = u.createdAt
-        ? u.createdAt
-        : "N/A";
+      document.getElementById("prof-val-date").innerText = u.createdAt ? u.createdAt : "N/A";
 
-      // 状态颜色逻辑
       let statusEl = document.getElementById("prof-val-status");
       if (u.status === "approved") {
         statusEl.style.background = "#e6f4ea";
@@ -2608,22 +2619,23 @@ window.openProfileModal = async function () {
         statusEl.style.color = "#ff9800";
       }
 
-      // 注入右侧表单数据
       document.getElementById("prof-input-email").value = u.email || "";
       document.getElementById("prof-input-phone").value = u.phone || "";
 
-      // 读取本地头像
       const savedAvatar = localStorage.getItem(`avatar_${u.username}`);
       if (savedAvatar) {
         document.getElementById("avatarIcon").style.display = "none";
-        document.getElementById("avatarPreview").style.backgroundImage =
-          `url(${savedAvatar})`;
+        document.getElementById("avatarPreview").style.backgroundImage = `url(${savedAvatar})`;
       } else {
         document.getElementById("avatarIcon").style.display = "block";
         document.getElementById("avatarPreview").style.backgroundImage = "none";
       }
     } else {
-      document.getElementById("prof-val-user").innerText = "⚠️ 找不到该账号";
+      // 查不到，大概率是 Admin/Owner 钱包（本来就没在 users 表里，属于正常情况）
+      document.getElementById("prof-val-user").innerText = "Admin (Owner)";
+      document.getElementById("prof-val-role").innerText = "admin";
+      document.getElementById("prof-val-status").innerText = "-";
+      document.getElementById("prof-val-date").innerText = "-";
     }
   } catch (error) {
     console.error("Profile fetch error:", error);
@@ -2642,6 +2654,7 @@ window.handleLogout = function () {
   if (confirm("Confirm Logout?")) {
     // 1. 彻底清除本地缓存里的账号记忆
     localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loggedInWallet");
     if (typeof closeProfileModal === "function") closeProfileModal();
 
     // 2. 🔴 终极大招：强制刷新当前网页
@@ -3089,50 +3102,95 @@ window.loadDevDashboard = async function () {
 // ==========================================
 window.openProjectModal = async function (projectId) {
   try {
+    // 1. 先拿 SQLite 里的基本资料（标题、地点、面积）
     let response = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
     let result = await response.json();
-
-    if (result.success) {
-      const p = result.project;
-      const stats = result.stats;
-      const sales = result.sales;
-
-      // 填充数据
-      document.getElementById("det-title").innerText =
-        p.projName || "Unnamed Project";
-      document.getElementById("det-loc").innerText = p.location || "Unknown";
-      document.getElementById("det-cap").innerText = p.capacity;
-      document.getElementById("det-total").innerText = p.carbonVolume;
-
-      // 填充剩余和已售
-      document.getElementById("det-avail").innerText = stats.remaining;
-      document.getElementById("det-sold").innerText = stats.sold;
-
-      // 填充销售记录表
-      const tbody = document.getElementById("det-sales-body");
-      tbody.innerHTML = "";
-
-      if (sales.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
-      } else {
-        sales.forEach((tx) => {
-          tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 10px; color: #64748b;">${tx.txDate || "N/A"}</td>
-                            <td style="padding: 10px; font-weight: bold; color: #2b3674;">${tx.buyerName}</td>
-                            <td style="padding: 10px; text-align: right; color: #ff9800; font-weight: bold;">+${tx.amount}</td>
-                        </tr>
-                    `;
-        });
-      }
-
-      // 显示弹窗
-      document.getElementById("projectDetailModal").classList.add("show");
-    } else {
-      // alert("无法获s取项目详情");
+    if (!result.success) {
+      alert("无法获取项目详情");
+      return;
     }
+    const p = result.project;
+
+    document.getElementById("det-title").innerText = p.projName || "Unnamed Project";
+    document.getElementById("det-loc").innerText = p.location || "Unknown";
+    document.getElementById("det-cap").innerText = p.capacity;
+
+    const tbody = document.getElementById("det-sales-body");
+    tbody.innerHTML = "";
+
+    // 2. 还没 mint 的项目，没有链上数据可查
+    if (!p.minted || !p.onChainProjectID) {
+      document.getElementById("det-total").innerText = p.carbonVolume;
+      document.getElementById("det-avail").innerText = "-";
+      document.getElementById("det-sold").innerText = "-";
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">项目还没 Mint，暂无链上销售数据。</td></tr>`;
+      document.getElementById("projectDetailModal").classList.add("show");
+      return;
+    }
+
+    // 3. 已 mint：连接钱包，去链上查真实数据
+    const devAddress = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
+
+    // 用 parseInt 处理，避免数据库里存的是 "xxxx.0" 这种带小数点的字符串
+    const onChainID = parseInt(p.onChainProjectID, 10);
+
+    const totalCapacity = await contracts.projectRegistry.methods.getCapacity(onChainID).call();
+    const devBalance = await contracts.carbonToken.methods.balanceOf(devAddress, onChainID).call();
+
+    document.getElementById("det-total").innerText = p.carbonVolume;
+    document.getElementById("det-avail").innerText = devBalance;
+
+    // 4. 拉取这个项目的所有购买事件（分批查询，避免超过 RPC 单次查询上限）
+    const currentBlock = Number(await web3.eth.getBlockNumber());
+    const CHUNK_SIZE = 9000;
+    let purchaseEvents = [];
+    let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+
+    while (fromBlock <= currentBlock) {
+      const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
+      const chunkEvents = await contracts.carbonToken.getPastEvents("TokensPurchased", {
+        filter: { projectID: onChainID },
+        fromBlock,
+        toBlock,
+      });
+      purchaseEvents = purchaseEvents.concat(chunkEvents);
+      fromBlock = toBlock + 1;
+    }
+
+    let totalSold = 0n;
+    for (const ev of purchaseEvents) {
+      totalSold += BigInt(ev.returnValues.amount);
+    }
+    document.getElementById("det-sold").innerText = totalSold.toString();
+
+    // 5. 渲染买家记录
+    if (purchaseEvents.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
+    } else {
+      for (const ev of purchaseEvents) {
+        let dateDisplay = "N/A";
+        try {
+          const block = await web3.eth.getBlock(ev.blockNumber);
+          dateDisplay = new Date(Number(block.timestamp) * 1000).toLocaleDateString();
+        } catch (e) {}
+
+        const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
+
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 10px; color: #64748b;">${dateDisplay}</td>
+            <td style="padding: 10px; font-weight: bold; color: #2b3674;">${buyerShort}</td>
+            <td style="padding: 10px; text-align: right; color: #ff9800; font-weight: bold;">+${ev.returnValues.amount}</td>
+          </tr>
+        `;
+      }
+    }
+
+    document.getElementById("projectDetailModal").classList.add("show");
   } catch (error) {
-    console.error(error);
+    console.error("打开项目详情失败:", error);
+    alert("加载项目详情失败：" + (error.message || error));
   }
 };
 
@@ -3167,10 +3225,13 @@ window.mintProjectToken = async function (projectId) {
 
     const priceInWei = web3.utils.toWei(String(p.pricePerToken || "0"), "ether");
 
-    // 3. 先在 ProjectRegistry 上注册项目
+    // 3. 生成一个链上专用的唯一 ID（用时间戳，避免和别人的 SQLite id 撞号）
+    const onChainProjectID = Date.now();
+
+    // 4. 先在 ProjectRegistry 上注册项目
     await contracts.projectRegistry.methods
       .createProject(
-        p.id,
+        onChainProjectID,
         p.projName,
         p.location,
         p.ecosystemType || "Unspecified",
@@ -3179,16 +3240,16 @@ window.mintProjectToken = async function (projectId) {
       )
       .send({ from: devAddress });
 
-    // 4. 再调用 CarbonToken 的 mintTokens 真正铸币
+    // 5. 再调用 CarbonToken 的 mintTokens 真正铸币
     await contracts.carbonToken.methods
-      .mintTokens(p.id)
+      .mintTokens(onChainProjectID)
       .send({ from: devAddress });
 
-    // 5. 通知后端把 SQLite 状态也标记为 minted
+    // 6. 通知后端把 SQLite 状态也标记为 minted，并存下链上的 ID（转成字符串，避免 SQLite 存成 REAL 带小数点）
     await fetch(`${SERVER_URL}/mark-project-minted`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: p.id }),
+      body: JSON.stringify({ id: p.id, onChainProjectID: String(onChainProjectID) }),
     });
 
     alert("✅ Mint 成功！");

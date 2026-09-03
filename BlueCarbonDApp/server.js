@@ -58,7 +58,8 @@ db.serialize(() => {
     db.run(`ALTER TABLE projects ADD COLUMN ecosystemType TEXT`, () => { });
     db.run(`ALTER TABLE projects ADD COLUMN pricePerToken TEXT`, () => { });
     db.run(`ALTER TABLE projects ADD COLUMN minted INTEGER DEFAULT 0`, () => { });
-
+    db.run(`ALTER TABLE projects ADD COLUMN onChainProjectID TEXT`, () => { });
+    
     // 4. 创建交易记录表 (用于追踪 Quota 卖给谁了)
     db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
@@ -378,11 +379,11 @@ app.post('/reject-project', (req, res) => {
 
 // 5. Dev 完成链上 mint 后，标记数据库状态
 app.post('/mark-project-minted', (req, res) => {
-    const { id } = req.body;
-    const sql = `UPDATE projects SET minted = 1 WHERE id = ?`;
-    db.run(sql, [id], function (err) {
+    const { id, onChainProjectID } = req.body;
+    const sql = `UPDATE projects SET minted = 1, onChainProjectID = ? WHERE id = ?`;
+    db.run(sql, [onChainProjectID, id], function (err) {
         if (err) return res.json({ success: false });
-        console.log(`⛏️ 项目 ID ${id} 已标记为 Minted`);
+        console.log(`⛏️ 项目 ID ${id} 已标记为 Minted，链上 ID: ${onChainProjectID}`);
         res.json({ success: true });
     });
 });

@@ -353,8 +353,6 @@
                 Submit Project</div>
             <div class="nav-item menu-dev" id="nav-devHistory" onclick="navTo('devHistoryPage', 'My Projects')">📝 My
                 Projects</div>
-            <div class="nav-item menu-dev" id="nav-devWallet" onclick="navTo('devWalletPage', 'My Wallet')">💰 My Wallet
-            </div>
 
             <!-- Admin 专区 -->
             <div class="nav-item menu-admin" id="nav-adminDash" onclick="navTo('adminDashPage', 'Admin Dashboard')">📈
@@ -966,11 +964,6 @@
                             <!-- 数据将由 JavaScript 动态生成 -->
                         </tbody>
                     </table>
-                </div>
-            </div>
-            <div id="devWalletPage" class="page-layer">
-                <div class="card">
-                    <h2 class="card-title">My Wallet</h2>
                 </div>
             </div>
 
@@ -1734,6 +1727,17 @@
                 if (typeof loadMyProjects === 'function') loadMyProjects();
             }
 
+            
+            // 👇 进入 Submit Project 页面时，自动把登入用的钱包地址填进去
+            if (targetPageId === 'devSubmitPage') {
+                const savedWallet = localStorage.getItem('loggedInWallet');
+                const devAddrInput = document.getElementById('devAddress');
+                if (devAddrInput && savedWallet) {
+                    devAddrInput.value = savedWallet;
+                    devAddrInput.style.color = '#5640fa';
+                }
+            }
+
             // ==========================================
             // Buyer page data triggers
             // ==========================================
@@ -2091,6 +2095,10 @@
                         <div class="avatar-overlay">📷</div>
                     </div>
 
+                    <div class="prof-row"><span class="prof-label">Wallet</span><span class="prof-val"
+                            id="prof-val-wallet" style="font-family: monospace; font-size: 11px;">Loading...</span></div>
+                    <div class="prof-row"><span class="prof-label">Username</span><span class="prof-val"
+                            id="prof-val-user">Loading...</span></div>
                     <div class="prof-row"><span class="prof-label">Username</span><span class="prof-val"
                             id="prof-val-user">Loading...</span></div>
                     <div class="prof-row"><span class="prof-label">Role</span><span class="prof-val" id="prof-val-role"
