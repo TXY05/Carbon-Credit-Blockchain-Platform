@@ -125,6 +125,61 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "getAllProjects",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "projectID",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "developer",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "projectName",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "location",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "ecosystemType",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "pricePerToken",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "availableCapacity",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bool",
+								"name": "minted",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct ProjectRegistry.Project[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -182,6 +237,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "getProjectCount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -208,6 +276,25 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "projectIDs",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -338,7 +425,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/ProjectRegistry.sol": "ProjectRegistry"
+			"BlueCarbonDApp/contracts/ProjectRegistry.sol": "ProjectRegistry"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -352,12 +439,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/ProjectRegistry.sol": {
-			"keccak256": "0x182129174b5b1213b5874f26792ea0db0e359fcff3dfa3c051ffb304042cd7f9",
+		"BlueCarbonDApp/contracts/ProjectRegistry.sol": {
+			"keccak256": "0x6afa3cccbbe8ae94c3b865756a0592e37267580a99a6466dfeeedf4138d35608",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b2ab5e092440d7741e38d3f881287042f48aabc0d11e0d1d01755cdd5856005a",
-				"dweb:/ipfs/QmSEXk67AaNob2m6zHP5EFWdtoqgNdyNCPQkTCdNjCfevz"
+				"bzz-raw://56daf23cc464f04ad908b5e13cef81f29081131a9465c85643eab80909c81b52",
+				"dweb:/ipfs/QmQBAkf3hfZrLFibStB8fpsw44G5eyJP61ZuCBJ8uN6F6D"
 			]
 		}
 	},

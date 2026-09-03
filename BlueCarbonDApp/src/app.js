@@ -5000,19 +5000,29 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       toBlock,
     });
 
+    const purchaseTxHashes = new Set(
+      purchaseEvents.map(
+        event => event.transactionHash.toLowerCase()
+      )
+    );
+
+    const retiredEvents = await carbonToken.getPastEvents("TokensRetired", {
+      filter: {buyer: buyerAddress,},
+      fromBlock,
+      toBlock,
+    });
+
+    const retirementTxHashes = new Set(
+      retiredEvents.map(event =>
+        event.transactionHash.toLowerCase()
+      )
+    );
+
     // ======================================
     // Retirements
     // ======================================
 
-    const retiredEvents = await carbonToken.getPastEvents("TokensRetired", {
-      filter: {
-        buyer: buyerAddress,
-      },
 
-      fromBlock,
-
-      toBlock,
-    });
 
     // ======================================
     // Transfers sent by buyer
@@ -5121,6 +5131,18 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
     for (const event of transferSentEvents) {
 
+      if (
+        purchaseTxHashes.has(
+          event.transactionHash.toLowerCase()
+        )
+      ) {
+        continue;
+      }
+
+      if (retirementTxHashes.has(event.transactionHash.toLowerCase())) {
+        continue;
+      }
+
       newEvents.push({
         id:
           `${event.transactionHash}-${event.logIndex}`,
@@ -5176,6 +5198,26 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       ) {
         continue;
       }
+      if (
+        purchaseTxHashes.has(
+          event.transactionHash.toLowerCase()
+        )
+      ) {
+        continue;
+      }
+
+      if (retirementTxHashes.has(event.transactionHash.toLowerCase())) {
+        continue;
+      }
+
+      // Ignore our own outgoing transfer
+      if (
+        event.returnValues.from.toLowerCase() ===
+        buyerAddress.toLowerCase()
+      ) {
+        continue;
+      }
+
 
       newEvents.push({
         id:

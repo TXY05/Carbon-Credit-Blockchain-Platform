@@ -37,7 +37,7 @@
 		},
 		"gasEstimates": null,
 		"methodIdentifiers": {
-			"isBuyer(address)": "2a55feec",
+			"isAdmin(address)": "24d7806c",
 			"isDeveloper(address)": "5eca4a70"
 		}
 	},
@@ -50,7 +50,7 @@
 					"type": "address"
 				}
 			],
-			"name": "isBuyer",
+			"name": "isAdmin",
 			"outputs": [
 				{
 					"internalType": "bool",

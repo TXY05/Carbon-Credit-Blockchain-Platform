@@ -532,7 +532,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/CarbonToken.sol": "CarbonToken"
+			"BlueCarbonDApp/contracts/CarbonToken.sol": "CarbonToken"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -546,12 +546,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/CarbonToken.sol": {
-			"keccak256": "0x48886c34874d3217aaac348cf19b6eb8a216f9bc79779057b25c7e3e745a607e",
+		"BlueCarbonDApp/contracts/CarbonToken.sol": {
+			"keccak256": "0x491f21cd3d3209ef519997887f5982665538564c8c19f434f201166cc7f20bdf",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://48cb62d5c6dd6ea159ac0d7b5ffeca6dd91c023f26db8f4e671a646e6d2150f1",
-				"dweb:/ipfs/QmbWDhwRCWQA3K7iiszixnPvc43HTvngRCAJW5rXnqPEfe"
+				"bzz-raw://669d8558096075f29e8f818f4cf71b34e655036b64c4025edd858528e5ce9435",
+				"dweb:/ipfs/QmagHEX4CyBpeH6gaUq24j2h5YjcwiSiAA3LFUf77hRHqR"
 			]
 		}
 	},
