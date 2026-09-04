@@ -2001,7 +2001,15 @@ window.applyProjectFilters = function () {
           : "#fff0d4";
     let displayDate = p.createdAt ? p.createdAt.split(" ")[0] : "N/A";
 
-    let row = `<tr>
+    let clickable = p.minted && p.onChainProjectID;
+    let rowStyle = clickable
+      ? `cursor: pointer;`
+      : `cursor: default;`;
+    let rowOnclick = clickable
+      ? `onclick="openProjectModal(${p.id})"`
+      : ``;
+
+    let row = `<tr style="${rowStyle}" ${rowOnclick} onmouseover="if(${clickable}) this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <td style="color: #a3aed1; font-size: 13px;">${displayDate}</td>
             <td><strong>${p.projName || "Unnamed Project"}</strong></td>
             <td>${p.location}</td>
@@ -2009,6 +2017,7 @@ window.applyProjectFilters = function () {
             <td><strong style="color: #5640fa;">${p.carbonVolume} BCC</strong></td>
             <td><span style="background: ${statusBg}; color: ${statusColor}; padding: 5px 10px; border-radius: 8px; font-size: 13px; text-transform: capitalize;">${p.status}</span></td>
         </tr>`;
+
     tbody.innerHTML += row;
   });
 };
@@ -3158,11 +3167,23 @@ window.openProjectModal = async function (projectId) {
       fromBlock = toBlock + 1;
     }
 
+    console.log("🔍 查到的购买事件:", purchaseEvents.map(ev => ({
+      projectID: ev.returnValues.projectID,
+      buyer: ev.returnValues.buyer,
+      amount: ev.returnValues.amount,
+      txHash: ev.transactionHash
+    })));
+
     let totalSold = 0n;
     for (const ev of purchaseEvents) {
       totalSold += BigInt(ev.returnValues.amount);
     }
+    
     document.getElementById("det-sold").innerText = totalSold.toString();
+
+    // 🔴 用"总量减去已卖出"来算 Available，比直接读钱包余额更符合直觉
+    const calculatedAvailable = BigInt(p.carbonVolume) - totalSold;
+    document.getElementById("det-avail").innerText = calculatedAvailable.toString();
 
     // 5. 渲染买家记录
     if (purchaseEvents.length === 0) {
