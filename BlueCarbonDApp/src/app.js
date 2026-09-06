@@ -2787,16 +2787,22 @@ window.loadDevDashboard = async function () {
 // ==========================================
 // Open project details to view quota and buyers (usable by both Developer / Admin)
 // ==========================================
+let projectModalRequestId = 0;
+
 window.openProjectModal = async function (onChainProjectID) {
+  const requestId = ++projectModalRequestId;
+
   try {
     const contracts = await ensureContractsReady();
 
     // 1. Get basic project info
     const p = await contracts.projectRegistry.methods.projects(onChainProjectID).call();
 
+    if (requestId !== projectModalRequestId) return;
+
     document.getElementById("det-title").innerText = p.projectName || "Unnamed Project";
     document.getElementById("det-loc").innerText = p.location || "Unknown";
-    document.getElementById("det-cap").innerText = "-"; // Area info is no longer on-chain, can be left blank or omitted
+    document.getElementById("det-cap").innerText = "-";
 
     const tbody = document.getElementById("det-sales-body");
     tbody.innerHTML = "";
@@ -2815,7 +2821,8 @@ window.openProjectModal = async function (onChainProjectID) {
     const devAddress = p.developer;
     const devBalance = await contracts.carbonToken.methods.balanceOf(devAddress, onChainProjectID).call();
 
-    // Derive amount sold from total (availableCapacity now keeps decreasing, so we accumulate from events)
+    if (requestId !== projectModalRequestId) return;
+
     const currentBlock = Number(await web3.eth.getBlockNumber());
     const CHUNK_SIZE = 9000;
     let purchaseEvents = [];
@@ -2832,6 +2839,8 @@ window.openProjectModal = async function (onChainProjectID) {
       fromBlock = toBlock + 1;
     }
 
+    if (requestId !== projectModalRequestId) return;
+
     let totalSold = 0n;
     for (const ev of purchaseEvents) {
       totalSold += BigInt(ev.returnValues.amount);
@@ -2847,6 +2856,7 @@ window.openProjectModal = async function (onChainProjectID) {
     if (purchaseEvents.length === 0) {
       tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
     } else {
+      let rowsHtml = "";
       for (const ev of purchaseEvents) {
         let dateDisplay = "N/A";
         try {
@@ -2856,7 +2866,7 @@ window.openProjectModal = async function (onChainProjectID) {
 
         const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
 
-        tbody.innerHTML += `
+        rowsHtml += `
           <tr style="border-bottom: 1px solid #e2e8f0;">
             <td style="padding: 10px; color: #64748b;">${dateDisplay}</td>
             <td style="padding: 10px; font-weight: bold; color: #2b3674;">${buyerShort}</td>
@@ -2864,6 +2874,9 @@ window.openProjectModal = async function (onChainProjectID) {
           </tr>
         `;
       }
+
+      if (requestId !== projectModalRequestId) return;
+      tbody.innerHTML = rowsHtml;
     }
 
     document.getElementById("projectDetailModal").classList.add("show");
