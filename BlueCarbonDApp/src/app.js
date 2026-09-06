@@ -2589,12 +2589,9 @@ window.loadAdminDashboard = async function () {
         circulatingEl.innerText = circulating.toLocaleString();
       }
 
-      // Pending Projects now lives on-chain, not in SQLite
-      const allChainProjects = await contracts.projectRegistry.methods.getAllProjects().call();
-      const onChainPendingProjects = allChainProjects.filter((p) => Number(p.status) === 0).length;
       const pendingProjEl = document.getElementById("dash-pending-proj");
       if (pendingProjEl) {
-        pendingProjEl.innerText = onChainPendingProjects + " ";
+        pendingProjEl.innerText = stats.pendingProjects + " ";
       }
 
             // Developer/Buyer counts should reflect the whole team's on-chain registrations, not just local SQLite
@@ -3298,13 +3295,24 @@ window.loadDevDashboard = async function () {
     let totalSold = 0n;
     let totalRevenueWei = 0n;
     let salesEvents = [];
+    let salesFetchFailed = false;
 
     try {
-      const purchaseEvents = await carbonToken.getPastEvents("TokensPurchased", {
-        filter: { developer: devAddress },
-        fromBlock: CARBON_TOKEN_DEPLOYMENT_BLOCK,
-        toBlock: "latest",
-      });
+      const currentBlock = Number(await web3.eth.getBlockNumber());
+      const CHUNK_SIZE = 9000;
+      let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+      let purchaseEvents = [];
+
+      while (fromBlock <= currentBlock) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
+        const chunkEvents = await carbonToken.getPastEvents("TokensPurchased", {
+          filter: { developer: devAddress },
+          fromBlock,
+          toBlock,
+        });
+        purchaseEvents = purchaseEvents.concat(chunkEvents);
+        fromBlock = toBlock + 1;
+      }
 
       for (const ev of purchaseEvents) {
         totalSold += BigInt(ev.returnValues.amount);
@@ -3314,11 +3322,13 @@ window.loadDevDashboard = async function () {
       salesEvents = purchaseEvents;
     } catch (e) {
       console.warn("Failed to read sales events:", e);
+      salesFetchFailed = true;
     }
 
-    document.getElementById("dev-total-sold").innerText = totalSold.toString();
-    document.getElementById("dev-revenue").innerText =
-      Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
+    document.getElementById("dev-total-sold").innerText = salesFetchFailed ? "-" : totalSold.toString();
+    document.getElementById("dev-revenue").innerText = salesFetchFailed
+      ? "-"
+      : Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
 
     document.getElementById("dev-total-minted").innerText =
       (availableQuota + totalSold).toLocaleString();
