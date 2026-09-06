@@ -343,7 +343,7 @@ app.post('/mark-project-minted', (req, res) => {
     const sql = `UPDATE projects SET minted = 1, onChainProjectID = ? WHERE id = ?`;
     db.run(sql, [onChainProjectID, id], function (err) {
         if (err) return res.json({ success: false });
-        console.log(`⛏️ 项目 ID ${id} 已标记为 Minted，链上 ID: ${onChainProjectID}`);
+        console.log(`⛏️ Project ID ${id} has been marked as Minted，Connect ID: ${onChainProjectID}`);
         res.json({ success: true });
     });
 });
