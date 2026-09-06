@@ -24,6 +24,19 @@
 						"internalType": "uint256",
 						"name": "projectID",
 						"type": "uint256"
+					}
+				],
+				"name": "ProjectApproved",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
 					},
 					{
 						"indexed": true,
@@ -55,16 +68,29 @@
 				"type": "event"
 			},
 			{
-				"inputs": [],
-				"name": "TONNES_PER_TOKEN",
-				"outputs": [
+				"anonymous": false,
+				"inputs": [
 					{
+						"indexed": true,
 						"internalType": "uint256",
-						"name": "",
+						"name": "projectID",
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "view",
+				"name": "ProjectRejected",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "approveProject",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -169,6 +195,11 @@
 								"internalType": "bool",
 								"name": "minted",
 								"type": "bool"
+							},
+							{
+								"internalType": "enum ProjectRegistry.ProjectStatus",
+								"name": "status",
+								"type": "uint8"
 							}
 						],
 						"internalType": "struct ProjectRegistry.Project[]",
@@ -244,6 +275,25 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "isApproved",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -349,6 +399,11 @@
 						"internalType": "bool",
 						"name": "minted",
 						"type": "bool"
+					},
+					{
+						"internalType": "enum ProjectRegistry.ProjectStatus",
+						"name": "status",
+						"type": "uint8"
 					}
 				],
 				"stateMutability": "view",
@@ -368,6 +423,19 @@
 					}
 				],
 				"name": "reduceAvailableCapacity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "projectID",
+						"type": "uint256"
+					}
+				],
+				"name": "rejectProject",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -440,11 +508,11 @@
 	},
 	"sources": {
 		"BlueCarbonDApp/contracts/ProjectRegistry.sol": {
-			"keccak256": "0x6afa3cccbbe8ae94c3b865756a0592e37267580a99a6466dfeeedf4138d35608",
+			"keccak256": "0x1f02cfa7d32e00f09a617b0d1ca06f93722b7be986f1eb07d4751a7382be1c9e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://56daf23cc464f04ad908b5e13cef81f29081131a9465c85643eab80909c81b52",
-				"dweb:/ipfs/QmQBAkf3hfZrLFibStB8fpsw44G5eyJP61ZuCBJ8uN6F6D"
+				"bzz-raw://20b3d16c42fa1ccbc1a19c8ffbf12c88221e7b8d9bdc56aa3d25dc00374e110e",
+				"dweb:/ipfs/QmQ9ZibbRqTawLNFHYjGjkkg8UatioSxf2BJEVAceWHFRh"
 			]
 		}
 	},
