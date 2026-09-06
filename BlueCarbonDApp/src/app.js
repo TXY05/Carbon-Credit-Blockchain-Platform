@@ -2,8 +2,8 @@ let web3;
 let currentAccount;
 
 const USER_REGISTRY_ADDRESS = "0xFB7860ca9669d99871B1D7Bd34d8CBe1efdC75F0";
-const PROJECT_REGISTRY_ADDRESS = "0x158098Fd62522b0Ec137D128F478D8B5901f9C42";
-const CARBON_TOKEN_ADDRESS = "0x5B94Bd4B2d69DB38650A2799F81FC1756EB733E1";
+const PROJECT_REGISTRY_ADDRESS = "0xC62c056ef21bd61149e2C64dBb35c30Df658d08e";
+const CARBON_TOKEN_ADDRESS = "0xf4d49B85C42bCa6830b469587C24e44C93A9E027";
 
 const USER_REGISTRY_ABI = [
   {
@@ -3513,7 +3513,7 @@ window.mintProjectToken = async function (dbId, onChainProjectID) {
     // Directly call on-chain mintTokens (developer pays gas here)
     await contracts.carbonToken.methods
       .mintTokens(onChainProjectID)
-      .send({ from: devAddress });
+      .send({ from: devAddress, gas: 500000 });
 
     // Sync mint status back to backend
     await fetch(`${SERVER_URL}/mark-project-minted`, {
