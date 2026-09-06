@@ -4055,15 +4055,6 @@ window.loadBuyerPortfolio = async function () {
                         🌱 You don't own any BCC yet.
                         <br><br>
 
-                        <button
-                            class="primary-btn"
-                            onclick="
-                                loadMarketplace()
-                            "
-                        >
-                            Browse Marketplace
-                        </button>
-
                     </td>
                 </tr>
             `;
@@ -4485,6 +4476,8 @@ window.transferBuyerCredits = async function () {
 // ==========================================
 
 window.loadOffsetProjects = async function () {
+  let totalRetirableBCC = 0n;
+
   const select = document.getElementById("offsetProjectSelect");
 
   if (!select) {
@@ -4535,6 +4528,8 @@ window.loadOffsetProjects = async function () {
         .balanceOf(buyerAddress, projectID)
         .call();
 
+      totalRetirableBCC += BigInt(balance);
+
       if (BigInt(balance) === 0n) {
         continue;
       }
@@ -4547,6 +4542,13 @@ window.loadOffsetProjects = async function () {
         } — ${balance} BCC`;
 
       select.appendChild(option);
+    }
+
+    const totalBalanceEl = document.getElementById("offsetTotalBalance");
+
+    if (totalBalanceEl) {
+        totalBalanceEl.innerText =
+            totalRetirableBCC.toLocaleString();
     }
 
     // ==========================================
@@ -4571,6 +4573,204 @@ window.loadOffsetProjects = async function () {
             </option>
         `;
   }
+};
+
+window.loadRetirementHistory = async function () {
+
+    const tbody =
+        document.getElementById("retirementHistoryBody");
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="3"
+                style="
+                    text-align: center;
+                    padding: 30px;
+                    color: #a3aed1;
+                ">
+                Loading retirement history...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        // ==========================================
+        // Wallet
+        // ==========================================
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+        // ==========================================
+        // Contracts
+        // ==========================================
+
+        const contracts =
+            await ensureContractsReady();
+
+        const carbonToken =
+            contracts.carbonToken;
+
+        const registry =
+            contracts.projectRegistry;
+
+        // ==========================================
+        // Get projects
+        // ==========================================
+
+        const projects =
+            await registry.methods
+                .getAllProjects()
+                .call();
+
+        tbody.innerHTML = "";
+
+        let hasHistory = false;
+
+        // ==========================================
+        // Check retirement for every project
+        // ==========================================
+
+        for (const project of projects) {
+
+            const projectID =
+                project.projectID;
+
+            if (!projectID || Number(projectID) === 0) {
+                continue;
+            }
+
+            let retiredAmount;
+
+            try {
+
+                retiredAmount =
+                    await carbonToken.methods
+                        .retired(
+                            buyerAddress,
+                            projectID
+                        )
+                        .call();
+
+            } catch (error) {
+
+                console.error(
+                    `Unable to read retired amount for project #${projectID}`,
+                    error
+                );
+
+                continue;
+            }
+
+            if (BigInt(retiredAmount) === 0n) {
+                continue;
+            }
+
+            hasHistory = true;
+
+            const projectName =
+                project.projectName ||
+                `Project #${projectID}`;
+
+            // ==========================================
+            // Create row
+            // ==========================================
+
+            const row =
+                document.createElement("tr");
+
+            row.style.borderBottom =
+                "1px solid #f4f7fe";
+
+            row.innerHTML = `
+                <td style="
+                    padding: 12px;
+                    color: #2b3674;
+                    font-weight: 600;
+                ">
+                    ${projectName}
+
+                    <div style="
+                        color: #a3aed1;
+                        font-size: 11px;
+                        margin-top: 3px;
+                    ">
+                        #${projectID}
+                    </div>
+                </td>
+
+                <td style="
+                    padding: 12px;
+                    color: #4318ff;
+                    font-weight: 700;
+                ">
+                    ${BigInt(retiredAmount).toLocaleString()} BCC
+                </td>
+
+                <td style="
+                    padding: 12px;
+                ">
+                    <span style="
+                        color: #05cd99;
+                        font-weight: 600;
+                    ">
+                        Retired
+                    </span>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        // ==========================================
+        // No history
+        // ==========================================
+
+        if (!hasHistory) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3"
+                        style="
+                            text-align: center;
+                            padding: 30px;
+                            color: #a3aed1;
+                        ">
+                        No retirement history yet.
+                    </td>
+                </tr>
+            `;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error loading retirement history:",
+            error
+        );
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3"
+                    style="
+                        text-align: center;
+                        padding: 30px;
+                        color: #ee5d50;
+                    ">
+                    Unable to load retirement history.
+                    <br><br>
+                    <small>
+                        ${error.message || error}
+                    </small>
+                </td>
+            </tr>
+        `;
+    }
 };
 
 window.openBuyerTransfer = function () {
@@ -4724,6 +4924,8 @@ window.retireBuyerCredits = async function () {
     await loadOffsetProjects();
 
     await loadBuyerTransactions();
+
+    await loadRetirementHistory();
   } catch (error) {
     console.error("BCC retirement failed:", error);
 
