@@ -2426,28 +2426,6 @@ window.handleLogout = function () {
   }
 };
 
-// Main menu switching
-window.switchProfTab = function (tab) {
-  document.getElementById("ptab-settings").classList.remove("active");
-  document.getElementById("ptab-prefs").classList.remove("active");
-  document.getElementById("pcontent-settings").style.display = "none";
-  document.getElementById("pcontent-prefs").style.display = "none";
-
-  document.getElementById(`ptab-${tab}`).classList.add("active");
-  document.getElementById(`pcontent-${tab}`).style.display = "block";
-};
-
-// Sub-menu switching
-window.switchSubTab = function (tab) {
-  document.getElementById("subtab-profile").classList.remove("active");
-  document.getElementById("subtab-security").classList.remove("active");
-  document.getElementById("subcontent-profile").style.display = "none";
-  document.getElementById("subcontent-security").style.display = "none";
-
-  document.getElementById(`subtab-${tab}`).classList.add("active");
-  document.getElementById(`subcontent-${tab}`).style.display = "block";
-};
-
 // Actually save regular profile info and new avatar
 window.handleUpdateProfile = async function () {
   let email = document.getElementById("prof-input-email").value;
@@ -2499,56 +2477,6 @@ window.handleUpdateProfile = async function () {
   }
 };
 
-// ==========================================
-// Standalone password change logic (with validation and direct change)
-// ==========================================
-window.handleUpdatePassword = async function () {
-  let oldPass = document.getElementById("prof-input-oldpass").value;
-  let newPass = document.getElementById("prof-input-newpass").value;
-  let confPass = document.getElementById("prof-input-confpass").value;
-  const currentUser = localStorage.getItem("loggedInUser");
-
-  // 1. Basic validation
-  if (!currentUser) return;
-  if (!oldPass || !newPass || !confPass) {
-    // alert("🚨 Please fill in all three password fields!");
-    return;
-  }
-  if (newPass !== confPass) {
-    // alert("🚨 The two new passwords do not match, please re-enter!");
-    return;
-  }
-
-  // 2. Send to the dedicated password change endpoint
-  try {
-    let response = await fetch(`${SERVER_URL}/update-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: currentUser,
-        oldPassword: oldPass,
-        newPassword: newPass,
-      }),
-    });
-
-    let result = await response.json();
-
-    if (result.success) {
-      // alert("✅ Password changed successfully! Please use the new password next time you log in.");
-
-      // Clear the three input fields after a successful change, as if nothing happened
-      document.getElementById("prof-input-oldpass").value = "";
-      document.getElementById("prof-input-newpass").value = "";
-      document.getElementById("prof-input-confpass").value = "";
-    } else {
-      // If the old password was wrong, the backend will block it here
-      // alert(result.message);
-    }
-  } catch (error) {
-    console.error(error);
-    // alert("🚨 Network request failed, please check the backend status.");
-  }
-};
 // Handle avatar upload and instant preview
 window.previewAvatar = function (event) {
   const file = event.target.files[0];

@@ -2090,8 +2090,6 @@
                             id="prof-val-wallet" style="font-family: monospace; font-size: 11px;">Loading...</span></div>
                     <div class="prof-row"><span class="prof-label">Username</span><span class="prof-val"
                             id="prof-val-user">Loading...</span></div>
-                    <div class="prof-row"><span class="prof-label">Username</span><span class="prof-val"
-                            id="prof-val-user">Loading...</span></div>
                     <div class="prof-row"><span class="prof-label">Role</span><span class="prof-val" id="prof-val-role"
                             style="text-transform: capitalize; color: #4318ff;">Loading...</span></div>
                     <div class="prof-row"><span class="prof-label">Email</span><span class="prof-val"
@@ -2108,66 +2106,21 @@
 
                 <!-- Right: settings area -->
                 <div class="prof-right">
-                    <!-- Main tabs -->
-                    <div class="prof-tabs">
-                        <div class="prof-tab active" id="ptab-settings" onclick="switchProfTab('settings')">Settings
-                        </div>
-                        <div class="prof-tab" id="ptab-prefs" onclick="switchProfTab('prefs')">Preferences</div>
-                    </div>
+    <h4 style="margin: 0 0 15px 0; color: #2b3674; font-size: 15px;">Profile Settings</h4>
 
-                    <!-- Settings content area -->
-                    <div id="pcontent-settings">
-                        <!-- Sub tabs -->
-                        <div class="sub-tabs">
-                            <div class="sub-tab active" id="subtab-profile" onclick="switchSubTab('profile')">Profile
-                                Settings</div>
-                            <div class="sub-tab" id="subtab-security" onclick="switchSubTab('security')">Security
-                                Settings</div>
-                        </div>
-
-                        <!-- Option A: Profile Settings -->
-                        <div id="subcontent-profile">
-                            <!-- 🔴 Changed to flex vertical layout (top-to-bottom arrangement) -->
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="prof-input-group">
-                                    <label>Email Address</label>
-                                    <input type="email" id="prof-input-email" placeholder="e.g., mail@bluecarbon.com">
-                                </div>
-                                <div class="prof-input-group">
-                                    <label>Contact Number</label>
-                                    <input type="text" id="prof-input-phone" placeholder="Enter contact number">
-                                </div>
-                            </div>
-                            <button class="primary-btn" style="background: #4318ff; width: 100%; margin-top: 15px;"
-                                onclick="handleUpdateProfile()">Update Profile</button>
-                        </div>
-
-                        <!-- Option B: Security Settings -->
-                        <div id="subcontent-security" style="display: none;">
-                            <div class="prof-input-group">
-                                <label>Current Password</label>
-                                <input type="password" id="prof-input-oldpass"
-                                    placeholder="Enter current password to verify">
-                            </div>
-                            <div class="prof-input-group">
-                                <label>New Password</label>
-                                <input type="password" id="prof-input-newpass" placeholder="Enter new password">
-                            </div>
-                            <div class="prof-input-group">
-                                <label>Confirm New Password</label>
-                                <input type="password" id="prof-input-confpass" placeholder="Confirm new password">
-                            </div>
-                            <button class="primary-btn" style="background: #e94560; width: 100%; margin-top: 15px;"
-                                onclick="handleUpdatePassword()">Change Password</button>
-                        </div>
-                    </div>
-
-                    <!-- Preferences content area -->
-                    <div id="pcontent-prefs" style="display: none;">
-                        <p style="font-size: 13px; color: #64748b;">System notification preferences will be available
-                            here.</p>
-                    </div>
-                </div>
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div class="prof-input-group">
+            <label>Email Address</label>
+            <input type="email" id="prof-input-email" placeholder="e.g., mail@bluecarbon.com">
+        </div>
+        <div class="prof-input-group">
+            <label>Contact Number</label>
+            <input type="text" id="prof-input-phone" placeholder="Enter contact number">
+        </div>
+    </div>
+    <button class="primary-btn" style="background: #4318ff; width: 100%; margin-top: 15px;"
+        onclick="handleUpdateProfile()">Update Profile</button>
+</div>
             </div>
         </div>
     </div>

@@ -379,27 +379,43 @@ app.get('/admin-stats', (req, res) => {
     });
 });
 
+app.post('/update-profile', (req, res) => {
+    const { username, email, phone } = req.body;
+
+    if (!username) {
+        return res.json({ success: false, message: "Missing username." });
+    }
+
+    const sql = `UPDATE users SET email = ?, phone = ? WHERE username = ?`;
+
+    db.run(sql, [email, phone, username], function (err) {
+        if (err) {
+            if (err.message.includes("UNIQUE")) {
+                return res.json({ success: false, message: "This email or contact number is already in use." });
+            }
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (this.changes === 0) {
+            return res.json({ success: false, message: "User not found." });
+        }
+        res.json({ success: true });
+    });
+});
 
 // ==========================================
 // Get current user profile
 // ==========================================
-
 app.get('/user-profile', (req, res) => {
-
     const {
         walletAddress
     } = req.query;
 
-
     if (!walletAddress) {
-
         return res.json({
             success: false,
             message: "Wallet address is required."
         });
-
     }
-
 
     const sql = `
         SELECT
@@ -415,42 +431,31 @@ app.get('/user-profile', (req, res) => {
         WHERE walletAddress = ?
     `;
 
-
     db.get(
         sql,
         [walletAddress],
         (err, row) => {
-
             if (err) {
-
                 console.error(err);
-
                 return res.status(500).json({
                     success: false,
                     message: "Database error."
                 });
-
             }
 
-
             if (!row) {
-
                 return res.json({
                     success: false,
                     message: "User profile not found."
                 });
-
             }
-
 
             return res.json({
                 success: true,
                 data: row
             });
-
         }
     );
-
 });
 
 app.get('/user-profile', (req, res) => {
