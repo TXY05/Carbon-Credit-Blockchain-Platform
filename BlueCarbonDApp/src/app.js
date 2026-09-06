@@ -2645,7 +2645,6 @@ window.loadDevDashboard = async function () {
     const carbonToken = contracts.carbonToken;
 
     const allChainProjects = await registry.methods.getAllProjects().call();
-
     const myChainProjects = allChainProjects.filter(
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
