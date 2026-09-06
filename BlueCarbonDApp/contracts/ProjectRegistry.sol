@@ -7,7 +7,6 @@ interface IUserRegistry {
 }
 
 contract ProjectRegistry {
-    uint256 public constant TONNES_PER_TOKEN = 1;
 
     IUserRegistry public userRegistry;
     address public carbonToken;

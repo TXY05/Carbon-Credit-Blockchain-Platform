@@ -1052,7 +1052,7 @@
                                     Data</span></div>
                         </div>
                         <div class="chart-card">
-                            <div class="kpi-title" style="margin-bottom: 10px;">BCC Liquidity Trend (Demo)</div>
+                            <div class="kpi-title" style="margin-bottom: 10px;">BCC Liquidity Trend</div>
                             <div style="flex: 1; position: relative;"><canvas id="liquidityChart"></canvas></div>
                         </div>
                     </div>
@@ -1755,6 +1755,13 @@
                     'function'
                 ) {
                     loadOffsetProjects();
+                }
+
+                if (
+                    typeof loadRetirementHistory ===
+                    'function'
+                ) {
+                    loadRetirementHistory();
                 }
             }
 

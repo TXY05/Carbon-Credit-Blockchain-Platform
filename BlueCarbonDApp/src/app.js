@@ -2,8 +2,8 @@ let web3;
 let currentAccount;
 
 const USER_REGISTRY_ADDRESS = "0xFB7860ca9669d99871B1D7Bd34d8CBe1efdC75F0";
-const PROJECT_REGISTRY_ADDRESS = "0x8d39F86ABc7302e15b682C4B24d04BF4f56b643b";
-const CARBON_TOKEN_ADDRESS = "0x477d0da54D081aEc8f29Ee69F7fA4ac34e6294de";
+const PROJECT_REGISTRY_ADDRESS = "0x158098Fd62522b0Ec137D128F478D8B5901f9C42";
+const CARBON_TOKEN_ADDRESS = "0x5B94Bd4B2d69DB38650A2799F81FC1756EB733E1";
 
 const USER_REGISTRY_ABI = [
   {
@@ -179,721 +179,995 @@ const USER_REGISTRY_ABI = [
 
 const PROJECT_REGISTRY_ABI = [
   {
-    inputs: [
-      { internalType: "uint256", name: "projectID", type: "uint256" },
-      { internalType: "string", name: "projectName", type: "string" },
-      { internalType: "string", name: "location", type: "string" },
-      { internalType: "string", name: "ecosystemType", type: "string" },
-      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
-      { internalType: "uint256", name: "availableCapacity", type: "uint256" },
-    ],
-    name: "createProject",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_userRegistry", type: "address" }],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "uint256", name: "projectID", type: "uint256" },
-      { indexed: true, internalType: "address", name: "developer", type: "address" },
-      { indexed: false, internalType: "string", name: "projectName", type: "string" },
-    ],
-    name: "ProjectCreated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "ProjectApproved",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "ProjectRejected",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "ProjectMinted",
-    type: "event",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "approveProject",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "rejectProject",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "isApproved",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "reduceAvailableCapacity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_carbonToken", type: "address" }],
-    name: "setCarbonToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "setMinted",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "carbonToken",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getAllProjects",
-    outputs: [
+    "inputs": [
       {
-        components: [
-          { internalType: "uint256", name: "projectID", type: "uint256" },
-          { internalType: "address", name: "developer", type: "address" },
-          { internalType: "string", name: "projectName", type: "string" },
-          { internalType: "string", name: "location", type: "string" },
-          { internalType: "string", name: "ecosystemType", type: "string" },
-          { internalType: "uint256", name: "pricePerToken", type: "uint256" },
-          { internalType: "uint256", name: "availableCapacity", type: "uint256" },
-          { internalType: "bool", name: "minted", type: "bool" },
-          { internalType: "uint8", name: "status", type: "uint8" },
-        ],
-        internalType: "struct ProjectRegistry.Project[]",
-        name: "",
-        type: "tuple[]",
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveProject",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
+      {
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ecosystemType",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pricePerToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableCapacity",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "getCapacity",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "getDeveloper",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "getPricePerToken",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getProjectCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
-    name: "isMinted",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "owner",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "projectIDs",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "projects",
-    outputs: [
-      { internalType: "uint256", name: "projectID", type: "uint256" },
-      { internalType: "address", name: "developer", type: "address" },
-      { internalType: "string", name: "projectName", type: "string" },
-      { internalType: "string", name: "location", type: "string" },
-      { internalType: "string", name: "ecosystemType", type: "string" },
-      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
-      { internalType: "uint256", name: "availableCapacity", type: "uint256" },
-      { internalType: "bool", name: "minted", type: "bool" },
-      { internalType: "uint8", name: "status", type: "uint8" },
+    "name": "createProject",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "TONNES_PER_TOKEN",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userRegistry",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    inputs: [],
-    name: "userRegistry",
-    outputs: [{ internalType: "contract IUserRegistry", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectApproved",
+    "type": "event"
   },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      }
+    ],
+    "name": "ProjectCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectMinted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectRejected",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "reduceAvailableCapacity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "rejectProject",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_carbonToken",
+        "type": "address"
+      }
+    ],
+    "name": "setCarbonToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinted",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "carbonToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllProjects",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "projectID",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "developer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "projectName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "ecosystemType",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pricePerToken",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableCapacity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "minted",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum ProjectRegistry.ProjectStatus",
+            "name": "status",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct ProjectRegistry.Project[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCapacity",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getDeveloper",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPricePerToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getProjectCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isApproved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isMinted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projectIDs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projects",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "projectName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ecosystemType",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pricePerToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableCapacity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "minted",
+        "type": "bool"
+      },
+      {
+        "internalType": "enum ProjectRegistry.ProjectStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "userRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IUserRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 const CARBON_TOKEN_ABI = [
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "_IProjectRegistry",
-        type: "address",
+        "internalType": "address",
+        "name": "_IProjectRegistry",
+        "type": "address"
       },
       {
-        internalType: "address",
-        name: "_IUserRegistry",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "_IUserRegistry",
+        "type": "address"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "spender",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
     ],
-    name: "Approval",
-    type: "event",
+    "name": "Approval",
+    "type": "event"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "_spender",
-        type: "address",
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "_value",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
       },
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
     ],
-    name: "approve",
-    outputs: [
+    "name": "approve",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
     ],
-    name: "mintTokens",
-    outputs: [
+    "name": "mintTokens",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
-    name: "purchaseCredits",
-    outputs: [
+    "name": "purchaseCredits",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "payable",
-    type: "function",
+    "stateMutability": "payable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
-    name: "retire",
-    outputs: [
+    "name": "retire",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "buyer",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "developer",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "developer",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "totalPrice",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalPrice",
+        "type": "uint256"
+      }
     ],
-    name: "TokensPurchased",
-    type: "event",
+    "name": "TokensPurchased",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "buyer",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
-    name: "TokensRetired",
-    type: "event",
+    "name": "TokensRetired",
+    "type": "event"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        internalType: "address",
-        name: "_to",
-        type: "address",
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "_value",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
     ],
-    name: "transfer",
-    outputs: [
+    "name": "transfer",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
     ],
-    name: "Transfer",
-    type: "event",
+    "name": "Transfer",
+    "type": "event"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "_from",
-        type: "address",
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
       },
       {
-        internalType: "address",
-        name: "_to",
-        type: "address",
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "_value",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
       },
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
     ],
-    name: "transferFrom",
-    outputs: [
+    "name": "transferFrom",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "_owner",
-        type: "address",
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
       },
       {
-        internalType: "address",
-        name: "_spender",
-        type: "address",
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
     ],
-    name: "allowance",
-    outputs: [
+    "name": "allowance",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "remaining",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "remaining",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "allowed",
-    outputs: [
+    "name": "allowed",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "projectID",
+        "type": "uint256"
+      }
     ],
-    name: "balanceOf",
-    outputs: [
+    "name": "balanceOf",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "projectBalances",
-    outputs: [
+    "name": "projectBalances",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "projectRegistry",
-    outputs: [
+    "inputs": [],
+    "name": "projectRegistry",
+    "outputs": [
       {
-        internalType: "contract IProjectRegistry",
-        name: "",
-        type: "address",
-      },
+        "internalType": "contract IProjectRegistry",
+        "name": "",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "projectRetired",
-    outputs: [
+    "name": "projectRetired",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "retired",
-    outputs: [
+    "name": "retired",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "totalMinted",
-    outputs: [
+    "inputs": [],
+    "name": "totalMinted",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "totalRetired",
-    outputs: [
+    "inputs": [],
+    "name": "totalRetired",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "totalSupply",
-    outputs: [
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "userRegistry",
-    outputs: [
+    "inputs": [],
+    "name": "userRegistry",
+    "outputs": [
       {
-        internalType: "contract IUserRegistry",
-        name: "",
-        type: "address",
-      },
+        "internalType": "contract IUserRegistry",
+        "name": "",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-  },
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 let userRegistryContract = null;
@@ -4087,15 +4361,6 @@ window.loadBuyerPortfolio = async function () {
                         🌱 You don't own any BCC yet.
                         <br><br>
 
-                        <button
-                            class="primary-btn"
-                            onclick="
-                                loadMarketplace()
-                            "
-                        >
-                            Browse Marketplace
-                        </button>
-
                     </td>
                 </tr>
             `;
@@ -4517,6 +4782,8 @@ window.transferBuyerCredits = async function () {
 // ==========================================
 
 window.loadOffsetProjects = async function () {
+  let totalRetirableBCC = 0n;
+
   const select = document.getElementById("offsetProjectSelect");
 
   if (!select) {
@@ -4567,6 +4834,8 @@ window.loadOffsetProjects = async function () {
         .balanceOf(buyerAddress, projectID)
         .call();
 
+      totalRetirableBCC += BigInt(balance);
+
       if (BigInt(balance) === 0n) {
         continue;
       }
@@ -4579,6 +4848,13 @@ window.loadOffsetProjects = async function () {
         } — ${balance} BCC`;
 
       select.appendChild(option);
+    }
+
+    const totalBalanceEl = document.getElementById("offsetTotalBalance");
+
+    if (totalBalanceEl) {
+        totalBalanceEl.innerText =
+            totalRetirableBCC.toLocaleString();
     }
 
     // ==========================================
@@ -4603,6 +4879,204 @@ window.loadOffsetProjects = async function () {
             </option>
         `;
   }
+};
+
+window.loadRetirementHistory = async function () {
+
+    const tbody =
+        document.getElementById("retirementHistoryBody");
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="3"
+                style="
+                    text-align: center;
+                    padding: 30px;
+                    color: #a3aed1;
+                ">
+                Loading retirement history...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        // ==========================================
+        // Wallet
+        // ==========================================
+
+        const buyerAddress =
+            await ensureBuyerWallet();
+
+        // ==========================================
+        // Contracts
+        // ==========================================
+
+        const contracts =
+            await ensureContractsReady();
+
+        const carbonToken =
+            contracts.carbonToken;
+
+        const registry =
+            contracts.projectRegistry;
+
+        // ==========================================
+        // Get projects
+        // ==========================================
+
+        const projects =
+            await registry.methods
+                .getAllProjects()
+                .call();
+
+        tbody.innerHTML = "";
+
+        let hasHistory = false;
+
+        // ==========================================
+        // Check retirement for every project
+        // ==========================================
+
+        for (const project of projects) {
+
+            const projectID =
+                project.projectID;
+
+            if (!projectID || Number(projectID) === 0) {
+                continue;
+            }
+
+            let retiredAmount;
+
+            try {
+
+                retiredAmount =
+                    await carbonToken.methods
+                        .retired(
+                            buyerAddress,
+                            projectID
+                        )
+                        .call();
+
+            } catch (error) {
+
+                console.error(
+                    `Unable to read retired amount for project #${projectID}`,
+                    error
+                );
+
+                continue;
+            }
+
+            if (BigInt(retiredAmount) === 0n) {
+                continue;
+            }
+
+            hasHistory = true;
+
+            const projectName =
+                project.projectName ||
+                `Project #${projectID}`;
+
+            // ==========================================
+            // Create row
+            // ==========================================
+
+            const row =
+                document.createElement("tr");
+
+            row.style.borderBottom =
+                "1px solid #f4f7fe";
+
+            row.innerHTML = `
+                <td style="
+                    padding: 12px;
+                    color: #2b3674;
+                    font-weight: 600;
+                ">
+                    ${projectName}
+
+                    <div style="
+                        color: #a3aed1;
+                        font-size: 11px;
+                        margin-top: 3px;
+                    ">
+                        #${projectID}
+                    </div>
+                </td>
+
+                <td style="
+                    padding: 12px;
+                    color: #4318ff;
+                    font-weight: 700;
+                ">
+                    ${BigInt(retiredAmount).toLocaleString()} BCC
+                </td>
+
+                <td style="
+                    padding: 12px;
+                ">
+                    <span style="
+                        color: #05cd99;
+                        font-weight: 600;
+                    ">
+                        Retired
+                    </span>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        // ==========================================
+        // No history
+        // ==========================================
+
+        if (!hasHistory) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3"
+                        style="
+                            text-align: center;
+                            padding: 30px;
+                            color: #a3aed1;
+                        ">
+                        No retirement history yet.
+                    </td>
+                </tr>
+            `;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error loading retirement history:",
+            error
+        );
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3"
+                    style="
+                        text-align: center;
+                        padding: 30px;
+                        color: #ee5d50;
+                    ">
+                    Unable to load retirement history.
+                    <br><br>
+                    <small>
+                        ${error.message || error}
+                    </small>
+                </td>
+            </tr>
+        `;
+    }
 };
 
 window.openBuyerTransfer = function () {
@@ -4756,6 +5230,8 @@ window.retireBuyerCredits = async function () {
     await loadOffsetProjects();
 
     await loadBuyerTransactions();
+
+    await loadRetirementHistory();
   } catch (error) {
     console.error("BCC retirement failed:", error);
 
