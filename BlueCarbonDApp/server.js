@@ -281,12 +281,6 @@ app.post('/delete-user', (req, res) => {
 
 // 1. Developer Submit a new project
 app.post('/submit-project', (req, res) => {
-    const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken } = req.body;
-
-    const carbonVolume = capacity * 5;
-
-    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
-app.post('/submit-project', (req, res) => {
     const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken, onChainProjectID } = req.body;
 
     const carbonVolume = capacity * 5;
@@ -294,13 +288,10 @@ app.post('/submit-project', (req, res) => {
     const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, onChainProjectID, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
 
     db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, onChainProjectID], function (err) {
-        if (err) return res.status(500).json({ success: false, message: "Database write failure" });
-        console.log(`🌱 New project submission: ${projName} - Submitter: ${username}`);
-        res.json({ success: true });
-    });
-});
-    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken], function (err) {
-        if (err) return res.status(500).json({ success: false, message: "Database write failure" });
+        if (err) {
+            console.error("DB Write Error:", err);
+            return res.status(500).json({ success: false, message: "Database write failure" });
+        }
         console.log(`🌱 New project submission: ${projName} - Submitter: ${username}`);
         res.json({ success: true });
     });
