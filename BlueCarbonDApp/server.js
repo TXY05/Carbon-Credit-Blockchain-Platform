@@ -286,7 +286,19 @@ app.post('/submit-project', (req, res) => {
     const carbonVolume = capacity * 5;
 
     const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
+app.post('/submit-project', (req, res) => {
+    const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken, onChainProjectID } = req.body;
 
+    const carbonVolume = capacity * 5;
+
+    const sql = `INSERT INTO projects (username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, onChainProjectID, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
+
+    db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken, onChainProjectID], function (err) {
+        if (err) return res.status(500).json({ success: false, message: "Database write failure" });
+        console.log(`🌱 New project submission: ${projName} - Submitter: ${username}`);
+        res.json({ success: true });
+    });
+});
     db.run(sql, [username, projName, devAddress, location, capacity, deadline, carbonVolume, ecosystemType, pricePerToken], function (err) {
         if (err) return res.status(500).json({ success: false, message: "Database write failure" });
         console.log(`🌱 New project submission: ${projName} - Submitter: ${username}`);
@@ -333,6 +345,19 @@ app.post('/mark-project-minted', (req, res) => {
         if (err) return res.json({ success: false });
         console.log(`⛏️ 项目 ID ${id} 已标记为 Minted，链上 ID: ${onChainProjectID}`);
         res.json({ success: true });
+    });
+});
+
+// Auto-heal: backfill onChainProjectID for legacy rows that don't have it yet
+app.post('/sync-onchain-id', (req, res) => {
+    const { id, onChainProjectID } = req.body;
+    if (!id || !onChainProjectID) {
+        return res.json({ success: false, message: "Missing id or onChainProjectID" });
+    }
+    const sql = `UPDATE projects SET onChainProjectID = ? WHERE id = ? AND (onChainProjectID IS NULL OR onChainProjectID = '')`;
+    db.run(sql, [onChainProjectID, id], function (err) {
+        if (err) return res.json({ success: false, error: err.message });
+        res.json({ success: true, changed: this.changes });
     });
 });
 

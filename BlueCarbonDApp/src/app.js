@@ -1612,6 +1612,17 @@ document.getElementById("submitBtn").onclick = async function () {
       )
       .send({ from: devAddress });
 
+    // 5.5 Sync to backend so Admin can approve without gas
+    await fetch(`${SERVER_URL}/submit-project`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: localStorage.getItem("loggedInUser"),
+        projName, devAddress, location, capacity, deadline,
+        ecosystemType, pricePerToken, onChainProjectID
+      })
+    });
+
     alert("✅ Project submitted successfully! It's on-chain, waiting for Admin review.");
 
     // Clear form
@@ -1663,10 +1674,8 @@ window.loadPendingProjects = async function () {
   tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">Loading...</td></tr>`;
 
   try {
-    const contracts = await ensureContractsReady();
-    const allProjects = await contracts.projectRegistry.methods.getAllProjects().call();
-
-    const pendingProjects = allProjects.filter((p) => Number(p.status) === 0);
+    const res = await fetch(`${SERVER_URL}/pending-projects`);
+    const pendingProjects = await res.json();
 
     tbody.innerHTML = "";
 
@@ -1677,17 +1686,17 @@ window.loadPendingProjects = async function () {
 
     pendingProjects.forEach((proj) => {
       let row = `<tr>
-                <td><strong>${proj.projectName || "Unnamed Project"}</strong></td>
+                <td><strong>${proj.projName || "Unnamed Project"}</strong></td>
                 <td>${proj.location}</td>
                 <td>${proj.ecosystemType}</td>
-                <td><strong style="color: #5640fa;">${proj.availableCapacity} BCC</strong></td>
+                <td><strong style="color: #5640fa;">${proj.carbonVolume} BCC</strong></td>
                 <td><span style="background: #fff0d4; color: #ff9800; padding: 5px 10px; border-radius: 8px; font-size: 13px;">Pending</span></td>
                 <td>
-                    <button type="button" class="primary-btn" onclick="approveProject(${proj.projectID})" 
+                    <button type="button" class="primary-btn" onclick="approveProject(${proj.id})" 
                             style="padding: 6px 12px; font-size: 13px; background-color: #28a745; margin-right: 5px;">
                         Approve
                     </button>
-                    <button type="button" class="primary-btn" onclick="rejectProject(${proj.projectID})" 
+                    <button type="button" class="primary-btn" onclick="rejectProject(${proj.id})" 
                             style="padding: 6px 12px; font-size: 13px; background-color: #dc3545;">
                         Reject
                     </button>
@@ -1700,17 +1709,19 @@ window.loadPendingProjects = async function () {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ee5d50; padding: 30px 0;">Loading failed: ${error.message || error}</td></tr>`;
   }
 };
+
 // ==========================================
 // Approve and reject (absolute anti-flicker)
 // ==========================================
-window.approveProject = async function (onChainProjectID) {
+window.approveProject = async function (id) {
   try {
-    const adminWallet = await ensureWalletConnected();
-    const contracts = await ensureContractsReady();
-
-    await contracts.projectRegistry.methods
-      .approveProject(onChainProjectID)
-      .send({ from: adminWallet });
+    const res = await fetch(`${SERVER_URL}/approve-project`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const result = await res.json();
+    if (!result.success) throw new Error("Backend rejected the update");
 
     alert("✅ Project approved!");
     loadPendingProjects();
@@ -1720,15 +1731,16 @@ window.approveProject = async function (onChainProjectID) {
   }
 };
 
-window.rejectProject = async function (onChainProjectID) {
+window.rejectProject = async function (id) {
   if (!confirm("⚠️ Are you sure you want to reject this project?")) return;
   try {
-    const adminWallet = await ensureWalletConnected();
-    const contracts = await ensureContractsReady();
-
-    await contracts.projectRegistry.methods
-      .rejectProject(onChainProjectID)
-      .send({ from: adminWallet });
+    const res = await fetch(`${SERVER_URL}/reject-project`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const result = await res.json();
+    if (!result.success) throw new Error("Backend rejected the update");
 
     alert("🚫 Project rejected.");
     loadPendingProjects();
@@ -2829,15 +2841,41 @@ window.loadMyProjects = async function () {
   tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">Loading...</td></tr>`;
 
   try {
-    const devAddress = await ensureWalletConnected();
-    const contracts = await ensureContractsReady();
+    const username = localStorage.getItem("loggedInUser");
+    const res = await fetch(`${SERVER_URL}/my-projects?username=${username}`);
+    const result = await res.json();
+    let myProjects = result.data || [];
 
-    const allProjects = await contracts.projectRegistry.methods.getAllProjects().call();
+    // ==========================================
+    // Self-heal: fix legacy rows missing onChainProjectID
+    // ==========================================
+    const needsFix = myProjects.filter((p) => !p.onChainProjectID);
+    if (needsFix.length > 0) {
+      try {
+        const devAddress = await ensureWalletConnected();
+        const contracts = await ensureContractsReady();
+        const chainProjects = await contracts.projectRegistry.methods.getAllProjects().call();
 
-    // Only keep projects belonging to the currently logged-in wallet
-    const myProjects = allProjects.filter(
-      (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
-    );
+        needsFix.forEach((p) => {
+          const match = chainProjects.find(
+            (cp) =>
+              cp.developer &&
+              cp.developer.toLowerCase() === devAddress.toLowerCase() &&
+              cp.projectName === p.projName
+          );
+          if (match) {
+            p.onChainProjectID = match.projectID; // fix in-memory so this render works right away
+            fetch(`${SERVER_URL}/sync-onchain-id`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: p.id, onChainProjectID: match.projectID }),
+            }).catch(() => {});
+          }
+        });
+      } catch (e) {
+        console.warn("Auto-fix onChainProjectID failed:", e);
+      }
+    }
 
     tbody.innerHTML = "";
 
@@ -2846,21 +2884,14 @@ window.loadMyProjects = async function () {
       return;
     }
 
-    // Sort projects by ID descending (most recently submitted first)
-    myProjects.sort((a, b) => Number(b.projectID) - Number(a.projectID));
-
     myProjects.forEach((p) => {
-      const statusNum = Number(p.status); // 0 = Pending, 1 = Approved, 2 = Rejected
-
       let statusHtml = "";
-      if (statusNum === 1 && !p.minted) {
-        // Approved but not minted yet
+      if (p.status === "approved" && !p.minted) {
         statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>
-                      <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" onclick="event.stopPropagation(); mintProjectToken(${p.projectID})">⛏️ Mint</button>`;
-      } else if (statusNum === 1 && p.minted) {
-        // Approved and already minted
+                      <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" ${!p.onChainProjectID ? "disabled title='Still syncing on-chain ID, refresh in a moment'" : ""} onclick="event.stopPropagation(); mintProjectToken(${p.id}, ${p.onChainProjectID})">⛏️ Mint</button>`;
+      } else if (p.status === "approved" && p.minted) {
         statusHtml = `<span style="background: #e9edf7; color: #4318ff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">🌊 Minted</span>`;
-      } else if (statusNum === 2) {
+      } else if (p.status === "rejected") {
         statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
       } else {
         statusHtml = `<span style="background: #fff0d4; color: #ff9800; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">⏳ Pending</span>`;
@@ -2871,18 +2902,18 @@ window.loadMyProjects = async function () {
       tr.style.cursor = "pointer";
       tr.onmouseover = () => (tr.style.background = "#f8fafc");
       tr.onmouseout = () => (tr.style.background = "transparent");
-      tr.onclick = () => openProjectModal(p.projectID);
+      tr.onclick = () => openProjectModal(p.onChainProjectID);
       tr.innerHTML = `
         <td style="padding: 15px 12px;">
-          <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projectName || "Unnamed Project"}</div>
-          <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.projectID}</div>
+          <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projName || "Unnamed Project"}</div>
+          <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.onChainProjectID || p.id}</div>
         </td>
         <td style="padding: 15px 12px;">
           <div style="font-size: 13px; color: #2b3674;">${p.location || "Unknown"}</div>
           <div style="font-size: 12px; color: #64748b; margin-top: 4px;">${p.ecosystemType || "Unknown"}</div>
         </td>
         <td style="padding: 15px 12px; font-weight: bold; color: #4318ff; font-size: 15px;">
-          ${p.availableCapacity}
+          ${p.carbonVolume}
         </td>
         <td style="padding: 15px 12px;">
           ${statusHtml}
@@ -3194,27 +3225,28 @@ window.closeProjectModal = function () {
 // ==========================================
 // Developer: Click the Mint button to pay gas and mint on-chain
 // ==========================================
-window.mintProjectToken = async function (onChainProjectID) {
+window.mintProjectToken = async function (dbId, onChainProjectID) {
   try {
     const devAddress = await ensureWalletConnected();
     const contracts = await ensureContractsReady();
 
-    // 1. First confirm the status (optional, but safer)
     const project = await contracts.projectRegistry.methods.projects(onChainProjectID).call();
-
-    if (Number(project.status) !== 1) {
-      alert("⚠️ This project has not been approved by Admin yet, cannot mint.");
-      return;
-    }
     if (project.minted) {
       alert("✅ This project has already been minted.");
       return;
     }
 
-    // 2. Directly call on-chain mintTokens
+    // Directly call on-chain mintTokens (developer pays gas here)
     await contracts.carbonToken.methods
       .mintTokens(onChainProjectID)
       .send({ from: devAddress });
+
+    // Sync mint status back to backend
+    await fetch(`${SERVER_URL}/mark-project-minted`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: dbId, onChainProjectID })
+    });
 
     alert("✅ Mint successful!");
     loadMyProjects(); // Refresh the table
