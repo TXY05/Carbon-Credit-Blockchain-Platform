@@ -1128,8 +1128,11 @@
                         <div class="chart-card">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                 <div>
-                                    <div class="kpi-title">Recent Transaction Volume (Demo)</div>
+                                    <div class="kpi-title">Recent Transaction Volume</div>
                                 </div>
+                                <div
+                                    style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">
+                                    Live Logic</div>
                             </div>
                             <div style="flex: 1; position: relative; margin-top: 10px; height: 80px;"><canvas
                                     id="txChart"></canvas></div>
@@ -1139,12 +1142,12 @@
                             <div class="kpi-header">
                                 <div>
                                     <div class="kpi-title">Admin Node Health</div>
-                                    <div class="kpi-value" style="font-size: 20px;">Operational</div>
+                                    <div class="kpi-value" style="font-size: 20px;" id="dash-node-health">Checking...</div>
                                 </div>
                                 <div class="kpi-icon" style="background: #e9edf7; color: #4318ff;">⚡</div>
                             </div>
                             <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 100%; background: #05cd99;"></div>
+                                <div class="progress-bar-fill" id="node-health-bar" style="width: 0%; background: #05cd99;"></div>
                             </div>
                         </div>
                     </div>

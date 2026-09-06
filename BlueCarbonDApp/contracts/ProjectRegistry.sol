@@ -13,6 +13,12 @@ contract ProjectRegistry {
     address public carbonToken;
     address public owner;
 
+    enum ProjectStatus {
+        Pending,
+        Approved,
+        Rejected
+    }
+
     struct Project {
         uint256 projectID;
         address developer;
@@ -22,6 +28,7 @@ contract ProjectRegistry {
         uint256 pricePerToken;
         uint256 availableCapacity;
         bool minted;
+        ProjectStatus status;
     }
 
     mapping(uint256 => Project) public projects;
@@ -53,6 +60,8 @@ contract ProjectRegistry {
         string projectName
     );
 
+    event ProjectApproved(uint256 indexed projectID);
+    event ProjectRejected(uint256 indexed projectID);
     event ProjectMinted(uint256 indexed projectID);
 
     constructor(address _userRegistry) {
@@ -71,17 +80,11 @@ contract ProjectRegistry {
         uint256 availableCapacity
     ) external onlyDeveloper returns (bool) {
         require(projectID != 0, "Invalid project ID");
-
         require(projects[projectID].projectID == 0, "Project already exists");
-
         require(bytes(projectName).length > 0, "Invalid project name");
-
         require(bytes(location).length > 0, "Invalid location");
-
         require(bytes(ecosystemType).length > 0, "Invalid ecosystem type");
-
         require(pricePerToken > 0, "Invalid price");
-
         require(availableCapacity > 0, "Invalid capacity");
 
         projects[projectID] = Project({
@@ -92,7 +95,8 @@ contract ProjectRegistry {
             ecosystemType: ecosystemType,
             pricePerToken: pricePerToken,
             availableCapacity: availableCapacity,
-            minted: false
+            minted: false,
+            status: ProjectStatus.Pending
         });
 
         projectIDs.push(projectID);
@@ -100,6 +104,38 @@ contract ProjectRegistry {
         emit ProjectCreated(projectID, msg.sender, projectName);
 
         return true;
+    }
+
+    function approveProject(
+        uint256 projectID
+    ) external onlyAdmin projectExists(projectID) {
+        require(
+            projects[projectID].status == ProjectStatus.Pending,
+            "Project is not pending"
+        );
+
+        projects[projectID].status = ProjectStatus.Approved;
+
+        emit ProjectApproved(projectID);
+    }
+
+    function rejectProject(
+        uint256 projectID
+    ) external onlyAdmin projectExists(projectID) {
+        require(
+            projects[projectID].status == ProjectStatus.Pending,
+            "Project is not pending"
+        );
+
+        projects[projectID].status = ProjectStatus.Rejected;
+
+        emit ProjectRejected(projectID);
+    }
+
+    function isApproved(
+        uint256 projectID
+    ) external view projectExists(projectID) returns (bool) {
+        return projects[projectID].status == ProjectStatus.Approved;
     }
 
     function getAllProjects() external view returns (Project[] memory) {
@@ -132,6 +168,10 @@ contract ProjectRegistry {
         uint256 projectID
     ) external onlyCarbonToken projectExists(projectID) {
         require(!projects[projectID].minted, "Project already minted");
+        require(
+            projects[projectID].status == ProjectStatus.Approved,
+            "Project not approved"
+        );
 
         projects[projectID].minted = true;
 
@@ -143,7 +183,6 @@ contract ProjectRegistry {
         uint256 amount
     ) external onlyCarbonToken projectExists(projectID) {
         require(amount > 0, "Invalid amount");
-
         require(
             projects[projectID].availableCapacity >= amount,
             "Insufficient capacity"
@@ -166,7 +205,6 @@ contract ProjectRegistry {
 
     function setCarbonToken(address _carbonToken) external onlyAdmin {
         require(_carbonToken != address(0), "Invalid CarbonToken");
-
         require(carbonToken == address(0), "Already set");
 
         carbonToken = _carbonToken;

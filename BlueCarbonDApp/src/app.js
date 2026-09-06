@@ -1,9 +1,9 @@
 let web3;
 let currentAccount;
 
-const USER_REGISTRY_ADDRESS = "0xCAeC5026E7aA66fdd6Bb09A4814783a016eF42Ea";
-const PROJECT_REGISTRY_ADDRESS = "0x1dc9671468680DD6bc0F0d4Aff6ea99C483ca8f3";
-const CARBON_TOKEN_ADDRESS = "0xcF375B65A1E82988160F091a9B7bbBAF866a9Eab";
+const USER_REGISTRY_ADDRESS = "0xFB7860ca9669d99871B1D7Bd34d8CBe1efdC75F0";
+const PROJECT_REGISTRY_ADDRESS = "0x8d39F86ABc7302e15b682C4B24d04BF4f56b643b";
+const CARBON_TOKEN_ADDRESS = "0x477d0da54D081aEc8f29Ee69F7fA4ac34e6294de";
 
 const USER_REGISTRY_ABI = [
   {
@@ -2247,6 +2247,7 @@ window.deleteUser = async function (userId) {
 // ==========================================
 let dashChartQueue = null; // Stores the doughnut chart instance to prevent duplicate-creation errors
 let dashChartLiquidity = null; // Stores the liquidity trend line chart instance
+let dashChartTx = null; // Stores the recent transaction volume bar chart instance
 
 window.loadAdminDashboard = async function () {
   try {
@@ -2254,9 +2255,6 @@ window.loadAdminDashboard = async function () {
     let stats = await response.json();
 
     if (stats.success) {
-      document.getElementById("dash-minted").innerText =
-        stats.totalMinted.toLocaleString();
-
       document.getElementById("dash-pending-users").innerText =
         stats.pendingUsers + " ";
 
@@ -2285,19 +2283,26 @@ window.loadAdminDashboard = async function () {
       }
     }
 
-    // Read on-chain Total BCC Offset (totalRetired), Circulating Supply, and Pending Projects
+    // Read on-chain Total BCC Minted, Total BCC Offset (totalRetired), Circulating Supply, and Pending Projects
     let contracts;
     try {
       contracts = await ensureContractsReady();
+      const totalMintedOnChain = await contracts.carbonToken.methods.totalMinted().call();
       const totalRetired = await contracts.carbonToken.methods.totalRetired().call();
+
+      const mintedEl = document.getElementById("dash-minted");
+      if (mintedEl) {
+        mintedEl.innerText = BigInt(totalMintedOnChain).toLocaleString();
+      }
+
       const offsetEl = document.getElementById("dash-offset");
       if (offsetEl) {
         offsetEl.innerText = BigInt(totalRetired).toLocaleString();
       }
 
       const circulatingEl = document.getElementById("dash-circulating");
-      if (circulatingEl && stats.success) {
-        const circulating = BigInt(stats.totalMinted) - BigInt(totalRetired);
+      if (circulatingEl) {
+        const circulating = BigInt(totalMintedOnChain) - BigInt(totalRetired);
         circulatingEl.innerText = circulating.toLocaleString();
       }
 
@@ -2485,6 +2490,95 @@ window.loadAdminDashboard = async function () {
       }
     } catch (e) {
       console.warn("Failed to load liquidity trend:", e);
+    }    // Build the Recent Transaction Volume chart from real purchase events
+    try {
+      if (!contracts) contracts = await ensureContractsReady();
+
+      const txCurrentBlock = Number(await web3.eth.getBlockNumber());
+      const TX_CHUNK_SIZE = 9000;
+      let txFromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+      let purchaseEventsAll = [];
+
+      while (txFromBlock <= txCurrentBlock) {
+        const txToBlock = Math.min(txFromBlock + TX_CHUNK_SIZE - 1, txCurrentBlock);
+        const chunk = await contracts.carbonToken.getPastEvents("TokensPurchased", {
+          fromBlock: txFromBlock,
+          toBlock: txToBlock,
+        });
+        purchaseEventsAll = purchaseEventsAll.concat(chunk);
+        txFromBlock = txToBlock + 1;
+      }
+
+      const txBlockNumbers = new Set(purchaseEventsAll.map((e) => Number(e.blockNumber)));
+      const txBlockTimestamps = new Map();
+      for (const bn of txBlockNumbers) {
+        const block = await web3.eth.getBlock(bn);
+        txBlockTimestamps.set(bn, Number(block.timestamp));
+      }
+
+      const dailyVolume = new Map();
+      for (const ev of purchaseEventsAll) {
+        const ts = txBlockTimestamps.get(Number(ev.blockNumber));
+        const dateLabel = new Date(ts * 1000).toLocaleDateString();
+        const prev = dailyVolume.get(dateLabel) || 0n;
+        dailyVolume.set(dateLabel, prev + BigInt(ev.returnValues.amount));
+      }
+
+      const txLabels = Array.from(dailyVolume.keys());
+      const txValues = Array.from(dailyVolume.values()).map((v) => Number(v));
+
+      const ctxTx = document.getElementById("txChart");
+      if (ctxTx) {
+        if (dashChartTx) dashChartTx.destroy();
+
+        if (txLabels.length > 0) {
+          dashChartTx = new Chart(ctxTx, {
+            type: "bar",
+            data: {
+              labels: txLabels,
+              datasets: [
+                {
+                  label: "Tokens Purchased",
+                  data: txValues,
+                  backgroundColor: "#4318ff",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load recent transaction volume:", e);
+    }
+
+    // Admin Node Health: real check based on whether the blockchain is reachable
+    try {
+      if (!contracts) contracts = await ensureContractsReady();
+      await web3.eth.getBlockNumber();
+
+      const healthEl = document.getElementById("dash-node-health");
+      const healthBar = document.getElementById("node-health-bar");
+      if (healthEl) healthEl.innerText = "Operational";
+      if (healthBar) {
+        healthBar.style.width = "100%";
+        healthBar.style.background = "#05cd99";
+      }
+    } catch (e) {
+      const healthEl = document.getElementById("dash-node-health");
+      const healthBar = document.getElementById("node-health-bar");
+      if (healthEl) healthEl.innerText = "Offline";
+      if (healthBar) {
+        healthBar.style.width = "10%";
+        healthBar.style.background = "#e53e3e";
+      }
     }
   } catch (error) {
     console.error("Failed to load real Dashboard data:", error);
