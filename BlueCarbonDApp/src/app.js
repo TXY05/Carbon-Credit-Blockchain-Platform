@@ -2704,73 +2704,9 @@ window.loadDevDashboard = async function () {
   const currentUser = localStorage.getItem("loggedInUser");
   if (!currentUser) return;
 
-  // ---------- 1. First fetch the project list from the database (no wallet needed) ----------
-  let myProjects = [];
-  try {
-    let res = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
-    let result = await res.json();
-    if (result.success) myProjects = result.data;
-  } catch (error) {
-    console.error("Failed to load My Projects:", error);
-  }
-
-  const totalProjects = myProjects.length;
-  const pendingCount = myProjects.filter((p) => p.status === "pending").length;
-  const approvedCount = myProjects.filter((p) => p.status === "approved").length;
-  const rejectedCount = myProjects.filter((p) => p.status === "rejected").length;
-  const awaitingMint = myProjects.filter((p) => p.status === "approved" && !p.minted);
-
-  document.getElementById("dev-total-projects").innerText = totalProjects;
-  document.getElementById("dev-pipe-pending").innerText = pendingCount;
-  document.getElementById("dev-pipe-approved").innerText = approvedCount;
-  document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
-
-  // Awaiting-mint reminder banner
   const banner = document.getElementById("devActionBanner");
   const bannerText = document.getElementById("devActionText");
   const bannerCta = document.getElementById("devActionCta");
-  if (awaitingMint.length > 0) {
-    banner.classList.remove("no-action");
-    bannerText.innerHTML = `⚠️ You have <strong>${awaitingMint.length}</strong> project(s) approved by Admin! Click here to pay gas and mint your BCC tokens.`;
-    bannerCta.innerText = "Go Mint →";
-  } else {
-    banner.classList.add("no-action");
-    bannerText.innerText = "✅ No pending mint tasks right now, all approved projects have been minted.";
-    bannerCta.innerText = "";
-  }
-
-  // Project pipeline doughnut chart
-  const ctxPipe = document.getElementById("devPipelineChart");
-  if (ctxPipe) {
-    if (devPipelineChartInstance) devPipelineChartInstance.destroy();
-    devPipelineChartInstance = new Chart(ctxPipe, {
-      type: "doughnut",
-      data: {
-        labels: ["Pending", "Approved", "Rejected"],
-        datasets: [
-          {
-            data: [pendingCount, approvedCount, rejectedCount],
-            backgroundColor: ["#ff9800", "#05cd99", "#ee5d50"],
-            borderWidth: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "70%",
-        plugins: { legend: { display: false } },
-      },
-    });
-  }
-
-  // Total BCC Minted: use the carbon volume total of minted projects from the database (consistent with the Admin Dashboard logic)
-  const totalMintedFromDb = myProjects
-    .filter((p) => p.minted)
-    .reduce((sum, p) => sum + (p.carbonVolume || 0), 0);
-  document.getElementById("dev-total-minted").innerText = totalMintedFromDb.toLocaleString();
-
-  // ---------- 2. Real on-chain data that requires wallet connection ----------
   const salesFeedList = document.getElementById("devSalesFeedList");
 
   try {
@@ -2782,17 +2718,60 @@ window.loadDevDashboard = async function () {
 
     const allChainProjects = await registry.methods.getAllProjects().call();
 
-    // Only look at projects belonging to the current wallet address
     const myChainProjects = allChainProjects.filter(
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
+
+    const totalProjects = myChainProjects.length;
+    const pendingCount = myChainProjects.filter((p) => Number(p.status) === 0).length;
+    const approvedCount = myChainProjects.filter((p) => Number(p.status) === 1).length;
+    const rejectedCount = myChainProjects.filter((p) => Number(p.status) === 2).length;
+    const awaitingMint = myChainProjects.filter((p) => Number(p.status) === 1 && !p.minted);
+
+    document.getElementById("dev-total-projects").innerText = totalProjects;
+    document.getElementById("dev-pipe-pending").innerText = pendingCount;
+    document.getElementById("dev-pipe-approved").innerText = approvedCount;
+    document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
+
+    if (awaitingMint.length > 0) {
+      banner.classList.remove("no-action");
+      bannerText.innerHTML = `⚠️ You have <strong>${awaitingMint.length}</strong> project(s) approved by Admin! Click here to pay gas and mint your BCC tokens.`;
+      bannerCta.innerText = "Go Mint →";
+    } else {
+      banner.classList.add("no-action");
+      bannerText.innerText = "✅ No pending mint tasks right now, all approved projects have been minted.";
+      bannerCta.innerText = "";
+    }
+
+    const ctxPipe = document.getElementById("devPipelineChart");
+    if (ctxPipe) {
+      if (devPipelineChartInstance) devPipelineChartInstance.destroy();
+      devPipelineChartInstance = new Chart(ctxPipe, {
+        type: "doughnut",
+        data: {
+          labels: ["Pending", "Approved", "Rejected"],
+          datasets: [
+            {
+              data: [pendingCount, approvedCount, rejectedCount],
+              backgroundColor: ["#ff9800", "#05cd99", "#ee5d50"],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "70%",
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
 
     const projectNameMap = {};
     myChainProjects.forEach((p) => {
       projectNameMap[p.projectID.toString()] = p.projectName;
     });
 
-    // Calculate the quota currently held (not yet sold)
     let availableQuota = 0n;
     for (const p of myChainProjects) {
       try {
@@ -2804,7 +2783,6 @@ window.loadDevDashboard = async function () {
     }
     document.getElementById("dev-available-quota").innerText = availableQuota.toString();
 
-    // Amount sold + revenue: read TokensPurchased events (developer is an indexed field, can filter directly)
     let totalSold = 0n;
     let totalRevenueWei = 0n;
     let salesEvents = [];
@@ -2830,7 +2808,9 @@ window.loadDevDashboard = async function () {
     document.getElementById("dev-revenue").innerText =
       Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
 
-    // Recent sales feed: sort by block number descending, take the latest 5
+    document.getElementById("dev-total-minted").innerText =
+      (availableQuota + totalSold).toLocaleString();
+
     salesEvents.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
     const recentSales = salesEvents.slice(0, 5);
 
@@ -2863,9 +2843,17 @@ window.loadDevDashboard = async function () {
   } catch (error) {
     console.warn("Failed to load on-chain data (possibly not connected to a wallet):", error);
     salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 Please connect MetaMask first to view real quota and sales data.</div>`;
+    document.getElementById("dev-total-projects").innerText = "-";
+    document.getElementById("dev-pipe-pending").innerText = "-";
+    document.getElementById("dev-pipe-approved").innerText = "-";
+    document.getElementById("dev-pipe-rejected").innerText = "-";
+    document.getElementById("dev-total-minted").innerText = "-";
     document.getElementById("dev-available-quota").innerText = "-";
     document.getElementById("dev-total-sold").innerText = "-";
     document.getElementById("dev-revenue").innerText = "-";
+    banner.classList.add("no-action");
+    bannerText.innerText = "🦊 Please connect MetaMask to see your project pipeline.";
+    bannerCta.innerText = "";
   }
 };
 
