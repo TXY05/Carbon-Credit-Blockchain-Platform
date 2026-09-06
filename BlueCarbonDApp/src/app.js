@@ -1,10 +1,9 @@
 let web3;
 let currentAccount;
 
-// 【请确保这里是你在 Remix 部署的真实合约地址】
 const USER_REGISTRY_ADDRESS = "0xCAeC5026E7aA66fdd6Bb09A4814783a016eF42Ea";
-const PROJECT_REGISTRY_ADDRESS = "0x1247b94c46c3608ceBA86F04830a4642112F218e";
-const CARBON_TOKEN_ADDRESS = "0x4F16A09EB4E2877A1b90af687E575FB5A813D60B";
+const PROJECT_REGISTRY_ADDRESS = "0x1dc9671468680DD6bc0F0d4Aff6ea99C483ca8f3";
+const CARBON_TOKEN_ADDRESS = "0xcF375B65A1E82988160F091a9B7bbBAF866a9Eab";
 
 const USER_REGISTRY_ABI = [
   {
@@ -181,136 +180,88 @@ const USER_REGISTRY_ABI = [
 const PROJECT_REGISTRY_ABI = [
   {
     inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "projectName",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "location",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "ecosystemType",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "pricePerToken",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "availableCapacity",
-        type: "uint256",
-      },
+      { internalType: "uint256", name: "projectID", type: "uint256" },
+      { internalType: "string", name: "projectName", type: "string" },
+      { internalType: "string", name: "location", type: "string" },
+      { internalType: "string", name: "ecosystemType", type: "string" },
+      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
+      { internalType: "uint256", name: "availableCapacity", type: "uint256" },
     ],
     name: "createProject",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_userRegistry",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "_userRegistry", type: "address" }],
     stateMutability: "nonpayable",
     type: "constructor",
   },
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "developer",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "projectName",
-        type: "string",
-      },
+      { indexed: true, internalType: "uint256", name: "projectID", type: "uint256" },
+      { indexed: true, internalType: "address", name: "developer", type: "address" },
+      { indexed: false, internalType: "string", name: "projectName", type: "string" },
     ],
     name: "ProjectCreated",
     type: "event",
   },
   {
     anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
+    name: "ProjectApproved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
+    name: "ProjectRejected",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "ProjectMinted",
     type: "event",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
+    name: "approveProject",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
+    name: "rejectProject",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
+    name: "isApproved",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "reduceAvailableCapacity",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_carbonToken",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "_carbonToken", type: "address" }],
     name: "setCarbonToken",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "setMinted",
     outputs: [],
     stateMutability: "nonpayable",
@@ -319,13 +270,7 @@ const PROJECT_REGISTRY_ABI = [
   {
     inputs: [],
     name: "carbonToken",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -335,46 +280,15 @@ const PROJECT_REGISTRY_ABI = [
     outputs: [
       {
         components: [
-          {
-            internalType: "uint256",
-            name: "projectID",
-            type: "uint256",
-          },
-          {
-            internalType: "address",
-            name: "developer",
-            type: "address",
-          },
-          {
-            internalType: "string",
-            name: "projectName",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "location",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "ecosystemType",
-            type: "string",
-          },
-          {
-            internalType: "uint256",
-            name: "pricePerToken",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "availableCapacity",
-            type: "uint256",
-          },
-          {
-            internalType: "bool",
-            name: "minted",
-            type: "bool",
-          },
+          { internalType: "uint256", name: "projectID", type: "uint256" },
+          { internalType: "address", name: "developer", type: "address" },
+          { internalType: "string", name: "projectName", type: "string" },
+          { internalType: "string", name: "location", type: "string" },
+          { internalType: "string", name: "ecosystemType", type: "string" },
+          { internalType: "uint256", name: "pricePerToken", type: "uint256" },
+          { internalType: "uint256", name: "availableCapacity", type: "uint256" },
+          { internalType: "bool", name: "minted", type: "bool" },
+          { internalType: "uint8", name: "status", type: "uint8" },
         ],
         internalType: "struct ProjectRegistry.Project[]",
         name: "",
@@ -385,176 +299,67 @@ const PROJECT_REGISTRY_ABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "getCapacity",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "getDeveloper",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "getPricePerToken",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getProjectCount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "projectID", type: "uint256" }],
     name: "isMinted",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     name: "projectIDs",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     name: "projects",
     outputs: [
-      {
-        internalType: "uint256",
-        name: "projectID",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "developer",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "projectName",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "location",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "ecosystemType",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "pricePerToken",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "availableCapacity",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "minted",
-        type: "bool",
-      },
+      { internalType: "uint256", name: "projectID", type: "uint256" },
+      { internalType: "address", name: "developer", type: "address" },
+      { internalType: "string", name: "projectName", type: "string" },
+      { internalType: "string", name: "location", type: "string" },
+      { internalType: "string", name: "ecosystemType", type: "string" },
+      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
+      { internalType: "uint256", name: "availableCapacity", type: "uint256" },
+      { internalType: "bool", name: "minted", type: "bool" },
+      { internalType: "uint8", name: "status", type: "uint8" },
     ],
     stateMutability: "view",
     type: "function",
@@ -562,26 +367,14 @@ const PROJECT_REGISTRY_ABI = [
   {
     inputs: [],
     name: "TONNES_PER_TOKEN",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "userRegistry",
-    outputs: [
-      {
-        internalType: "contract IUserRegistry",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "contract IUserRegistry", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -1176,7 +969,7 @@ async function ensureContractsReady() {
   };
 }
 
-// Node.js 后端服务器地址
+// Node.js backend server URL
 const SERVER_URL = "http://localhost:3000";
 
 // ==========================================
@@ -1320,7 +1113,7 @@ window.connectAndLogin = async function () {
   try {
 
     // ==================================
-    // 1. Connect MetaMask (含网络检查)
+    // 1. Connect MetaMask (with network check)
     // ==================================
 
     const walletAddress =
@@ -1337,8 +1130,8 @@ window.connectAndLogin = async function () {
       walletAddress
     );
 
-    // 顺便把 username 缓存回 loggedInUser，
-    // 让 My Projects / Submit Project 等旧逻辑继续能用
+    // Also cache the username back to loggedInUser,
+    // so old logic in My Projects / Submit Project etc. can still work
     try {
       const profRes = await fetch(`${SERVER_URL}/user-profile?walletAddress=${walletAddress}`);
       const profData = await profRes.json();
@@ -1346,7 +1139,7 @@ window.connectAndLogin = async function () {
         localStorage.setItem("loggedInUser", profData.data.username);
       }
     } catch (e) {
-      console.warn("无法缓存用户名:", e);
+      console.warn("Unable to cache username:", e);
     }
 
 
@@ -1778,63 +1571,65 @@ window.handleRegister = async function () {
 };
 
 // ==========================================
-// Developer：提交新项目 (修复身份绑定版)
+// Developer: Submit new project (identity-binding fix version)
 // ==========================================
 document.getElementById("submitBtn").onclick = async function () {
-  let projName = document.getElementById("projName").value;
-  let location = document.getElementById("location").value;
+  let projName = document.getElementById("projName").value.trim();
+  let location = document.getElementById("location").value.trim();
   let capacity = document.getElementById("capacity").value;
   let deadline = document.getElementById("deadline").value;
   let ecosystemType = document.getElementById("ecosystemType").value;
   let pricePerToken = document.getElementById("pricePerToken").value;
 
-  // 🔴 核心修复：直接抓取当前登录的 Username
-  let currentUser = localStorage.getItem("loggedInUser");
-
-  if (!projName || !location || !capacity || !deadline) {
-    // alert("🚨 请填写完整所有的项目信息！");
+  if (!projName || !location || !capacity || !deadline || !pricePerToken) {
+    alert("🚨 Please fill in all project information!");
     return;
   }
 
   try {
-    let response = await fetch(`${SERVER_URL}/submit-project`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: currentUser,
-        projName: projName,
-        devAddress: document.getElementById("devAddress").value,
-        location: location,
-        capacity: capacity,
-        deadline: deadline,
-        ecosystemType: ecosystemType,
-        pricePerToken: pricePerToken,
-      }),
-    });
+    // 1. Make sure wallet is connected
+    const devAddress = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
 
-    let result = await response.json();
-    if (result.success) {
-      // alert("✅ 项目提交成功！已进入排队审核。");
+    // 2. Generate a unique on-chain project ID
+    const onChainProjectID = Date.now();
 
-      // 清空表单
-      document.getElementById("projName").value = "";
-      document.getElementById("location").value = "";
-      document.getElementById("capacity").value = "";
-      document.getElementById("deadline").value = "";
+    // 3. Calculate total carbon volume (same logic as before: capacity x 5)
+    const carbonVolume = capacity * 5;
 
-      // 🔴 提交成功后，直接丝滑跳转到 My Projects 页面去欣赏你的成果！
-      navTo("devHistoryPage", "My Projects");
-    } else {
-      // alert(result.message);
-    }
+    // 4. Convert price to wei
+    const priceInWei = web3.utils.toWei(String(pricePerToken), "ether");
+
+    // 5. Directly call on-chain createProject, status defaults to Pending
+    await contracts.projectRegistry.methods
+      .createProject(
+        onChainProjectID,
+        projName,
+        location,
+        ecosystemType,
+        priceInWei,
+        carbonVolume
+      )
+      .send({ from: devAddress });
+
+    alert("✅ Project submitted successfully! It's on-chain, waiting for Admin review.");
+
+    // Clear form
+    document.getElementById("projName").value = "";
+    document.getElementById("location").value = "";
+    document.getElementById("capacity").value = "";
+    document.getElementById("deadline").value = "";
+    document.getElementById("pricePerToken").value = "";
+
+    navTo("devHistoryPage", "My Projects");
   } catch (error) {
-    console.error(error);
-    // alert("🚨 请求报错，请检查控制台。");
+    console.error("Project submission failed:", error);
+    alert("❌ Submission failed: " + (error.message || error));
   }
 };
 
 // ==========================================
-// Admin：项目管理 (Tab切换逻辑)
+// Admin: Project management (tab switching logic)
 // ==========================================
 window.switchProjectTab = function (tab) {
   if (tab === "pending") {
@@ -1859,37 +1654,40 @@ window.switchProjectTab = function (tab) {
 };
 
 // ==========================================
-// 渲染待审核项目 (Pending)
+// Admin: Load pending projects from chain (status = Pending)
 // ==========================================
 window.loadPendingProjects = async function () {
-  try {
-    let response = await fetch(`${SERVER_URL}/pending-projects`);
-    let pendingProjects = await response.json();
+  const tbody = document.getElementById("tableBody");
+  if (!tbody) return;
 
-    let tbody = document.getElementById("tableBody");
-    if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">Loading...</td></tr>`;
+
+  try {
+    const contracts = await ensureContractsReady();
+    const allProjects = await contracts.projectRegistry.methods.getAllProjects().call();
+
+    const pendingProjects = allProjects.filter((p) => Number(p.status) === 0);
+
     tbody.innerHTML = "";
 
     if (pendingProjects.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 目前没有需要审核的项目</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 No projects need review right now</td></tr>`;
       return;
     }
 
     pendingProjects.forEach((proj) => {
       let row = `<tr>
-                <td><strong>${proj.projName || "Unnamed Project"}</strong></td>
+                <td><strong>${proj.projectName || "Unnamed Project"}</strong></td>
                 <td>${proj.location}</td>
-                <td>${proj.capacity} ha</td>
-                <td><strong style="color: #5640fa;">${proj.carbonVolume} BCC</strong></td>
+                <td>${proj.ecosystemType}</td>
+                <td><strong style="color: #5640fa;">${proj.availableCapacity} BCC</strong></td>
                 <td><span style="background: #fff0d4; color: #ff9800; padding: 5px 10px; border-radius: 8px; font-size: 13px;">Pending</span></td>
                 <td>
-                    <!-- 🔴 重点加上 type="button" -->
-                    <button type="button" class="primary-btn" onclick="approveProject(${proj.id})"" 
+                    <button type="button" class="primary-btn" onclick="approveProject(${proj.projectID})" 
                             style="padding: 6px 12px; font-size: 13px; background-color: #28a745; margin-right: 5px;">
                         Approve
                     </button>
-                    <!-- 🔴 重点加上 type="button" -->
-                    <button type="button" class="primary-btn" onclick="rejectProject(${proj.id})" 
+                    <button type="button" class="primary-btn" onclick="rejectProject(${proj.projectID})" 
                             style="padding: 6px 12px; font-size: 13px; background-color: #dc3545;">
                         Reject
                     </button>
@@ -1898,153 +1696,109 @@ window.loadPendingProjects = async function () {
       tbody.innerHTML += row;
     });
   } catch (error) {
-    console.error(error);
+    console.error("Failed to load pending projects:", error);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ee5d50; padding: 30px 0;">Loading failed: ${error.message || error}</td></tr>`;
   }
 };
-
 // ==========================================
-// 审批与驳回 (绝对防闪回)
+// Approve and reject (absolute anti-flicker)
 // ==========================================
-window.approveProject = async function (projectId) {
+window.approveProject = async function (onChainProjectID) {
   try {
-    let response = await fetch(`${SERVER_URL}/approve-project`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: projectId }),
-    });
+    const adminWallet = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
 
-    let result = await response.json();
-    if (result.success) {
-      loadPendingProjects(); // 原地局部刷新
-    }
+    await contracts.projectRegistry.methods
+      .approveProject(onChainProjectID)
+      .send({ from: adminWallet });
+
+    alert("✅ Project approved!");
+    loadPendingProjects();
   } catch (error) {
-    console.error(error);
+    console.error("Approval failed:", error);
+    alert("❌ Approval failed: " + (error.message || error));
   }
 };
 
-window.rejectProject = async function (projectId) {
-  if (!confirm("⚠️ 确定要驳回该项目吗？")) return;
+window.rejectProject = async function (onChainProjectID) {
+  if (!confirm("⚠️ Are you sure you want to reject this project?")) return;
   try {
-    let response = await fetch(`${SERVER_URL}/reject-project`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: projectId }),
-    });
-    if ((await response.json()).success) {
-      // alert("🚫 项目已驳回。");
-      loadPendingProjects(); // 🔴 原地局部刷新
-    }
+    const adminWallet = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
+
+    await contracts.projectRegistry.methods
+      .rejectProject(onChainProjectID)
+      .send({ from: adminWallet });
+
+    alert("🚫 Project rejected.");
+    loadPendingProjects();
   } catch (error) {
-    console.error(error);
+    console.error("Rejection failed:", error);
+    alert("❌ Rejection failed: " + (error.message || error));
   }
 };
 
 // ==========================================
-// 渲染所有项目总览 (Overview) - 带强力报错
+// Render all projects overview - with robust error handling
 // ==========================================
 let allProjectsData = [];
 
 window.loadAllProjects = async function () {
   try {
-    let response = await fetch(`${SERVER_URL}/all-projects`);
-
-    // 核心防呆：如果后端没有这个接口，立刻拦截并弹窗警告
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    allProjectsData = await response.json();
+    const contracts = await ensureContractsReady();
+    allProjectsData = await contracts.projectRegistry.methods.getAllProjects().call();
     applyProjectFilters();
   } catch (error) {
-    console.error("加载大名单失败:", error);
-    // alert("🚨 数据拉取失败！\n请确保你在 server.js 里加上了 /all-projects 接口，并且已经用 Ctrl+C 停止并重新启动了 node server.js！");
+    console.error("Failed to load full project list:", error);
+    alert("🚨 Failed to fetch data: " + (error.message || error));
   }
 };
 
 window.applyProjectFilters = function () {
   const statusFilter = document.getElementById("filterProjectStatus").value;
-  const startDate = document.getElementById("projDateStart").value;
-  const endDate = document.getElementById("projDateEnd").value;
+
+  // On-chain status: 0 = pending, 1 = approved, 2 = rejected
+  const statusMap = { 0: "pending", 1: "approved", 2: "rejected" };
 
   let filtered = allProjectsData.filter((p) => {
-    let matchStatus = statusFilter === "all" || p.status === statusFilter;
-
-    // 日期比对逻辑
-    let matchDate = true;
-    if (p.createdAt) {
-      let rowDate = p.createdAt.split(" ")[0];
-      if (startDate && rowDate < startDate) matchDate = false;
-      if (endDate && rowDate > endDate) matchDate = false;
-    } else {
-      if (startDate || endDate) matchDate = false;
-    }
-
-    return matchStatus && matchDate;
+    const statusText = statusMap[Number(p.status)];
+    return statusFilter === "all" || statusText === statusFilter;
   });
 
   let tbody = document.getElementById("allProjectsTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  filtered.forEach((p) => {
-    let statusColor =
-      p.status === "approved"
-        ? "#28a745"
-        : p.status === "rejected"
-          ? "#dc3545"
-          : "#ff9800";
-    let statusBg =
-      p.status === "approved"
-        ? "#e6f4ea"
-        : p.status === "rejected"
-          ? "#fce8e6"
-          : "#fff0d4";
-    let displayDate = p.createdAt ? p.createdAt.split(" ")[0] : "N/A";
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a3aed1; padding: 30px 0;">No projects match the filter</td></tr>`;
+    return;
+  }
 
-    let clickable = p.minted && p.onChainProjectID;
-    let rowStyle = clickable
-      ? `cursor: pointer;`
-      : `cursor: default;`;
-    let rowOnclick = clickable
-      ? `onclick="openProjectModal(${p.id})"`
-      : ``;
+  filtered.forEach((p) => {
+    const statusText = statusMap[Number(p.status)];
+    let statusColor =
+      statusText === "approved" ? "#28a745" : statusText === "rejected" ? "#dc3545" : "#ff9800";
+    let statusBg =
+      statusText === "approved" ? "#e6f4ea" : statusText === "rejected" ? "#fce8e6" : "#fff0d4";
+
+    let clickable = p.minted;
+    let rowStyle = clickable ? `cursor: pointer;` : `cursor: default;`;
+    let rowOnclick = clickable ? `onclick="openProjectModal(${p.projectID})"` : ``;
 
     let row = `<tr style="${rowStyle}" ${rowOnclick} onmouseover="if(${clickable}) this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-            <td style="color: #a3aed1; font-size: 13px;">${displayDate}</td>
-            <td><strong>${p.projName || "Unnamed Project"}</strong></td>
+            <td>#${p.projectID}</td>
+            <td><strong>${p.projectName || "Unnamed Project"}</strong></td>
             <td>${p.location}</td>
-            <td>${p.capacity} ha</td>
-            <td><strong style="color: #5640fa;">${p.carbonVolume} BCC</strong></td>
-            <td><span style="background: ${statusBg}; color: ${statusColor}; padding: 5px 10px; border-radius: 8px; font-size: 13px; text-transform: capitalize;">${p.status}</span></td>
+            <td>${p.ecosystemType}</td>
+            <td><strong style="color: #5640fa;">${p.availableCapacity} BCC</strong></td>
+            <td><span style="background: ${statusBg}; color: ${statusColor}; padding: 5px 10px; border-radius: 8px; font-size: 13px; text-transform: capitalize;">${statusText}</span></td>
         </tr>`;
-
     tbody.innerHTML += row;
   });
 };
 
-// 🔴 新增：驳回项目逻辑
-window.rejectProject = async function (projectId) {
-  if (!confirm("⚠️ 确定要无情驳回该项目吗？")) return;
-
-  try {
-    let response = await fetch(`${SERVER_URL}/reject-project`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: projectId }),
-    });
-
-    let result = await response.json();
-    if (result.success) {
-      // alert("🚫 项目已被驳回。");
-      loadPendingProjects(); // 刷新表格，该项目会从 pending 列表中消失
-    }
-  } catch (error) {
-    console.error("驳回请求失败:", error);
-  }
-};
-
 // ==========================================
-// Admin：用户管理 (Tab切换逻辑)
+// Admin: User management (tab switching logic)
 // ==========================================
 window.switchUserTab = function (tab) {
   if (tab === "pending") {
@@ -2054,7 +1808,7 @@ window.switchUserTab = function (tab) {
     document.getElementById("tab-pending-users").style.color = "white";
     document.getElementById("tab-all-users").style.background = "#f4f7fe";
     document.getElementById("tab-all-users").style.color = "#2b3674";
-    loadPendingUsers(); // 🔴 切换时拉取待审核数据
+    loadPendingUsers(); // Fetch pending data when switching
   } else {
     document.getElementById("panel-pending-users").style.display = "none";
     document.getElementById("panel-all-users").style.display = "block";
@@ -2062,12 +1816,12 @@ window.switchUserTab = function (tab) {
     document.getElementById("tab-all-users").style.color = "white";
     document.getElementById("tab-pending-users").style.background = "#f4f7fe";
     document.getElementById("tab-pending-users").style.color = "#2b3674";
-    loadAllUsers(); // 🔴 切换时拉取总览数据
+    loadAllUsers(); // Fetch overview data when switching
   }
 };
 
 // ==========================================
-// 渲染待审核用户 (加入 type="button" 终极防刷新)
+// Render pending users (added type="button" to prevent form refresh)
 // ==========================================
 window.loadPendingUsers = async function () {
   try {
@@ -2079,7 +1833,7 @@ window.loadPendingUsers = async function () {
     tbody.innerHTML = "";
 
     if (pendingUsers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 目前没有需要审核的用户</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a3aed1; padding: 30px 0;">🎉 No users need review right now</td></tr>`;
       return;
     }
 
@@ -2089,10 +1843,10 @@ window.loadPendingUsers = async function () {
                 <td style="text-transform: capitalize;">${u.role}</td>
                 <td><span style="background: #fff0d4; color: #ff9800; padding: 5px 10px; border-radius: 8px; font-size: 13px;">Pending</span></td>
                 <td>
-                    <!-- 🔴 重点加上 type="button" -->
+                    <!-- Added type="button" here -->
                     <button type="button" class="primary-btn" onclick="approveUser(${u.id})" style="padding: 6px 12px; font-size: 13px; background-color: #28a745; margin-right: 5px;">Approve</button>
                     
-                    <!-- 🔴 重点加上 type="button" -->
+                    <!-- Added type="button" here -->
                     <button type="button" class="primary-btn" onclick="rejectUser(${u.id})" style="padding: 6px 12px; font-size: 13px; background-color: #dc3545;">Reject</button>
                 </td>
             </tr>`;
@@ -2363,7 +2117,7 @@ window.approveUser = async function (userId) {
 };
 
 window.rejectUser = async function (userId) {
-  if (!confirm("⚠️ 确定要驳回该用户的申请吗？")) return;
+  if (!confirm("⚠️ Are you sure you want to reject this user's application?")) return;
   try {
     let response = await fetch(`${SERVER_URL}/reject-user`, {
       method: "POST",
@@ -2372,8 +2126,8 @@ window.rejectUser = async function (userId) {
     });
 
     if ((await response.json()).success) {
-      // alert("🚫 用户已被驳回。");
-      loadPendingUsers(); // 🔴 原地刷新当前表格
+      // alert("🚫 User has been rejected.");
+      loadPendingUsers(); // Refresh current table in place
     }
   } catch (error) {
     console.error(error);
@@ -2381,17 +2135,17 @@ window.rejectUser = async function (userId) {
 };
 
 // ==========================================
-// Admin：面板 B - 全局数据与过滤器 (Filter)
+// Admin: Panel B - Global data and filters
 // ==========================================
-let allUsersData = []; // 缓存在前端的数据池
+let allUsersData = []; // Frontend data cache
 
 window.loadAllUsers = async function () {
   try {
     let response = await fetch(`${SERVER_URL}/all-users`);
     allUsersData = await response.json();
 
-    // 🔴 加上这句！它会在浏览器的控制台里打印出所有的原始数据
-    console.log("🔥 后端传来的用户数据: ", allUsersData);
+    // Print all raw data to browser console for debugging
+    console.log("🔥 Raw user data from backend: ", allUsersData);
 
     applyUserFilters();
   } catch (error) {
@@ -2409,14 +2163,14 @@ window.applyUserFilters = function () {
     let matchRole = roleFilter === "all" || u.role === roleFilter;
     let matchStatus = statusFilter === "all" || u.status === statusFilter;
 
-    // 日期比对逻辑
+    // Date comparison logic
     let matchDate = true;
     if (u.createdAt) {
-      let rowDate = u.createdAt.split(" ")[0]; // 从 "YYYY-MM-DD HH:MM:SS" 中提取日期
+      let rowDate = u.createdAt.split(" ")[0]; // Extract date from "YYYY-MM-DD HH:MM:SS"
       if (startDate && rowDate < startDate) matchDate = false;
       if (endDate && rowDate > endDate) matchDate = false;
     } else {
-      if (startDate || endDate) matchDate = false; // 旧数据没有日期，如有过滤则不显示
+      if (startDate || endDate) matchDate = false; // Old data has no date, hide it if a filter is applied
     }
 
     return matchRole && matchStatus && matchDate;
@@ -2457,12 +2211,12 @@ window.applyUserFilters = function () {
 };
 
 // ==========================================
-// Admin：物理注销用户
+// Admin: Permanently delete user
 // ==========================================
 window.deleteUser = async function (userId) {
   if (
     !confirm(
-      "⚠️ 确定要彻底注销该账号吗？注销后，任何人都可以重新使用这个 Username 进行注册。",
+      "⚠️ Are you sure you want to permanently delete this account? Once deleted, anyone can re-register with this Username.",
     )
   )
     return;
@@ -2477,21 +2231,21 @@ window.deleteUser = async function (userId) {
     let result = await response.json();
 
     if (result.success) {
-      // alert("🗑️ 账号已注销！该 Username 现在自由了。");
-      loadAllUsers(); // 瞬间刷新表格
+      // alert("🗑️ Account deleted! This Username is now free.");
+      loadAllUsers(); // Instantly refresh table
     } else {
-      // alert("❌ 注销失败：" + result.message);
+      // alert("❌ Deletion failed: " + result.message);
     }
   } catch (error) {
-    console.error("注销请求报错:", error);
-    // alert("🚨 请求失败！请检查你的 VS Code 终端：\n1. 是否已经按 Ctrl+C 停止了旧的服务器？\n2. 是否已经重新输入 node server.js 启动了最新的代码？");
+    console.error("Deletion request error:", error);
+    // alert("🚨 Request failed! Please check your VS Code terminal:\n1. Have you stopped the old server with Ctrl+C?\n2. Have you re-run node server.js with the latest code?");
   }
 };
 
 // ==========================================
-// Admin Dashboard 真实数据抓取与图表渲染
+// Admin Dashboard real data fetch and chart rendering
 // ==========================================
-let dashChartQueue = null; // 用来存储甜甜圈图的实例，防止重复创建报错
+let dashChartQueue = null; // Stores the doughnut chart instance to prevent duplicate-creation errors
 
 window.loadAdminDashboard = async function () {
   try {
@@ -2499,19 +2253,19 @@ window.loadAdminDashboard = async function () {
     let stats = await response.json();
 
     if (stats.success) {
-      // 1. 注入文本数字
+      // 1. Inject text numbers
       document.getElementById("dash-minted").innerText =
         stats.totalMinted.toLocaleString();
       document.getElementById("dash-circulating").innerText =
-        stats.totalMinted.toLocaleString(); // 销毁功能做完前，流通=总发行
+        stats.totalMinted.toLocaleString(); // Until the burn feature is built, circulating = total issued
       document.getElementById("dash-pending-proj").innerText =
-        stats.pendingProjects + " 个";
+        stats.pendingProjects + " ";
       document.getElementById("dash-pending-users").innerText =
-        stats.pendingUsers + " 个";
+        stats.pendingUsers + " ";
       document.getElementById("dash-rejections").innerText =
-        stats.totalRejections + " 次";
+        stats.totalRejections + " ";
 
-      // 2. 计算供需比和进度条
+      // 2. Calculate supply/demand ratio and progress bar
       let dCount = stats.devCount;
       let bCount = stats.buyerCount;
       let totalActive = dCount + bCount;
@@ -2526,19 +2280,19 @@ window.loadAdminDashboard = async function () {
         document.getElementById("bar-buyer").style.width = 100 - dPercent + "%";
       }
 
-      // 3. 动态渲染甜甜圈图表 (队列比例)
+      // 3. Dynamically render doughnut chart (queue ratio)
       const ctxQueue = document.getElementById("queueChart");
       if (ctxQueue) {
-        // 如果图表已经存在，先销毁它，不然画笔会重叠打架
+        // If the chart already exists, destroy it first, or the drawings will overlap and conflict
         if (dashChartQueue) dashChartQueue.destroy();
 
         dashChartQueue = new Chart(ctxQueue, {
           type: "doughnut",
           data: {
-            labels: ["项目审批", "用户审批"],
+            labels: ["Project Approvals", "User Approvals"],
             datasets: [
               {
-                data: [stats.pendingProjects, stats.pendingUsers], // 🔴 真实的动态数据！
+                data: [stats.pendingProjects, stats.pendingUsers], // Real, dynamic data!
                 backgroundColor: ["#4318ff", "#ff9800"],
                 borderWidth: 0,
               },
@@ -2554,31 +2308,31 @@ window.loadAdminDashboard = async function () {
       }
     }
   } catch (error) {
-    console.error("加载真实 Dashboard 数据失败:", error);
+    console.error("Failed to load real Dashboard data:", error);
   }
 };
 
 // ==========================================
-// Admin Dashboard Tab 切换逻辑
+// Admin Dashboard tab switching logic
 // ==========================================
 window.switchDashTab = function (tabName) {
-  // 1. 隐藏所有 Dashboard 模块
+  // 1. Hide all Dashboard modules
   document.getElementById("dash-section-market").style.display = "none";
   document.getElementById("dash-section-queue").style.display = "none";
   document.getElementById("dash-section-eco").style.display = "none";
 
-  // 2. 移除所有按钮的 active 状态 (变成浅色)
+  // 2. Remove active state from all buttons (turn them back to light color)
   document.getElementById("dash-btn-market").classList.remove("active");
   document.getElementById("dash-btn-queue").classList.remove("active");
   document.getElementById("dash-btn-eco").classList.remove("active");
 
-  // 3. 显示被点击的模块，并让对应按钮变成深紫色 active 状态
+  // 3. Show the clicked module and turn its button dark purple / active
   document.getElementById(`dash-section-${tabName}`).style.display = "block";
   document.getElementById(`dash-btn-${tabName}`).classList.add("active");
 };
 
 // ==========================================
-// Profile Modal (个人信息弹窗) 终极逻辑
+// Profile Modal - final logic
 // ==========================================
 window.openProfileModal = async function () {
   document.getElementById("profileModal").classList.add("show");
@@ -2588,7 +2342,7 @@ window.openProfileModal = async function () {
     (await getConnectedWallet());
 
   if (!currentWallet) {
-    document.getElementById("prof-val-user").innerText = "⚠️ 请先连接 MetaMask 登录";
+    document.getElementById("prof-val-user").innerText = "⚠️ Please connect MetaMask to log in first";
     document.getElementById("prof-val-wallet").innerText = "-";
     document.getElementById("prof-val-role").innerText = "-";
     document.getElementById("prof-val-status").innerText = "-";
@@ -2640,7 +2394,7 @@ window.openProfileModal = async function () {
         document.getElementById("avatarPreview").style.backgroundImage = "none";
       }
     } else {
-      // 查不到，大概率是 Admin/Owner 钱包（本来就没在 users 表里，属于正常情况）
+      // Not found - likely an Admin/Owner wallet (not in the users table by design, this is normal)
       document.getElementById("prof-val-user").innerText = "Admin (Owner)";
       document.getElementById("prof-val-role").innerText = "admin";
       document.getElementById("prof-val-status").innerText = "-";
@@ -2648,7 +2402,7 @@ window.openProfileModal = async function () {
     }
   } catch (error) {
     console.error("Profile fetch error:", error);
-    document.getElementById("prof-val-user").innerText = "🚨 网络请求失败";
+    document.getElementById("prof-val-user").innerText = "🚨 Network request failed";
   }
 };
 
@@ -2657,22 +2411,22 @@ window.closeProfileModal = function () {
 };
 
 // ==========================================
-// 退出登录逻辑 (彻底重置版)
+// Logout logic (full reset version)
 // ==========================================
 window.handleLogout = function () {
   if (confirm("Confirm Logout?")) {
-    // 1. 彻底清除本地缓存里的账号记忆
+    // 1. Completely clear the account memory in local cache
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("loggedInWallet");
     if (typeof closeProfileModal === "function") closeProfileModal();
 
-    // 2. 🔴 终极大招：强制刷新当前网页
-    // 刷新后，系统检测不到缓存，会自动将所有 UI 和状态完美重置回最初的 Login 界面
+    // 2. Ultimate move: force refresh the current page
+    // After refreshing, the system won't detect any cache and will automatically reset all UI and state back to the initial Login screen
     window.location.reload();
   }
 };
 
-// 主菜单切换
+// Main menu switching
 window.switchProfTab = function (tab) {
   document.getElementById("ptab-settings").classList.remove("active");
   document.getElementById("ptab-prefs").classList.remove("active");
@@ -2683,7 +2437,7 @@ window.switchProfTab = function (tab) {
   document.getElementById(`pcontent-${tab}`).style.display = "block";
 };
 
-// 子菜单切换
+// Sub-menu switching
 window.switchSubTab = function (tab) {
   document.getElementById("subtab-profile").classList.remove("active");
   document.getElementById("subtab-security").classList.remove("active");
@@ -2694,19 +2448,19 @@ window.switchSubTab = function (tab) {
   document.getElementById(`subcontent-${tab}`).style.display = "block";
 };
 
-// 🔴 真实保存普通资料与新头像
+// Actually save regular profile info and new avatar
 window.handleUpdateProfile = async function () {
   let email = document.getElementById("prof-input-email").value;
   let phone = document.getElementById("prof-input-phone").value;
   const currentUser = localStorage.getItem("loggedInUser");
 
   if (!currentUser) {
-    // alert("❌ 请先正常登录系统！");
+    // alert("❌ Please log in properly first!");
     return;
   }
 
   try {
-    // 1. 发送真实数据给后端保存
+    // 1. Send real data to backend to save
     let response = await fetch(`${SERVER_URL}/update-profile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -2720,7 +2474,7 @@ window.handleUpdateProfile = async function () {
     let result = await response.json();
 
     if (result.success) {
-      // 2. 如果后端保存成功，再保存头像到本地
+      // 2. If backend save succeeded, also save avatar locally
       if (window.pendingAvatarUpdate) {
         localStorage.setItem(
           `avatar_${currentUser}`,
@@ -2730,23 +2484,23 @@ window.handleUpdateProfile = async function () {
       }
       syncGlobalAvatar();
 
-      // alert("✅ 资料保存成功！");
+      // alert("✅ Profile saved successfully!");
 
-      // 3. 刷新弹窗，让你立刻看到左侧名片更新
+      // 3. Refresh the modal so you can immediately see the updated card on the left
       closeProfileModal();
       setTimeout(() => openProfileModal(), 300);
     } else {
-      // 如果邮箱/电话和别人撞了，这里会弹窗报错
+      // If email/phone conflicts with someone else's, an error popup will show here
       // alert("❌ " + result.message);
     }
   } catch (error) {
     console.error(error);
-    // alert("🚨 网络请求失败，请检查后端是否运行。");
+    // alert("🚨 Network request failed, please check if the backend is running.");
   }
 };
 
 // ==========================================
-// 独立修改密码逻辑 (防呆与直接修改)
+// Standalone password change logic (with validation and direct change)
 // ==========================================
 window.handleUpdatePassword = async function () {
   let oldPass = document.getElementById("prof-input-oldpass").value;
@@ -2754,18 +2508,18 @@ window.handleUpdatePassword = async function () {
   let confPass = document.getElementById("prof-input-confpass").value;
   const currentUser = localStorage.getItem("loggedInUser");
 
-  // 1. 基础防呆拦截
+  // 1. Basic validation
   if (!currentUser) return;
   if (!oldPass || !newPass || !confPass) {
-    // alert("🚨 请将三个密码框填写完整！");
+    // alert("🚨 Please fill in all three password fields!");
     return;
   }
   if (newPass !== confPass) {
-    // alert("🚨 两次输入的新密码不一致，请重新输入！");
+    // alert("🚨 The two new passwords do not match, please re-enter!");
     return;
   }
 
-  // 2. 发送给专属换密码接口
+  // 2. Send to the dedicated password change endpoint
   try {
     let response = await fetch(`${SERVER_URL}/update-password`, {
       method: "POST",
@@ -2780,42 +2534,42 @@ window.handleUpdatePassword = async function () {
     let result = await response.json();
 
     if (result.success) {
-      // alert("✅ 密码修改成功！下次登录请使用新密码。");
+      // alert("✅ Password changed successfully! Please use the new password next time you log in.");
 
-      // 修改成功后，把三个输入框清空，假装什么都没发生
+      // Clear the three input fields after a successful change, as if nothing happened
       document.getElementById("prof-input-oldpass").value = "";
       document.getElementById("prof-input-newpass").value = "";
       document.getElementById("prof-input-confpass").value = "";
     } else {
-      // 如果旧密码填错了，后端会在这里拦截
+      // If the old password was wrong, the backend will block it here
       // alert(result.message);
     }
   } catch (error) {
     console.error(error);
-    // alert("🚨 网络请求失败，请检查后端运行状态。");
+    // alert("🚨 Network request failed, please check the backend status.");
   }
 };
-// 🔴 处理头像上传与即时预览
+// Handle avatar upload and instant preview
 window.previewAvatar = function (event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e) {
       const avatarBase64 = e.target.result;
-      // 隐藏默认的 👤 图标，设置背景图
+      // Hide the default 👤 icon, set the background image
       document.getElementById("avatarIcon").style.display = "none";
       document.getElementById("avatarPreview").style.backgroundImage =
         `url(${avatarBase64})`;
 
-      // 把图片数据暂存到全局变量，等待用户点击 Update Profile 保存
+      // Temporarily store the image data in a global variable, waiting for the user to click Update Profile to save
       window.pendingAvatarUpdate = avatarBase64;
     };
-    reader.readAsDataURL(file); // 将图片转为 Base64
+    reader.readAsDataURL(file); // Convert the image to Base64
   }
 };
 
 // ==========================================
-// 全局头像同步逻辑
+// Global avatar sync logic
 // ==========================================
 window.syncGlobalAvatar = function () {
   const currentUser = localStorage.getItem("loggedInUser");
@@ -2825,38 +2579,38 @@ window.syncGlobalAvatar = function () {
   if (!globalBtn || !globalIcon) return;
 
   if (currentUser) {
-    // 去缓存里找当前用户的专属头像
+    // Look up the current user's avatar in the cache
     const savedAvatar = localStorage.getItem(`avatar_${currentUser}`);
     if (savedAvatar) {
       globalBtn.style.backgroundImage = `url(${savedAvatar})`;
-      globalIcon.style.display = "none"; // 隐藏默认的文字小人
+      globalIcon.style.display = "none"; // Hide the default text figure
       return;
     }
   }
 
-  // 如果没找到照片，或者没登录，恢复默认小人
+  // If no photo found, or not logged in, restore the default figure
   globalBtn.style.backgroundImage = "none";
   globalIcon.style.display = "block";
 };
 
-// 页面一加载就偷偷执行一次，防止刷新后头像掉线
+// Quietly run this once when the page loads, to prevent the avatar from being lost after a refresh
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(syncGlobalAvatar, 500);
 });
 
 // ==========================================
-// 侧边栏折叠与展开逻辑
+// Sidebar collapse and expand logic
 // ==========================================
 window.toggleSidebar = function () {
   const sidebar = document.getElementById("mainSidebar");
   const mainContent = document.getElementById("mainContent");
   const headerBtn = document.getElementById("headerSidebarBtn");
 
-  // 切换折叠状态的 CSS class
+  // Toggle the collapsed CSS class
   sidebar.classList.toggle("collapsed");
   mainContent.classList.toggle("expanded");
 
-  // 如果侧边栏被收起了，就在左上角显示出那个小按钮
+  // If the sidebar has been collapsed, show that little button in the top-left corner
   if (sidebar.classList.contains("collapsed")) {
     headerBtn.style.display = "block";
   } else {
@@ -2865,75 +2619,84 @@ window.toggleSidebar = function () {
 };
 
 // ==========================================
-// Developer：加载我名下的所有项目
+// Developer: Load all my projects from the chain
 // ==========================================
 window.loadMyProjects = async function () {
-  const currentUser = localStorage.getItem("loggedInUser");
-  if (!currentUser) return;
+  const tbody = document.getElementById("myProjectsTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">Loading...</td></tr>`;
 
   try {
-    let response = await fetch(
-      `${SERVER_URL}/my-projects?username=${currentUser}`,
+    const devAddress = await ensureWalletConnected();
+    const contracts = await ensureContractsReady();
+
+    const allProjects = await contracts.projectRegistry.methods.getAllProjects().call();
+
+    // Only keep projects belonging to the currently logged-in wallet
+    const myProjects = allProjects.filter(
+      (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
-    let result = await response.json();
 
-    if (result.success) {
-      const tbody = document.getElementById("myProjectsTableBody");
-      tbody.innerHTML = ""; // 清空旧数据
+    tbody.innerHTML = "";
 
-      if (result.data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">No projects found. Go to "Submit Project" to create one! 🌱</td></tr>`;
-        return;
+    if (myProjects.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">No projects found. Go to "Submit Project" to create one! 🌱</td></tr>`;
+      return;
+    }
+
+    // Sort projects by ID descending (most recently submitted first)
+    myProjects.sort((a, b) => Number(b.projectID) - Number(a.projectID));
+
+    myProjects.forEach((p) => {
+      const statusNum = Number(p.status); // 0 = Pending, 1 = Approved, 2 = Rejected
+
+      let statusHtml = "";
+      if (statusNum === 1 && !p.minted) {
+        // Approved but not minted yet
+        statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>
+                      <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" onclick="event.stopPropagation(); mintProjectToken(${p.projectID})">⛏️ Mint</button>`;
+      } else if (statusNum === 1 && p.minted) {
+        // Approved and already minted
+        statusHtml = `<span style="background: #e9edf7; color: #4318ff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">🌊 Minted</span>`;
+      } else if (statusNum === 2) {
+        statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
+      } else {
+        statusHtml = `<span style="background: #fff0d4; color: #ff9800; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">⏳ Pending</span>`;
       }
 
-      result.data.forEach((p) => {
-        // 根据状态生成不同颜色的炫酷 UI 标签
-        let statusHtml = "";
-        if (p.status === "approved" && !p.minted) {
-          statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>
-                        <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" onclick="event.stopPropagation(); mintProjectToken(${p.id})">⛏️ Mint</button>`;
-        } else if (p.status === "approved" && p.minted) {
-          statusHtml = `<span style="background: #e9edf7; color: #4318ff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">🌊 Minted</span>`;
-        } else if (p.status === "rejected") {
-          statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
-        } else {
-          statusHtml = `<span style="background: #fff0d4; color: #ff9800; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">⏳ Pending</span>`;
-        }
-
-        // 组装每一行数据
-        let tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid #f4f7fe";
-        tr.style.cursor = "pointer"; // 🔴 鼠标放上去变小手
-        // 🔴 加个 hover 效果，并且点击触发查看详情 (把 p.id 传进去)
-        tr.onmouseover = () => (tr.style.background = "#f8fafc");
-        tr.onmouseout = () => (tr.style.background = "transparent");
-        tr.onclick = () => openProjectModal(p.id);
-        tr.innerHTML = `
-                    <td style="padding: 15px 12px;">
-                        <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projName || "Unnamed Project"}</div>
-                        <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.id}</div>
-                    </td>
-                    <td style="padding: 15px 12px;">
-                        <div style="font-size: 13px; color: #2b3674;">${p.location || "Unknown"}</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">${p.capacity} Hectares</div>
-                    </td>
-                    <td style="padding: 15px 12px; font-weight: bold; color: #4318ff; font-size: 15px;">
-                        ${p.carbonVolume}
-                    </td>
-                    <td style="padding: 15px 12px;">
-                        ${statusHtml}
-                    </td>
-                `;
-        tbody.appendChild(tr);
-      });
-    }
+      let tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid #f4f7fe";
+      tr.style.cursor = "pointer";
+      tr.onmouseover = () => (tr.style.background = "#f8fafc");
+      tr.onmouseout = () => (tr.style.background = "transparent");
+      tr.onclick = () => openProjectModal(p.projectID);
+      tr.innerHTML = `
+        <td style="padding: 15px 12px;">
+          <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projectName || "Unnamed Project"}</div>
+          <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.projectID}</div>
+        </td>
+        <td style="padding: 15px 12px;">
+          <div style="font-size: 13px; color: #2b3674;">${p.location || "Unknown"}</div>
+          <div style="font-size: 12px; color: #64748b; margin-top: 4px;">${p.ecosystemType || "Unknown"}</div>
+        </td>
+        <td style="padding: 15px 12px; font-weight: bold; color: #4318ff; font-size: 15px;">
+          ${p.availableCapacity}
+        </td>
+        <td style="padding: 15px 12px;">
+          ${statusHtml}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   } catch (error) {
-    console.error("加载我的项目失败:", error);
+    console.error("Failed to load my projects:", error);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ee5d50;">Loading failed: ${error.message || error}</td></tr>`;
   }
 };
 
 // ==========================================
-// Developer Dashboard：核心数据加载
+// Developer Dashboard: Core data loading
 // ==========================================
 let devPipelineChartInstance = null;
 
@@ -2941,14 +2704,14 @@ window.loadDevDashboard = async function () {
   const currentUser = localStorage.getItem("loggedInUser");
   if (!currentUser) return;
 
-  // ---------- 1. 先从数据库拉取项目列表（不需要钱包） ----------
+  // ---------- 1. First fetch the project list from the database (no wallet needed) ----------
   let myProjects = [];
   try {
     let res = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
     let result = await res.json();
     if (result.success) myProjects = result.data;
   } catch (error) {
-    console.error("加载 My Projects 失败:", error);
+    console.error("Failed to load My Projects:", error);
   }
 
   const totalProjects = myProjects.length;
@@ -2962,21 +2725,21 @@ window.loadDevDashboard = async function () {
   document.getElementById("dev-pipe-approved").innerText = approvedCount;
   document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
 
-  // 待铸币提醒横幅
+  // Awaiting-mint reminder banner
   const banner = document.getElementById("devActionBanner");
   const bannerText = document.getElementById("devActionText");
   const bannerCta = document.getElementById("devActionCta");
   if (awaitingMint.length > 0) {
     banner.classList.remove("no-action");
-    bannerText.innerHTML = `⚠️ 您有 <strong>${awaitingMint.length}</strong> 个项目已通过 Admin 审批！点击这里支付 Gas 费并 Mint 您的 BCC 代币。`;
-    bannerCta.innerText = "去 Mint →";
+    bannerText.innerHTML = `⚠️ You have <strong>${awaitingMint.length}</strong> project(s) approved by Admin! Click here to pay gas and mint your BCC tokens.`;
+    bannerCta.innerText = "Go Mint →";
   } else {
     banner.classList.add("no-action");
-    bannerText.innerText = "✅ 目前没有待处理的 Mint 任务，所有已批准项目都已铸币。";
+    bannerText.innerText = "✅ No pending mint tasks right now, all approved projects have been minted.";
     bannerCta.innerText = "";
   }
 
-  // 项目管道甜甜圈图
+  // Project pipeline doughnut chart
   const ctxPipe = document.getElementById("devPipelineChart");
   if (ctxPipe) {
     if (devPipelineChartInstance) devPipelineChartInstance.destroy();
@@ -3001,13 +2764,13 @@ window.loadDevDashboard = async function () {
     });
   }
 
-  // Total BCC Minted：用数据库里已 mint 项目的碳汇总量（和 Admin Dashboard 逻辑一致）
+  // Total BCC Minted: use the carbon volume total of minted projects from the database (consistent with the Admin Dashboard logic)
   const totalMintedFromDb = myProjects
     .filter((p) => p.minted)
     .reduce((sum, p) => sum + (p.carbonVolume || 0), 0);
   document.getElementById("dev-total-minted").innerText = totalMintedFromDb.toLocaleString();
 
-  // ---------- 2. 需要连接钱包才能拉取的真实链上数据 ----------
+  // ---------- 2. Real on-chain data that requires wallet connection ----------
   const salesFeedList = document.getElementById("devSalesFeedList");
 
   try {
@@ -3019,7 +2782,7 @@ window.loadDevDashboard = async function () {
 
     const allChainProjects = await registry.methods.getAllProjects().call();
 
-    // 只看属于当前钱包地址的项目
+    // Only look at projects belonging to the current wallet address
     const myChainProjects = allChainProjects.filter(
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
@@ -3029,19 +2792,19 @@ window.loadDevDashboard = async function () {
       projectNameMap[p.projectID.toString()] = p.projectName;
     });
 
-    // 计算目前手上还持有（尚未卖出）的可用额度
+    // Calculate the quota currently held (not yet sold)
     let availableQuota = 0n;
     for (const p of myChainProjects) {
       try {
         const bal = await carbonToken.methods.balanceOf(devAddress, p.projectID).call();
         availableQuota += BigInt(bal);
       } catch (e) {
-        console.warn("读取项目余额失败:", p.projectID, e);
+        console.warn("Failed to read project balance:", p.projectID, e);
       }
     }
     document.getElementById("dev-available-quota").innerText = availableQuota.toString();
 
-    // 已卖出数量 + 收入：读取 TokensPurchased 事件（developer 是 indexed 字段，可直接过滤）
+    // Amount sold + revenue: read TokensPurchased events (developer is an indexed field, can filter directly)
     let totalSold = 0n;
     let totalRevenueWei = 0n;
     let salesEvents = [];
@@ -3060,19 +2823,19 @@ window.loadDevDashboard = async function () {
 
       salesEvents = purchaseEvents;
     } catch (e) {
-      console.warn("读取销售事件失败:", e);
+      console.warn("Failed to read sales events:", e);
     }
 
     document.getElementById("dev-total-sold").innerText = totalSold.toString();
     document.getElementById("dev-revenue").innerText =
       Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
 
-    // 近期销售动态：按区块号倒序，取最新 5 条
+    // Recent sales feed: sort by block number descending, take the latest 5
     salesEvents.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
     const recentSales = salesEvents.slice(0, 5);
 
     if (recentSales.length === 0) {
-      salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">暂时还没有任何销售记录。</div>`;
+      salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">No sales records yet.</div>`;
     } else {
       salesFeedList.innerHTML = "";
       for (const ev of recentSales) {
@@ -3098,8 +2861,8 @@ window.loadDevDashboard = async function () {
       }
     }
   } catch (error) {
-    console.warn("链上数据加载失败（可能未连接钱包）:", error);
-    salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 请先连接 MetaMask 查看真实的额度与销售数据。</div>`;
+    console.warn("Failed to load on-chain data (possibly not connected to a wallet):", error);
+    salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 Please connect MetaMask first to view real quota and sales data.</div>`;
     document.getElementById("dev-available-quota").innerText = "-";
     document.getElementById("dev-total-sold").innerText = "-";
     document.getElementById("dev-revenue").innerText = "-";
@@ -3107,50 +2870,37 @@ window.loadDevDashboard = async function () {
 };
 
 // ==========================================
-// Developer：打开项目详情，查看额度和买家
+// Open project details to view quota and buyers (usable by both Developer / Admin)
 // ==========================================
-window.openProjectModal = async function (projectId) {
+window.openProjectModal = async function (onChainProjectID) {
   try {
-    // 1. 先拿 SQLite 里的基本资料（标题、地点、面积）
-    let response = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
-    let result = await response.json();
-    if (!result.success) {
-      alert("无法获取项目详情");
-      return;
-    }
-    const p = result.project;
+    const contracts = await ensureContractsReady();
 
-    document.getElementById("det-title").innerText = p.projName || "Unnamed Project";
+    // 1. Get basic project info
+    const p = await contracts.projectRegistry.methods.projects(onChainProjectID).call();
+
+    document.getElementById("det-title").innerText = p.projectName || "Unnamed Project";
     document.getElementById("det-loc").innerText = p.location || "Unknown";
-    document.getElementById("det-cap").innerText = p.capacity;
+    document.getElementById("det-cap").innerText = "-"; // Area info is no longer on-chain, can be left blank or omitted
 
     const tbody = document.getElementById("det-sales-body");
     tbody.innerHTML = "";
 
-    // 2. 还没 mint 的项目，没有链上数据可查
-    if (!p.minted || !p.onChainProjectID) {
-      document.getElementById("det-total").innerText = p.carbonVolume;
+    // 2. Not minted yet, no sales data to query
+    if (!p.minted) {
+      document.getElementById("det-total").innerText = "-";
       document.getElementById("det-avail").innerText = "-";
       document.getElementById("det-sold").innerText = "-";
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">项目还没 Mint，暂无链上销售数据。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">Project not minted yet, no on-chain sales data available.</td></tr>`;
       document.getElementById("projectDetailModal").classList.add("show");
       return;
     }
 
-    // 3. 已 mint：连接钱包，去链上查真实数据
-    const devAddress = await ensureWalletConnected();
-    const contracts = await ensureContractsReady();
+    // 3. Already minted: query real on-chain data
+    const devAddress = p.developer;
+    const devBalance = await contracts.carbonToken.methods.balanceOf(devAddress, onChainProjectID).call();
 
-    // 用 parseInt 处理，避免数据库里存的是 "xxxx.0" 这种带小数点的字符串
-    const onChainID = parseInt(p.onChainProjectID, 10);
-
-    const totalCapacity = await contracts.projectRegistry.methods.getCapacity(onChainID).call();
-    const devBalance = await contracts.carbonToken.methods.balanceOf(devAddress, onChainID).call();
-
-    document.getElementById("det-total").innerText = p.carbonVolume;
-    document.getElementById("det-avail").innerText = devBalance;
-
-    // 4. 拉取这个项目的所有购买事件（分批查询，避免超过 RPC 单次查询上限）
+    // Derive amount sold from total (availableCapacity now keeps decreasing, so we accumulate from events)
     const currentBlock = Number(await web3.eth.getBlockNumber());
     const CHUNK_SIZE = 9000;
     let purchaseEvents = [];
@@ -3159,7 +2909,7 @@ window.openProjectModal = async function (projectId) {
     while (fromBlock <= currentBlock) {
       const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
       const chunkEvents = await contracts.carbonToken.getPastEvents("TokensPurchased", {
-        filter: { projectID: onChainID },
+        filter: { projectID: onChainProjectID },
         fromBlock,
         toBlock,
       });
@@ -3167,25 +2917,18 @@ window.openProjectModal = async function (projectId) {
       fromBlock = toBlock + 1;
     }
 
-    console.log("🔍 查到的购买事件:", purchaseEvents.map(ev => ({
-      projectID: ev.returnValues.projectID,
-      buyer: ev.returnValues.buyer,
-      amount: ev.returnValues.amount,
-      txHash: ev.transactionHash
-    })));
-
     let totalSold = 0n;
     for (const ev of purchaseEvents) {
       totalSold += BigInt(ev.returnValues.amount);
     }
-    
+
+    const totalGenerated = BigInt(devBalance) + totalSold;
+
+    document.getElementById("det-total").innerText = totalGenerated.toString();
+    document.getElementById("det-avail").innerText = devBalance;
     document.getElementById("det-sold").innerText = totalSold.toString();
 
-    // 🔴 用"总量减去已卖出"来算 Available，比直接读钱包余额更符合直觉
-    const calculatedAvailable = BigInt(p.carbonVolume) - totalSold;
-    document.getElementById("det-avail").innerText = calculatedAvailable.toString();
-
-    // 5. 渲染买家记录
+    // 4. Render buyer records
     if (purchaseEvents.length === 0) {
       tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
     } else {
@@ -3210,8 +2953,8 @@ window.openProjectModal = async function (projectId) {
 
     document.getElementById("projectDetailModal").classList.add("show");
   } catch (error) {
-    console.error("打开项目详情失败:", error);
-    alert("加载项目详情失败：" + (error.message || error));
+    console.error("Failed to open project details:", error);
+    alert("Failed to load project details: " + (error.message || error));
   }
 };
 
@@ -3221,63 +2964,35 @@ window.closeProjectModal = function () {
 
 
 // ==========================================
-// Developer：点击 Mint 按钮，自己付 gas 上链铸币
+// Developer: Click the Mint button to pay gas and mint on-chain
 // ==========================================
-window.mintProjectToken = async function (projectId) {
+window.mintProjectToken = async function (onChainProjectID) {
   try {
-    // 1. 拿项目最新详情
-    let res = await fetch(`${SERVER_URL}/project-details?id=${projectId}`);
-    let result = await res.json();
-    if (!result.success) throw new Error("找不到项目详情");
-    const p = result.project;
-
-    if (p.status !== "approved") {
-      alert("⚠️ 项目还没被 Admin 批准，不能 mint。");
-      return;
-    }
-    if (p.minted) {
-      alert("✅ 这个项目已经 mint 过了。");
-      return;
-    }
-
-    // 2. 连接 dev 自己的钱包
     const devAddress = await ensureWalletConnected();
     const contracts = await ensureContractsReady();
 
-    const priceInWei = web3.utils.toWei(String(p.pricePerToken || "0"), "ether");
+    // 1. First confirm the status (optional, but safer)
+    const project = await contracts.projectRegistry.methods.projects(onChainProjectID).call();
 
-    // 3. 生成一个链上专用的唯一 ID（用时间戳，避免和别人的 SQLite id 撞号）
-    const onChainProjectID = Date.now();
+    if (Number(project.status) !== 1) {
+      alert("⚠️ This project has not been approved by Admin yet, cannot mint.");
+      return;
+    }
+    if (project.minted) {
+      alert("✅ This project has already been minted.");
+      return;
+    }
 
-    // 4. 先在 ProjectRegistry 上注册项目
-    await contracts.projectRegistry.methods
-      .createProject(
-        onChainProjectID,
-        p.projName,
-        p.location,
-        p.ecosystemType || "Unspecified",
-        priceInWei,
-        p.carbonVolume
-      )
-      .send({ from: devAddress });
-
-    // 5. 再调用 CarbonToken 的 mintTokens 真正铸币
+    // 2. Directly call on-chain mintTokens
     await contracts.carbonToken.methods
       .mintTokens(onChainProjectID)
       .send({ from: devAddress });
 
-    // 6. 通知后端把 SQLite 状态也标记为 minted，并存下链上的 ID（转成字符串，避免 SQLite 存成 REAL 带小数点）
-    await fetch(`${SERVER_URL}/mark-project-minted`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: p.id, onChainProjectID: String(onChainProjectID) }),
-    });
-
-    alert("✅ Mint 成功！");
-    loadMyProjects(); // 刷新表格
+    alert("✅ Mint successful!");
+    loadMyProjects(); // Refresh the table
   } catch (error) {
     console.error("Mint failed:", error);
-    alert("❌ Mint 失败：" + (error.message || error));
+    alert("❌ Mint failed: " + (error.message || error));
   }
 };
 
@@ -4855,8 +4570,8 @@ window.loadBuyerTransactions = async function () {
 
     transactions.sort((a, b) => b.blockNumber - a.blockNumber);
     // ==========================================
-    // // No transactions
-    // // ==========================================
+    // No transactions
+    // ==========================================
     if (transactions.length === 0) {
       tbody.innerHTML = `<tr> <td colspan="5" 
             style=" text-align: center; padding: 30px; 

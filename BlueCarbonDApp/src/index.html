@@ -28,7 +28,7 @@
             border-color: #e94560;
         }
 
-        /* 侧边栏底部的钱包按钮专属样式 */
+        /* Dedicated style for the wallet button at the bottom of the sidebar */
         .wallet-btn {
             width: 100%;
             background: rgba(255, 255, 255, 0.1);
@@ -50,7 +50,7 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        /* 右上角圆形头像按钮 */
+        /* Top-right circular avatar button */
         .avatar-btn {
             background: white;
             border: none;
@@ -71,7 +71,7 @@
         }
 
         /* ========================================== */
-        /* Admin Dashboard 专属卡片与 Grid 布局样式 */
+        /* Admin Dashboard dedicated card and grid layout styles */
         /* ========================================== */
         .dash-section {
             margin-bottom: 30px;
@@ -84,7 +84,7 @@
             margin-bottom: 15px;
         }
 
-        /* 核心 Grid 网格系统 */
+        /* Core grid system */
         .dash-grid-4 {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -103,7 +103,7 @@
             gap: 20px;
         }
 
-        /* 卡片基础美化 */
+        /* Basic card styling */
         .kpi-card {
             background: white;
             border-radius: 16px;
@@ -163,7 +163,7 @@
         }
 
 
-        /* Developer Dashboard 专属样式 */
+        /* Developer Dashboard dedicated styles */
         .dash-grid-2 {
             display: grid;
             grid-template-columns: 1.3fr 1fr;
@@ -234,7 +234,7 @@
             flex-direction: column;
         }
 
-        /* 进度条美化 */
+        /* Progress bar styling */
         .progress-bar-bg {
             background: #f4f7fe;
             height: 10px;
@@ -250,11 +250,11 @@
         }
 
         /* ========================================== */
-        /* Sidebar 折叠与展开动画系统 */
+        /* Sidebar collapse and expand animation system */
         /* ========================================== */
         .sidebar {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            /* 确保原始宽度固定，防止变形 */
+            /* Ensure the original width is fixed to prevent distortion */
         }
 
         .sidebar.collapsed {
@@ -273,7 +273,7 @@
             padding-left: 0 !important;
         }
 
-        /* Logo 悬浮时显示折叠按钮特效 */
+        /* Logo hover shows the collapse button effect */
         .sidebar-logo {
             cursor: pointer;
             display: flex;
@@ -285,7 +285,7 @@
 
         .sidebar-logo:hover {
             background: rgba(255, 255, 255, 0.05);
-            /* 鼠标移上去背景微微变亮 */
+            /* Background slightly brightens on hover */
         }
 
         .logo-collapse-icon {
@@ -301,7 +301,7 @@
             transform: translateX(0);
         }
 
-        /* 顶部 Header 的呼出小按钮 (默认隐藏) */
+        /* Top header's toggle button (hidden by default) */
         .header-menu-btn {
             display: none;
             background: none;
@@ -323,30 +323,30 @@
 
 <body>
 
-    <!-- 左侧固定菜单栏 -->
+    <!-- Left fixed sidebar menu -->
     <aside id="mainSidebar" class="sidebar" style="display: flex; flex-direction: column; overflow-y: auto;">
 
-        <!-- 🔴 替换原本的 Logo，加入折叠按钮与点击事件 -->
+        <!-- 🔴 Replace the original logo, add a collapse button and click event -->
         <div class="sidebar-logo" onclick="toggleSidebar()" title="Collapse Menu">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span>B</span> BlueCarbon
             </div>
-            <!-- 这个就是 hover 时才会出现的 sidebar 小图案 -->
+            <!-- This is the small sidebar icon that only appears on hover -->
             <div class="logo-collapse-icon">☰</div>
         </div>
 
-        <!-- ... 下面的导航栏保持不变 ... -->
+        <!-- ... the nav menu below remains unchanged ... -->
 
         <div class="nav-menu">
-            <!-- 游客可见 -->
+            <!-- Visible to guests -->
             <div class="nav-item menu-guest" id="nav-login" onclick="navTo('loginPage', 'Welcome Back')">🏠 Register /
                 Login</div>
 
-            <!-- 共有模块 -->
+            <!-- Shared module -->
             <div class="nav-item menu-shared" id="nav-market" onclick="navTo('marketPage', 'Carbon Marketplace')">🛒
                 Marketplace</div>
 
-            <!-- Developer 专区 -->
+            <!-- Developer section -->
             <div class="nav-item menu-dev" id="nav-devDash" onclick="navTo('devDashPage', 'Developer Dashboard')">📊 Dev
                 Dashboard</div>
             <div class="nav-item menu-dev" id="nav-devSubmit" onclick="navTo('devSubmitPage', 'Submit Project')">🌱
@@ -354,7 +354,7 @@
             <div class="nav-item menu-dev" id="nav-devHistory" onclick="navTo('devHistoryPage', 'My Projects')">📝 My
                 Projects</div>
 
-            <!-- Admin 专区 -->
+            <!-- Admin section -->
             <div class="nav-item menu-admin" id="nav-adminDash" onclick="navTo('adminDashPage', 'Admin Dashboard')">📈
                 Admin Dashboard</div>
             <div class="nav-item menu-admin" id="nav-adminReview" onclick="navTo('adminReviewPage', 'Project Review')">
@@ -362,7 +362,7 @@
             <div class="nav-item menu-admin" id="nav-adminUsers" onclick="navTo('adminUsersPage', 'User Management')">👥
                 User Management</div>
 
-            <!-- Buyer 专区 -->
+            <!-- Buyer section -->
             <div class="nav-item menu-buyer" id="nav-buyerPortfolio"
                 onclick="navTo('buyerPortfolioPage', 'My Portfolio')">💼 My Portfolio</div>
             <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="navTo('buyerOffsetPage', 'Offset & Claim')">
@@ -375,23 +375,23 @@
 
     </aside>
 
-    <!-- 右侧动态内容区 -->
+    <!-- Right dynamic content area -->
     <main id="mainContent" class="main-wrapper">
         <header class="header">
 
-            <!-- 🔴 用 div 把标题包起来，并在前面塞入一个小汉堡按钮 -->
+            <!-- 🔴 Wrap the title with a div and insert a small hamburger button before it -->
             <div style="display: flex; align-items: center;">
                 <button id="headerSidebarBtn" class="header-menu-btn" onclick="toggleSidebar()">☰</button>
                 <h1 id="pageTitle" style="margin: 0;">Welcome Back</h1>
             </div>
-            <!-- 右上角圆形头像 -->
+            <!-- Top-right circular avatar -->
             <div class="header-actions menu-shared"
                 style="display: none; background: transparent; padding: 0; box-shadow: none;">
-                <!-- 把原来的 avatar-btn 替换成这个 -->
-                <!-- 右上角圆形头像 -->
+                <!-- Replace the original avatar-btn with this -->
+                <!-- Top-right circular avatar -->
                 <div class="header-actions menu-shared"
                     style="display: none; background: transparent; padding: 0; box-shadow: none;">
-                    <!-- 🔴 新增了 id="globalAvatarBtn" 和 id="globalAvatarIcon" -->
+                    <!-- 🔴 Added id="globalAvatarBtn" and id="globalAvatarIcon" -->
                     <button class="avatar-btn" id="globalAvatarBtn" onclick="openProfileModal()"
                         title="Profile & Settings" style="background-size: cover; background-position: center;">
                         <span id="globalAvatarIcon">👤</span>
@@ -716,7 +716,7 @@
 
             </div>
 
-            <!-- Shared 画布 -->
+            <!-- Shared canvas -->
             <div id="marketPage" class="page-layer">
 
                 <div class="card">
@@ -775,7 +775,7 @@
                 </div>
             </div>
 
-            <!-- Developer 画布 -->
+            <!-- Developer canvas -->
             <div id="devDashPage" class="page-layer">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <div>
@@ -789,7 +789,7 @@
                     </button>
                 </div>
 
-                <!-- KPI 卡片区 -->
+                <!-- KPI card section -->
                 <div class="dash-grid-4" style="margin-bottom: 20px;">
                     <div class="gradient-kpi-card" style="background: linear-gradient(135deg, #c471f5, #fa71cd);">
                         <div class="gradient-kpi-title">Total Projects</div>
@@ -822,7 +822,7 @@
                     </div>
                 </div>
 
-                <!-- 紧急待办警报 -->
+                <!-- Urgent action alert -->
                 <div id="devActionBanner" class="action-banner no-action"
                     onclick="navTo('devHistoryPage', 'My Projects')">
                     <div style="display: flex; align-items: center; gap: 12px;">
@@ -833,7 +833,7 @@
                     <span style="font-weight: 700; color: #4318ff;" id="devActionCta"></span>
                 </div>
 
-                <!-- 项目管道 + 近期销售 -->
+                <!-- Project pipeline + recent sales -->
                 <div class="dash-grid-2">
                     <div class="chart-card">
                         <div class="kpi-title" style="margin-bottom: 10px;">Project Pipeline</div>
@@ -935,7 +935,7 @@
                         Review</button>
                 </div>
             </div>
-            <!-- 画布：Developer 专属的 My Projects -->
+            <!-- Canvas: Developer's own My Projects -->
             <div id="devHistoryPage" class="page-layer">
                 <div class="card">
                     <div
@@ -961,17 +961,17 @@
                             </tr>
                         </thead>
                         <tbody id="myProjectsTableBody">
-                            <!-- 数据将由 JavaScript 动态生成 -->
+                            <!-- Data will be dynamically generated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- 画布：Admin Dashboard -->
-            <!-- 画布：Admin Dashboard -->
+            <!-- Canvas: Admin Dashboard -->
+            <!-- Canvas: Admin Dashboard -->
             <div id="adminDashPage" class="page-layer">
                 <style>
-                    /* Dashboard 专属 Tab 样式 */
+                    /* Dashboard dedicated tab style */
                     .dash-tab-btn {
                         flex: 1;
                         padding: 12px;
@@ -992,7 +992,7 @@
                     }
                 </style>
 
-                <!-- 顶部标题区 -->
+                <!-- Top title area -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <div>
                         <h2 class="card-title" style="margin-bottom: 5px;">Admin Dashboard</h2>
@@ -1005,7 +1005,7 @@
                     </button>
                 </div>
 
-                <!-- 🔴 新增：模块切换 Tab 栏 -->
+                <!-- 🔴 Added: module switch tab bar -->
                 <div style="display: flex; gap: 10px; margin-bottom: 30px;">
                     <button type="button" id="dash-btn-market" class="dash-tab-btn active"
                         onclick="switchDashTab('market')">📊 Market Liquidity</button>
@@ -1015,7 +1015,7 @@
                         Ecosystem Logic</button>
                 </div>
 
-                <!-- 模块 1：宏观市场 (默认显示) -->
+                <!-- Module 1: Macro Market (shown by default) -->
                 <div id="dash-section-market" class="dash-section">
                     <div class="dash-grid-3-1">
                         <div class="kpi-card">
@@ -1058,7 +1058,7 @@
                     </div>
                 </div>
 
-                <!-- 模块 2：任务调度 (默认隐藏) -->
+                <!-- Module 2: Task Scheduling (hidden by default) -->
                 <div id="dash-section-queue" class="dash-section" style="display: none;">
                     <div class="dash-grid-3-1">
                         <div class="kpi-card">
@@ -1110,7 +1110,7 @@
                     </div>
                 </div>
 
-                <!-- 模块 3：生态底层 (默认隐藏) -->
+                <!-- Module 3: Ecosystem Foundation (hidden by default) -->
                 <div id="dash-section-eco" class="dash-section" style="display: none;">
                     <div class="dash-grid-3">
                         <div class="kpi-card">
@@ -1160,12 +1160,12 @@
                     </div>
                 </div>
             </div>
-            <!-- 画布：Admin Project Review -->
+            <!-- Canvas: Admin Project Review -->
             <div id="adminReviewPage" class="page-layer">
                 <div class="card">
                     <h2 class="card-title">Project Review Management</h2>
 
-                    <!-- 内部切换器：Pending vs Overview -->
+                    <!-- Internal switcher: Pending vs Overview -->
                     <div style="display: flex; gap: 10px; margin-bottom: 25px;">
                         <button type="button" id="tab-pending-projects" onclick="switchProjectTab('pending')"
                             style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #5640fa; color: white; border-radius: 8px; cursor: pointer;">⏳
@@ -1175,14 +1175,14 @@
                             All Projects Overview</button>
                     </div>
 
-                    <!-- 🔴 面板 A：待审核项目 -->
+                    <!-- 🔴 Panel A: Pending Projects -->
                     <div id="panel-pending-projects">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Project Title</th>
                                     <th>Location</th>
-                                    <th>Capacity</th>
+                                    <th>Ecosystem</th>
                                     <th>Volume (BCC)</th>
                                     <th>Status</th>
                                     <th>Action</th>
@@ -1192,7 +1192,7 @@
                         </table>
                     </div>
 
-                    <!-- 🔴 面板 B：所有项目总览 (带 Date Range) -->
+                    <!-- 🔴 Panel B: All Projects Overview (with Date Range) -->
                     <div id="panel-all-projects" style="display: none;">
                         <div
                             style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f4f7fe; padding: 15px; border-radius: 12px;">
@@ -1206,23 +1206,14 @@
                                     <option value="rejected">Rejected</option>
                                 </select>
                             </div>
-                            <!-- 新增：日期范围过滤器 -->
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <label style="font-size: 14px; font-weight: 600;">Date Range:</label>
-                                <input type="date" id="projDateStart" onchange="applyProjectFilters()"
-                                    style="margin: 0; padding: 6px; width: 130px;">
-                                <span style="color: #a3aed1;">to</span>
-                                <input type="date" id="projDateEnd" onchange="applyProjectFilters()"
-                                    style="margin: 0; padding: 6px; width: 130px;">
-                            </div>
                         </div>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Date</th>
+                                    <th>ID</th>
                                     <th>Project Title</th>
                                     <th>Location</th>
-                                    <th>Capacity</th>
+                                    <th>Ecosystem</th>
                                     <th>Volume</th>
                                     <th>Status</th>
                                 </tr>
@@ -1245,7 +1236,7 @@
                             All Users Overview</button>
                     </div>
 
-                    <!-- 面板 A：待审核名单 -->
+                    <!-- Panel A: Pending Approval List -->
                     <div id="panel-pending-users">
                         <table>
                             <thead>
@@ -1260,8 +1251,8 @@
                         </table>
                     </div>
 
-                    <!-- 面板 B：全员大名单 -->
-                    <!-- 🔴 面板 B：全员大名单 (带 Date Range) -->
+                    <!-- Panel B: All Users List -->
+                    <!-- 🔴 Panel B: All Users List (with Date Range) -->
                     <div id="panel-all-users" style="display: none;">
                         <div
                             style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f4f7fe; padding: 15px; border-radius: 12px;">
@@ -1284,7 +1275,7 @@
                                     <option value="rejected">Rejected</option>
                                 </select>
                             </div>
-                            <!-- 新增：日期范围过滤器 -->
+                            <!-- Added: date range filter -->
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <label style="font-size: 14px; font-weight: 600;">Date Range:</label>
                                 <input type="date" id="userDateStart" onchange="applyUserFilters()"
@@ -1310,7 +1301,7 @@
                 </div>
             </div>
 
-            <!-- Buyer 画布 -->
+            <!-- Buyer canvas -->
             <div id="buyerPortfolioPage" class="page-layer">
 
                 <div class="card">
@@ -1679,7 +1670,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script>
-        // === 1. 基础页面切换逻辑 ===
+        // === 1. Basic page switching logic ===
         function navTo(targetPageId, titleText) {
             document.querySelectorAll('.page-layer').forEach(el => el.classList.remove('active-page'));
 
@@ -1693,18 +1684,18 @@
             if (document.getElementById(navId)) document.getElementById(navId).classList.add('active');
             document.getElementById('pageTitle').innerText = titleText;
 
-            // 🔴 严格隔离的后台数据拉取触发器
+            // 🔴 Strictly isolated backend data fetch trigger
             if (targetPageId === 'adminDashPage') {
                 if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
             }
 
 
-            // 👇 Developer Dashboard 数据拉取触发器
+            // 👇 Developer Dashboard data fetch trigger
             if (targetPageId === 'devDashPage') {
                 if (typeof loadDevDashboard === 'function') loadDevDashboard();
             }
 
-            // 👇 补上 User Management 的触发器！进来就默认激活 Pending Tab
+            // 👇 Add the User Management trigger! Activate the Pending Tab by default on entry
             if (targetPageId === 'adminUsersPage') {
                 if (typeof switchUserTab === 'function') {
                     switchUserTab('pending');
@@ -1713,7 +1704,7 @@
                 }
             }
 
-            // 👇 Project Review 也升级成激活 Pending Tab，防止闪回
+            // 👇 Project Review is also upgraded to activate the Pending Tab, to prevent flashback
             if (targetPageId === 'adminReviewPage') {
                 if (typeof switchProjectTab === 'function') {
                     switchProjectTab('pending');
@@ -1722,13 +1713,13 @@
                 }
             }
 
-            // 👇 自动拉取 Developer 的 My Projects
+            // 👇 Automatically fetch Developer's My Projects
             if (targetPageId === 'devHistoryPage') {
                 if (typeof loadMyProjects === 'function') loadMyProjects();
             }
 
             
-            // 👇 进入 Submit Project 页面时，自动把登入用的钱包地址填进去
+            // 👇 When entering the Submit Project page, automatically fill in the wallet address used for login
             if (targetPageId === 'devSubmitPage') {
                 const savedWallet = localStorage.getItem('loggedInWallet');
                 const devAddrInput = document.getElementById('devAddress');
@@ -1787,7 +1778,7 @@
         }
 
 
-        // === 2. 角色权限切换逻辑 (终极纯净版) ===
+        // === 2. Role permission switching logic (final clean version) ===
         function switchRole(role) {
 
             document.querySelectorAll(
@@ -1835,7 +1826,7 @@
     </script>
     <script src="app.js"></script>
     <!-- ========================================== -->
-    <!-- Profile Modal (个人信息弹窗 - 终极版) -->
+    <!-- Profile Modal (personal info modal - final version) -->
     <!-- ========================================== -->
     <style>
         .modal-overlay {
@@ -1903,8 +1894,8 @@
             gap: 30px;
         }
 
-        /* 左侧：基础信息 */
-        /* 左侧：基础信息 */
+        /* Left: basic info */
+        /* Left: basic info */
         .prof-left {
             flex: 1;
             background: #f8fafc;
@@ -1914,7 +1905,7 @@
             flex-direction: column;
         }
 
-        /* 🔴 升级头像样式：支持背景图和鼠标悬浮交互 */
+        /* 🔴 Upgraded avatar style: supports background image and mouse hover interaction */
         .prof-avatar {
             width: 80px;
             height: 80px;
@@ -1935,7 +1926,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
 
-        /* 鼠标移上去显示的半透明黑底和相机图标 */
+        /* Semi-transparent black background and camera icon shown on hover */
         .avatar-overlay {
             position: absolute;
             bottom: 0;
@@ -1978,7 +1969,7 @@
             margin-left: 10px;
         }
 
-        /* 登出按钮 */
+        /* Logout button */
         .logout-btn {
             margin-top: auto;
             padding: 12px;
@@ -1996,7 +1987,7 @@
             background: #ea4d5d;
         }
 
-        /* 右侧：设置 Tabs */
+        /* Right: settings tabs */
         .prof-right {
             flex: 1.5;
         }
@@ -2022,7 +2013,7 @@
             border-bottom-color: #4318ff;
         }
 
-        /* 右侧：子菜单 Sub-tabs */
+        /* Right: submenu sub-tabs */
         .sub-tabs {
             display: flex;
             gap: 15px;
@@ -2082,13 +2073,13 @@
                 <button class="modal-close" onclick="closeProfileModal()">✕</button>
             </div>
             <div class="modal-body">
-                <!-- 左侧：只读数字名片 -->
+                <!-- Left: read-only digital business card -->
                 <div class="prof-left">
-                    <!-- 🔴 隐藏的文件选择器 -->
+                    <!-- 🔴 Hidden file picker -->
                     <input type="file" id="avatarUpload" accept="image/*" style="display: none;"
                         onchange="previewAvatar(event)">
 
-                    <!-- 🔴 可点击交互的头像框 -->
+                    <!-- 🔴 Clickable interactive avatar frame -->
                     <div class="prof-avatar" id="avatarPreview"
                         onclick="document.getElementById('avatarUpload').click()" title="Change Profile Picture">
                         <span id="avatarIcon">👤</span>
@@ -2115,18 +2106,18 @@
                     <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
                 </div>
 
-                <!-- 右侧：设置区 -->
+                <!-- Right: settings area -->
                 <div class="prof-right">
-                    <!-- 主 Tabs -->
+                    <!-- Main tabs -->
                     <div class="prof-tabs">
                         <div class="prof-tab active" id="ptab-settings" onclick="switchProfTab('settings')">Settings
                         </div>
                         <div class="prof-tab" id="ptab-prefs" onclick="switchProfTab('prefs')">Preferences</div>
                     </div>
 
-                    <!-- Settings 内容区 -->
+                    <!-- Settings content area -->
                     <div id="pcontent-settings">
-                        <!-- 子 Tabs -->
+                        <!-- Sub tabs -->
                         <div class="sub-tabs">
                             <div class="sub-tab active" id="subtab-profile" onclick="switchSubTab('profile')">Profile
                                 Settings</div>
@@ -2134,9 +2125,9 @@
                                 Settings</div>
                         </div>
 
-                        <!-- 选项 A：Profile Settings -->
+                        <!-- Option A: Profile Settings -->
                         <div id="subcontent-profile">
-                            <!-- 🔴 改成 flex 纵向排列 (上下的排列方式) -->
+                            <!-- 🔴 Changed to flex vertical layout (top-to-bottom arrangement) -->
                             <div style="display: flex; flex-direction: column; gap: 15px;">
                                 <div class="prof-input-group">
                                     <label>Email Address</label>
@@ -2151,7 +2142,7 @@
                                 onclick="handleUpdateProfile()">Update Profile</button>
                         </div>
 
-                        <!-- 选项 B：Security Settings -->
+                        <!-- Option B: Security Settings -->
                         <div id="subcontent-security" style="display: none;">
                             <div class="prof-input-group">
                                 <label>Current Password</label>
@@ -2171,7 +2162,7 @@
                         </div>
                     </div>
 
-                    <!-- Preferences 内容区 -->
+                    <!-- Preferences content area -->
                     <div id="pcontent-prefs" style="display: none;">
                         <p style="font-size: 13px; color: #64748b;">System notification preferences will be available
                             here.</p>
@@ -2182,7 +2173,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- Project Details Modal (项目详情与销售记录) -->
+    <!-- Project Details Modal (project details and sales records) -->
     <!-- ========================================== -->
     <div id="projectDetailModal" class="modal-overlay">
         <div class="profile-modal" style="width: 700px;">
@@ -2192,7 +2183,7 @@
             </div>
             <div class="modal-body" style="flex-direction: column; gap: 20px;">
 
-                <!-- 顶部：项目基础与额度条 -->
+                <!-- Top: project basics and quota bar -->
                 <div
                     style="background: #f8fafc; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between;">
                     <div>
@@ -2221,7 +2212,7 @@
                     </div>
                 </div>
 
-                <!-- 底部：买家记录列表 -->
+                <!-- Bottom: buyer records list -->
                 <div>
                     <h5 style="margin: 10px 0; color: #2b3674; font-size: 14px;">Buyer Records (Who bought your BCC)
                     </h5>
@@ -2235,7 +2226,7 @@
                                 </tr>
                             </thead>
                             <tbody id="det-sales-body">
-                                <!-- 销售记录会生成在这里 -->
+                                <!-- Sales records will be generated here -->
                             </tbody>
                         </table>
                     </div>
