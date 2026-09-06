@@ -2246,6 +2246,7 @@ window.deleteUser = async function (userId) {
 // Admin Dashboard real data fetch and chart rendering
 // ==========================================
 let dashChartQueue = null; // Stores the doughnut chart instance to prevent duplicate-creation errors
+let dashChartLiquidity = null; // Stores the liquidity trend line chart instance
 
 window.loadAdminDashboard = async function () {
   try {
@@ -2253,46 +2254,22 @@ window.loadAdminDashboard = async function () {
     let stats = await response.json();
 
     if (stats.success) {
-      // 1. Inject text numbers
       document.getElementById("dash-minted").innerText =
         stats.totalMinted.toLocaleString();
-      document.getElementById("dash-circulating").innerText =
-        stats.totalMinted.toLocaleString(); // Until the burn feature is built, circulating = total issued
-      document.getElementById("dash-pending-proj").innerText =
-        stats.pendingProjects + " ";
+
       document.getElementById("dash-pending-users").innerText =
         stats.pendingUsers + " ";
-      document.getElementById("dash-rejections").innerText =
-        stats.totalRejections + " ";
 
-      // 2. Calculate supply/demand ratio and progress bar
-      let dCount = stats.devCount;
-      let bCount = stats.buyerCount;
-      let totalActive = dCount + bCount;
-
-      let ratioText =
-        bCount === 0 ? `${dCount} : 0` : `${(dCount / bCount).toFixed(2)} : 1`;
-      document.getElementById("dash-ratio").innerText = ratioText;
-
-      if (totalActive > 0) {
-        let dPercent = Math.round((dCount / totalActive) * 100);
-        document.getElementById("bar-dev").style.width = dPercent + "%";
-        document.getElementById("bar-buyer").style.width = 100 - dPercent + "%";
-      }
-
-      // 3. Dynamically render doughnut chart (queue ratio)
       const ctxQueue = document.getElementById("queueChart");
       if (ctxQueue) {
-        // If the chart already exists, destroy it first, or the drawings will overlap and conflict
         if (dashChartQueue) dashChartQueue.destroy();
-
         dashChartQueue = new Chart(ctxQueue, {
           type: "doughnut",
           data: {
             labels: ["Project Approvals", "User Approvals"],
             datasets: [
               {
-                data: [stats.pendingProjects, stats.pendingUsers], // Real, dynamic data!
+                data: [stats.pendingProjects, stats.pendingUsers],
                 backgroundColor: ["#4318ff", "#ff9800"],
                 borderWidth: 0,
               },
@@ -2306,6 +2283,208 @@ window.loadAdminDashboard = async function () {
           },
         });
       }
+    }
+
+    // Read on-chain Total BCC Offset (totalRetired), Circulating Supply, and Pending Projects
+    let contracts;
+    try {
+      contracts = await ensureContractsReady();
+      const totalRetired = await contracts.carbonToken.methods.totalRetired().call();
+      const offsetEl = document.getElementById("dash-offset");
+      if (offsetEl) {
+        offsetEl.innerText = BigInt(totalRetired).toLocaleString();
+      }
+
+      const circulatingEl = document.getElementById("dash-circulating");
+      if (circulatingEl && stats.success) {
+        const circulating = BigInt(stats.totalMinted) - BigInt(totalRetired);
+        circulatingEl.innerText = circulating.toLocaleString();
+      }
+
+      // Pending Projects now lives on-chain, not in SQLite
+      const allChainProjects = await contracts.projectRegistry.methods.getAllProjects().call();
+      const onChainPendingProjects = allChainProjects.filter((p) => Number(p.status) === 0).length;
+      const pendingProjEl = document.getElementById("dash-pending-proj");
+      if (pendingProjEl) {
+        pendingProjEl.innerText = onChainPendingProjects + " ";
+      }
+
+            // Developer/Buyer counts should reflect the whole team's on-chain registrations, not just local SQLite
+      try {
+        const userCurrentBlock = Number(await web3.eth.getBlockNumber());
+        const CHUNK_SIZE = 9000;
+        let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+        let registeredEvents = [];
+
+        while (fromBlock <= userCurrentBlock) {
+          const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, userCurrentBlock);
+          const chunk = await contracts.userRegistry.getPastEvents("UserRegistered", {
+            fromBlock,
+            toBlock,
+          });
+          registeredEvents = registeredEvents.concat(chunk);
+          fromBlock = toBlock + 1;
+        }
+
+        const roleByAddress = new Map();
+        for (const ev of registeredEvents) {
+          roleByAddress.set(ev.returnValues.user.toLowerCase(), Number(ev.returnValues.role));
+        }
+
+        let onChainDevCount = 0;
+        let onChainBuyerCount = 0;
+        for (const role of roleByAddress.values()) {
+          if (role === 2) onChainDevCount++;
+          if (role === 1) onChainBuyerCount++;
+        }
+
+        const onChainTotalActive = onChainDevCount + onChainBuyerCount;
+        const onChainRatioText =
+          onChainBuyerCount === 0
+            ? `${onChainDevCount} : 0`
+            : `${(onChainDevCount / onChainBuyerCount).toFixed(2)} : 1`;
+
+        document.getElementById("dash-ratio").innerText = onChainRatioText;
+
+        if (onChainTotalActive > 0) {
+          const dPercent = Math.round((onChainDevCount / onChainTotalActive) * 100);
+          document.getElementById("bar-dev").style.width = dPercent + "%";
+          document.getElementById("bar-buyer").style.width = 100 - dPercent + "%";
+        }
+      } catch (e) {
+        console.warn("Failed to read on-chain user registrations:", e);
+      }
+
+      // Queue doughnut chart should also reflect real on-chain pending count
+      const ctxQueueLive = document.getElementById("queueChart");
+      if (ctxQueueLive && stats.success) {
+        if (dashChartQueue) dashChartQueue.destroy();
+        dashChartQueue = new Chart(ctxQueueLive, {
+          type: "doughnut",
+          data: {
+            labels: ["Project Approvals", "User Approvals"],
+            datasets: [
+              {
+                data: [onChainPendingProjects, stats.pendingUsers],
+                backgroundColor: ["#4318ff", "#ff9800"],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "75%",
+            plugins: { legend: { display: false } },
+          },
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to read on-chain admin data:", e);
+    }
+
+    // Build the BCC Liquidity Trend chart from real mint/retire events
+    try {
+      if (!contracts) contracts = await ensureContractsReady();
+
+      const currentBlock = Number(await web3.eth.getBlockNumber());
+      const CHUNK_SIZE = 9000;
+      const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+      let mintEvents = [];
+      let retireEvents = [];
+      let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+
+      while (fromBlock <= currentBlock) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
+
+        const mintChunk = await contracts.carbonToken.getPastEvents("Transfer", {
+          filter: { from: ZERO_ADDRESS },
+          fromBlock,
+          toBlock,
+        });
+        mintEvents = mintEvents.concat(mintChunk);
+
+        const retireChunk = await contracts.carbonToken.getPastEvents("TokensRetired", {
+          fromBlock,
+          toBlock,
+        });
+        retireEvents = retireEvents.concat(retireChunk);
+
+        fromBlock = toBlock + 1;
+      }
+
+      const blockNumbers = new Set([
+        ...mintEvents.map((e) => Number(e.blockNumber)),
+        ...retireEvents.map((e) => Number(e.blockNumber)),
+      ]);
+      const blockTimestamps = new Map();
+      for (const bn of blockNumbers) {
+        const block = await web3.eth.getBlock(bn);
+        blockTimestamps.set(bn, Number(block.timestamp));
+      }
+
+      const deltas = [];
+      for (const ev of mintEvents) {
+        deltas.push({
+          timestamp: blockTimestamps.get(Number(ev.blockNumber)),
+          amount: BigInt(ev.returnValues.value),
+        });
+      }
+      for (const ev of retireEvents) {
+        deltas.push({
+          timestamp: blockTimestamps.get(Number(ev.blockNumber)),
+          amount: -BigInt(ev.returnValues.amount),
+        });
+      }
+      deltas.sort((a, b) => a.timestamp - b.timestamp);
+
+      const dailyMap = new Map();
+      let running = 0n;
+      for (const d of deltas) {
+        running += d.amount;
+        const dateLabel = new Date(d.timestamp * 1000).toLocaleDateString();
+        dailyMap.set(dateLabel, running);
+      }
+
+      const labels = Array.from(dailyMap.keys());
+      const values = Array.from(dailyMap.values()).map((v) => Number(v));
+
+      const ctxLiquidity = document.getElementById("liquidityChart");
+      if (ctxLiquidity) {
+        if (dashChartLiquidity) dashChartLiquidity.destroy();
+
+        if (labels.length === 0) {
+          // No mint/retire history yet — nothing to plot
+        } else {
+          dashChartLiquidity = new Chart(ctxLiquidity, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Circulating Supply",
+                  data: values,
+                  borderColor: "#4318ff",
+                  backgroundColor: "rgba(67, 24, 255, 0.1)",
+                  fill: true,
+                  tension: 0.3,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load liquidity trend:", e);
     }
   } catch (error) {
     console.error("Failed to load real Dashboard data:", error);
@@ -2627,8 +2806,11 @@ window.loadMyProjects = async function () {
 // Developer Dashboard: Core data loading
 // ==========================================
 let devPipelineChartInstance = null;
+let devDashboardRequestId = 0; // 👈 新增:请求ID守卫
 
 window.loadDevDashboard = async function () {
+  const requestId = ++devDashboardRequestId; // 👈 新增
+
   const currentUser = localStorage.getItem("loggedInUser");
   if (!currentUser) return;
 
@@ -2639,12 +2821,17 @@ window.loadDevDashboard = async function () {
 
   try {
     const devAddress = await ensureWalletConnected();
+    if (requestId !== devDashboardRequestId) return; // 👈 新增：过期请求直接放弃
+
     const contracts = await ensureContractsReady();
+    if (requestId !== devDashboardRequestId) return; // 👈 新增
 
     const registry = contracts.projectRegistry;
     const carbonToken = contracts.carbonToken;
 
     const allChainProjects = await registry.methods.getAllProjects().call();
+    if (requestId !== devDashboardRequestId) return; // 👈 新增
+
     const myChainProjects = allChainProjects.filter(
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
@@ -2708,6 +2895,7 @@ window.loadDevDashboard = async function () {
         console.warn("Failed to read project balance:", p.projectID, e);
       }
     }
+    if (requestId !== devDashboardRequestId) return; // 👈 新增
     document.getElementById("dev-available-quota").innerText = availableQuota.toString();
 
     let totalSold = 0n;
@@ -2715,11 +2903,21 @@ window.loadDevDashboard = async function () {
     let salesEvents = [];
 
     try {
-      const purchaseEvents = await carbonToken.getPastEvents("TokensPurchased", {
-        filter: { developer: devAddress },
-        fromBlock: CARBON_TOKEN_DEPLOYMENT_BLOCK,
-        toBlock: "latest",
-      });
+      const currentBlock = Number(await web3.eth.getBlockNumber());
+      const CHUNK_SIZE = 9000;
+      let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
+      let purchaseEvents = [];
+
+      while (fromBlock <= currentBlock) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
+        const chunkEvents = await carbonToken.getPastEvents("TokensPurchased", {
+          filter: { developer: devAddress },
+          fromBlock,
+          toBlock,
+        });
+        purchaseEvents = purchaseEvents.concat(chunkEvents);
+        fromBlock = toBlock + 1;
+      }
 
       for (const ev of purchaseEvents) {
         totalSold += BigInt(ev.returnValues.amount);
@@ -2730,6 +2928,8 @@ window.loadDevDashboard = async function () {
     } catch (e) {
       console.warn("Failed to read sales events:", e);
     }
+
+    if (requestId !== devDashboardRequestId) return; // 👈 新增
 
     document.getElementById("dev-total-sold").innerText = totalSold.toString();
     document.getElementById("dev-revenue").innerText =
@@ -2742,9 +2942,10 @@ window.loadDevDashboard = async function () {
     const recentSales = salesEvents.slice(0, 5);
 
     if (recentSales.length === 0) {
+      if (requestId !== devDashboardRequestId) return; // 👈 新增
       salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">No sales records yet.</div>`;
     } else {
-      salesFeedList.innerHTML = "";
+      let feedHtml = ""; // 👈 改动：先拼字符串，不直接操作 DOM
       for (const ev of recentSales) {
         let dateDisplay = "";
         try {
@@ -2753,10 +2954,12 @@ window.loadDevDashboard = async function () {
         } catch (e) {
           dateDisplay = "N/A";
         }
+        if (requestId !== devDashboardRequestId) return; // 👈 新增：每次 await 后都检查
+
         const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
         const projName = projectNameMap[ev.returnValues.projectID.toString()] || `Project #${ev.returnValues.projectID}`;
 
-        salesFeedList.innerHTML += `
+        feedHtml += `
           <div class="sales-feed-item">
             <div>
               <div style="font-weight: 700; color: #2b3674;">${buyerShort}</div>
@@ -2766,8 +2969,11 @@ window.loadDevDashboard = async function () {
           </div>
         `;
       }
+      if (requestId !== devDashboardRequestId) return; // 👈 新增
+      salesFeedList.innerHTML = feedHtml; // 👈 改动：最后一次性写入，而不是循环里用 +=
     }
   } catch (error) {
+    if (requestId !== devDashboardRequestId) return; // 👈 新增
     console.warn("Failed to load on-chain data (possibly not connected to a wallet):", error);
     salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 Please connect MetaMask first to view real quota and sales data.</div>`;
     document.getElementById("dev-total-projects").innerText = "-";

@@ -1060,7 +1060,7 @@
 
                 <!-- Module 2: Task Scheduling (hidden by default) -->
                 <div id="dash-section-queue" class="dash-section" style="display: none;">
-                    <div class="dash-grid-3-1">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px;">
                         <div class="kpi-card">
                             <div class="kpi-header">
                                 <div>
@@ -1080,16 +1080,6 @@
                                 <div class="kpi-icon" style="background: #fff4e5; color: #ff9800;">👥</div>
                             </div>
                             <div class="kpi-footer"><span>Awaiting Approval</span></div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-header">
-                                <div>
-                                    <div class="kpi-title">Rejection Action</div>
-                                    <div class="kpi-value" id="dash-rejections">0</div>
-                                </div>
-                                <div class="kpi-icon" style="background: #fce8e6; color: #ee5d50;">❌</div>
-                            </div>
-                            <div class="kpi-footer"><span>Total Rejections</span></div>
                         </div>
                         <div class="chart-card"
                             style="flex-direction: row; align-items: center; justify-content: space-between;">
