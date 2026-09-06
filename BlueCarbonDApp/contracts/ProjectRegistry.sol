@@ -7,6 +7,7 @@ interface IUserRegistry {
 }
 
 contract ProjectRegistry {
+    uint256 public constant TONNES_PER_TOKEN = 1;
 
     IUserRegistry public userRegistry;
     address public carbonToken;
@@ -167,13 +168,7 @@ contract ProjectRegistry {
         uint256 projectID
     ) external onlyCarbonToken projectExists(projectID) {
         require(!projects[projectID].minted, "Project already minted");
-        require(
-            projects[projectID].status == ProjectStatus.Approved,
-            "Project not approved"
-        );
-
         projects[projectID].minted = true;
-
         emit ProjectMinted(projectID);
     }
 

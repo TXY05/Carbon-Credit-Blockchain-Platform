@@ -1,9 +1,9 @@
 let web3;
 let currentAccount;
 
-const USER_REGISTRY_ADDRESS = "0xFB7860ca9669d99871B1D7Bd34d8CBe1efdC75F0";
-const PROJECT_REGISTRY_ADDRESS = "0xC62c056ef21bd61149e2C64dBb35c30Df658d08e";
-const CARBON_TOKEN_ADDRESS = "0xf4d49B85C42bCa6830b469587C24e44C93A9E027";
+const USER_REGISTRY_ADDRESS = "0xC65B8dB9C7CD0985083bB42A4bbc421F8DCEC6Ea";
+const PROJECT_REGISTRY_ADDRESS = "0x5C492a7b9bd479d39B42581a53bf0B87A510Aff8";
+const CARBON_TOKEN_ADDRESS = "0x219fC63D622421BE06fe30ad8982beF5E6C536c1";
 
 const USER_REGISTRY_ABI = [
   {
@@ -1893,7 +1893,8 @@ document.getElementById("submitBtn").onclick = async function () {
       body: JSON.stringify({
         username: localStorage.getItem("loggedInUser"),
         projName, devAddress, location, capacity, deadline,
-        ecosystemType, pricePerToken, onChainProjectID
+        ecosystemType, pricePerToken,
+        onChainProjectID: String(onChainProjectID)
       })
     });
 
@@ -2031,8 +2032,9 @@ let allProjectsData = [];
 
 window.loadAllProjects = async function () {
   try {
-    const contracts = await ensureContractsReady();
-    allProjectsData = await contracts.projectRegistry.methods.getAllProjects().call();
+    const res = await fetch(`${SERVER_URL}/all-projects`);
+    const rows = await res.json();
+    allProjectsData = Array.isArray(rows) ? rows : [];
     applyProjectFilters();
   } catch (error) {
     console.error("Failed to load full project list:", error);
@@ -2043,12 +2045,8 @@ window.loadAllProjects = async function () {
 window.applyProjectFilters = function () {
   const statusFilter = document.getElementById("filterProjectStatus").value;
 
-  // On-chain status: 0 = pending, 1 = approved, 2 = rejected
-  const statusMap = { 0: "pending", 1: "approved", 2: "rejected" };
-
   let filtered = allProjectsData.filter((p) => {
-    const statusText = statusMap[Number(p.status)];
-    return statusFilter === "all" || statusText === statusFilter;
+    return statusFilter === "all" || p.status === statusFilter;
   });
 
   let tbody = document.getElementById("allProjectsTableBody");
@@ -2061,23 +2059,22 @@ window.applyProjectFilters = function () {
   }
 
   filtered.forEach((p) => {
-    const statusText = statusMap[Number(p.status)];
     let statusColor =
-      statusText === "approved" ? "#28a745" : statusText === "rejected" ? "#dc3545" : "#ff9800";
+      p.status === "approved" ? "#28a745" : p.status === "rejected" ? "#dc3545" : "#ff9800";
     let statusBg =
-      statusText === "approved" ? "#e6f4ea" : statusText === "rejected" ? "#fce8e6" : "#fff0d4";
+      p.status === "approved" ? "#e6f4ea" : p.status === "rejected" ? "#fce8e6" : "#fff0d4";
 
-    let clickable = p.minted;
+    let clickable = !!p.minted && !!p.onChainProjectID;
     let rowStyle = clickable ? `cursor: pointer;` : `cursor: default;`;
-    let rowOnclick = clickable ? `onclick="openProjectModal(${p.projectID})"` : ``;
+    let rowOnclick = clickable ? `onclick="openProjectModal(${p.onChainProjectID})"` : ``;
 
     let row = `<tr style="${rowStyle}" ${rowOnclick} onmouseover="if(${clickable}) this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-            <td>#${p.projectID}</td>
-            <td><strong>${p.projectName || "Unnamed Project"}</strong></td>
+            <td>#${p.id}</td>
+            <td><strong>${p.projName || "Unnamed Project"}</strong></td>
             <td>${p.location}</td>
             <td>${p.ecosystemType}</td>
-            <td><strong style="color: #5640fa;">${p.availableCapacity} BCC</strong></td>
-            <td><span style="background: ${statusBg}; color: ${statusColor}; padding: 5px 10px; border-radius: 8px; font-size: 13px; text-transform: capitalize;">${statusText}</span></td>
+            <td><strong style="color: #5640fa;">${p.carbonVolume} BCC</strong></td>
+            <td><span style="background: ${statusBg}; color: ${statusColor}; padding: 5px 10px; border-radius: 8px; font-size: 13px; text-transform: capitalize;">${p.status}</span></td>
         </tr>`;
     tbody.innerHTML += row;
   });
@@ -3138,11 +3135,11 @@ window.loadMyProjects = async function () {
               cp.projectName === p.projName
           );
           if (match) {
-            p.onChainProjectID = match.projectID; // fix in-memory so this render works right away
+            p.onChainProjectID = String(match.projectID); // fix in-memory so this render works right away
             fetch(`${SERVER_URL}/sync-onchain-id`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: p.id, onChainProjectID: match.projectID }),
+              body: JSON.stringify({ id: p.id, onChainProjectID: String(match.projectID) }),
             }).catch(() => {});
           }
         });
@@ -3205,11 +3202,9 @@ window.loadMyProjects = async function () {
 // Developer Dashboard: Core data loading
 // ==========================================
 let devPipelineChartInstance = null;
-let devDashboardRequestId = 0; // 👈 新增:请求ID守卫
+let devDashboardRequestId = 0;
 
 window.loadDevDashboard = async function () {
-  const requestId = ++devDashboardRequestId; // 👈 新增
-
   const currentUser = localStorage.getItem("loggedInUser");
   if (!currentUser) return;
 
@@ -3218,67 +3213,71 @@ window.loadDevDashboard = async function () {
   const bannerCta = document.getElementById("devActionCta");
   const salesFeedList = document.getElementById("devSalesFeedList");
 
+  let myDbProjects = [];
+  try {
+    const res = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
+    const result = await res.json();
+    if (result.success) myDbProjects = result.data;
+  } catch (error) {
+    console.error("Failed to load My Projects from DB:", error);
+  }
+
+  const totalProjects = myDbProjects.length;
+  const pendingCount = myDbProjects.filter((p) => p.status === "pending").length;
+  const approvedCount = myDbProjects.filter((p) => p.status === "approved").length;
+  const rejectedCount = myDbProjects.filter((p) => p.status === "rejected").length;
+  const awaitingMint = myDbProjects.filter((p) => p.status === "approved" && !p.minted);
+
+  document.getElementById("dev-total-projects").innerText = totalProjects;
+  document.getElementById("dev-pipe-pending").innerText = pendingCount;
+  document.getElementById("dev-pipe-approved").innerText = approvedCount;
+  document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
+
+  if (awaitingMint.length > 0) {
+    banner.classList.remove("no-action");
+    bannerText.innerHTML = `⚠️ You have <strong>${awaitingMint.length}</strong> project(s) approved by Admin! Click here to pay gas and mint your BCC tokens.`;
+    bannerCta.innerText = "Go Mint →";
+  } else {
+    banner.classList.add("no-action");
+    bannerText.innerText = "No pending mint tasks right now, all approved projects have been minted.";
+    bannerCta.innerText = "";
+  }
+
+  const ctxPipe = document.getElementById("devPipelineChart");
+  if (ctxPipe) {
+    if (devPipelineChartInstance) devPipelineChartInstance.destroy();
+    devPipelineChartInstance = new Chart(ctxPipe, {
+      type: "doughnut",
+      data: {
+        labels: ["Pending", "Approved", "Rejected"],
+        datasets: [
+          {
+            data: [pendingCount, approvedCount, rejectedCount],
+            backgroundColor: ["#ff9800", "#05cd99", "#ee5d50"],
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "70%",
+        plugins: { legend: { display: false } },
+      },
+    });
+  }
+
   try {
     const devAddress = await ensureWalletConnected();
-    if (requestId !== devDashboardRequestId) return; // 👈 新增：过期请求直接放弃
-
     const contracts = await ensureContractsReady();
-    if (requestId !== devDashboardRequestId) return; // 👈 新增
 
     const registry = contracts.projectRegistry;
     const carbonToken = contracts.carbonToken;
 
     const allChainProjects = await registry.methods.getAllProjects().call();
-    if (requestId !== devDashboardRequestId) return; // 👈 新增
-
     const myChainProjects = allChainProjects.filter(
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
-
-    const totalProjects = myChainProjects.length;
-    const pendingCount = myChainProjects.filter((p) => Number(p.status) === 0).length;
-    const approvedCount = myChainProjects.filter((p) => Number(p.status) === 1).length;
-    const rejectedCount = myChainProjects.filter((p) => Number(p.status) === 2).length;
-    const awaitingMint = myChainProjects.filter((p) => Number(p.status) === 1 && !p.minted);
-
-    document.getElementById("dev-total-projects").innerText = totalProjects;
-    document.getElementById("dev-pipe-pending").innerText = pendingCount;
-    document.getElementById("dev-pipe-approved").innerText = approvedCount;
-    document.getElementById("dev-pipe-rejected").innerText = rejectedCount;
-
-    if (awaitingMint.length > 0) {
-      banner.classList.remove("no-action");
-      bannerText.innerHTML = `⚠️ You have <strong>${awaitingMint.length}</strong> project(s) approved by Admin! Click here to pay gas and mint your BCC tokens.`;
-      bannerCta.innerText = "Go Mint →";
-    } else {
-      banner.classList.add("no-action");
-      bannerText.innerText = "✅ No pending mint tasks right now, all approved projects have been minted.";
-      bannerCta.innerText = "";
-    }
-
-    const ctxPipe = document.getElementById("devPipelineChart");
-    if (ctxPipe) {
-      if (devPipelineChartInstance) devPipelineChartInstance.destroy();
-      devPipelineChartInstance = new Chart(ctxPipe, {
-        type: "doughnut",
-        data: {
-          labels: ["Pending", "Approved", "Rejected"],
-          datasets: [
-            {
-              data: [pendingCount, approvedCount, rejectedCount],
-              backgroundColor: ["#ff9800", "#05cd99", "#ee5d50"],
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "70%",
-          plugins: { legend: { display: false } },
-        },
-      });
-    }
 
     const projectNameMap = {};
     myChainProjects.forEach((p) => {
@@ -3294,7 +3293,6 @@ window.loadDevDashboard = async function () {
         console.warn("Failed to read project balance:", p.projectID, e);
       }
     }
-    if (requestId !== devDashboardRequestId) return; // 👈 新增
     document.getElementById("dev-available-quota").innerText = availableQuota.toString();
 
     let totalSold = 0n;
@@ -3302,21 +3300,11 @@ window.loadDevDashboard = async function () {
     let salesEvents = [];
 
     try {
-      const currentBlock = Number(await web3.eth.getBlockNumber());
-      const CHUNK_SIZE = 9000;
-      let fromBlock = CARBON_TOKEN_DEPLOYMENT_BLOCK;
-      let purchaseEvents = [];
-
-      while (fromBlock <= currentBlock) {
-        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, currentBlock);
-        const chunkEvents = await carbonToken.getPastEvents("TokensPurchased", {
-          filter: { developer: devAddress },
-          fromBlock,
-          toBlock,
-        });
-        purchaseEvents = purchaseEvents.concat(chunkEvents);
-        fromBlock = toBlock + 1;
-      }
+      const purchaseEvents = await carbonToken.getPastEvents("TokensPurchased", {
+        filter: { developer: devAddress },
+        fromBlock: CARBON_TOKEN_DEPLOYMENT_BLOCK,
+        toBlock: "latest",
+      });
 
       for (const ev of purchaseEvents) {
         totalSold += BigInt(ev.returnValues.amount);
@@ -3327,8 +3315,6 @@ window.loadDevDashboard = async function () {
     } catch (e) {
       console.warn("Failed to read sales events:", e);
     }
-
-    if (requestId !== devDashboardRequestId) return; // 👈 新增
 
     document.getElementById("dev-total-sold").innerText = totalSold.toString();
     document.getElementById("dev-revenue").innerText =
@@ -3341,10 +3327,9 @@ window.loadDevDashboard = async function () {
     const recentSales = salesEvents.slice(0, 5);
 
     if (recentSales.length === 0) {
-      if (requestId !== devDashboardRequestId) return; // 👈 新增
       salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">No sales records yet.</div>`;
     } else {
-      let feedHtml = ""; // 👈 改动：先拼字符串，不直接操作 DOM
+      salesFeedList.innerHTML = "";
       for (const ev of recentSales) {
         let dateDisplay = "";
         try {
@@ -3353,12 +3338,10 @@ window.loadDevDashboard = async function () {
         } catch (e) {
           dateDisplay = "N/A";
         }
-        if (requestId !== devDashboardRequestId) return; // 👈 新增：每次 await 后都检查
-
         const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
         const projName = projectNameMap[ev.returnValues.projectID.toString()] || `Project #${ev.returnValues.projectID}`;
 
-        feedHtml += `
+        salesFeedList.innerHTML += `
           <div class="sales-feed-item">
             <div>
               <div style="font-weight: 700; color: #2b3674;">${buyerShort}</div>
@@ -3368,24 +3351,14 @@ window.loadDevDashboard = async function () {
           </div>
         `;
       }
-      if (requestId !== devDashboardRequestId) return; // 👈 新增
-      salesFeedList.innerHTML = feedHtml; // 👈 改动：最后一次性写入，而不是循环里用 +=
     }
   } catch (error) {
-    if (requestId !== devDashboardRequestId) return; // 👈 新增
     console.warn("Failed to load on-chain data (possibly not connected to a wallet):", error);
     salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 Please connect MetaMask first to view real quota and sales data.</div>`;
-    document.getElementById("dev-total-projects").innerText = "-";
-    document.getElementById("dev-pipe-pending").innerText = "-";
-    document.getElementById("dev-pipe-approved").innerText = "-";
-    document.getElementById("dev-pipe-rejected").innerText = "-";
-    document.getElementById("dev-total-minted").innerText = "-";
     document.getElementById("dev-available-quota").innerText = "-";
     document.getElementById("dev-total-sold").innerText = "-";
     document.getElementById("dev-revenue").innerText = "-";
-    banner.classList.add("no-action");
-    bannerText.innerText = "🦊 Please connect MetaMask to see your project pipeline.";
-    bannerCta.innerText = "";
+    document.getElementById("dev-total-minted").innerText = "-";
   }
 };
 
@@ -3396,7 +3369,7 @@ let projectModalRequestId = 0;
 
 window.openProjectModal = async function (onChainProjectID) {
   const requestId = ++projectModalRequestId;
-
+  onChainProjectID = String(onChainProjectID).split(".")[0];
   try {
     const contracts = await ensureContractsReady();
 
