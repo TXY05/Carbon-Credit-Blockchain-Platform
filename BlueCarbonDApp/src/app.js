@@ -2277,12 +2277,17 @@ window.applyUserFilters = function () {
     let matchStatus = statusFilter === "all" || u.status === statusFilter;
 
     let matchDate = true;
-    if (u.createdAt) {
-      let rowDate = u.createdAt.split(" ")[0];
-      if (startDate && rowDate < startDate) matchDate = false;
-      if (endDate && rowDate > endDate) matchDate = false;
+    if (u.createdAt && u.createdAt !== "N/A") {
+      let dateParts = u.createdAt.split("/"); 
+      
+      if (dateParts.length === 3) {
+        let rowDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; 
+
+        if (startDate && rowDate < startDate) matchDate = false;
+        if (endDate && rowDate > endDate) matchDate = false;
+      }
     } else {
-      if (startDate || endDate) matchDate = false;
+      if (startDate || endDate) matchDate = false; 
     }
 
     return matchRole && matchStatus && matchDate;
@@ -2290,6 +2295,11 @@ window.applyUserFilters = function () {
 
   let tbody = document.getElementById("allUserTableBody");
   tbody.innerHTML = "";
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a3aed1; padding: 30px 0;">No users match the filter</td></tr>`;
+    return;
+  }
 
   filtered.forEach((u) => {
     let statusColor =
@@ -2304,7 +2314,7 @@ window.applyUserFilters = function () {
         : u.status === "rejected"
           ? "#fce8e6"
           : "#fff0d4";
-    let displayDate = u.createdAt ? u.createdAt.split(" ")[0] : "N/A";
+    let displayDate = u.createdAt ? u.createdAt : "N/A";
 
     let actionHtml =
       u.status === "rejected"
@@ -2321,6 +2331,7 @@ window.applyUserFilters = function () {
     tbody.innerHTML += row;
   });
 };
+
 window.deleteUser = async function (userId) {
   if (
     !confirm(
