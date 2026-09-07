@@ -7,8 +7,6 @@ interface IUserRegistry {
 }
 
 contract ProjectRegistry {
-    uint256 public constant TONNES_PER_TOKEN = 1;
-
     IUserRegistry public userRegistry;
     address public carbonToken;
     address public owner;
@@ -60,8 +58,6 @@ contract ProjectRegistry {
         string projectName
     );
 
-    event ProjectApproved(uint256 indexed projectID);
-    event ProjectRejected(uint256 indexed projectID);
     event ProjectMinted(uint256 indexed projectID);
 
     constructor(address _userRegistry) {
@@ -106,32 +102,6 @@ contract ProjectRegistry {
         return true;
     }
 
-    function approveProject(
-        uint256 projectID
-    ) external onlyAdmin projectExists(projectID) {
-        require(
-            projects[projectID].status == ProjectStatus.Pending,
-            "Project is not pending"
-        );
-
-        projects[projectID].status = ProjectStatus.Approved;
-
-        emit ProjectApproved(projectID);
-    }
-
-    function rejectProject(
-        uint256 projectID
-    ) external onlyAdmin projectExists(projectID) {
-        require(
-            projects[projectID].status == ProjectStatus.Pending,
-            "Project is not pending"
-        );
-
-        projects[projectID].status = ProjectStatus.Rejected;
-
-        emit ProjectRejected(projectID);
-    }
-
     function isApproved(
         uint256 projectID
     ) external view projectExists(projectID) returns (bool) {
@@ -169,6 +139,7 @@ contract ProjectRegistry {
     ) external onlyCarbonToken projectExists(projectID) {
         require(!projects[projectID].minted, "Project already minted");
         projects[projectID].minted = true;
+        projects[projectID].status = ProjectStatus.Approved;
         emit ProjectMinted(projectID);
     }
 
