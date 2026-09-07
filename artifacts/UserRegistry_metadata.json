@@ -43,6 +43,29 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "getAllUsers",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "addresses",
+						"type": "address[]"
+					},
+					{
+						"internalType": "enum UserRegistry.UserRole[]",
+						"name": "roles",
+						"type": "uint8[]"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "registeredAt",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -203,11 +226,11 @@
 	},
 	"sources": {
 		"BlueCarbonDApp/contracts/UserRegistry.sol": {
-			"keccak256": "0x5b977e5849b91d238f752b2596ed241c23e02b26dfebf0b0b0f74e172a66ec10",
+			"keccak256": "0x1475c5e325578281886765e92c7a6a3e5bc1095fe3756edb86a5115d4ab721d5",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://efa51bf9d7469e0445c5487fa064b431d286e6adfed3f8d9cfc636fa61b1d1de",
-				"dweb:/ipfs/QmNUkfUDKEXimV6NbpGAQRAR6eSkHx8ViyzXcnYtUdcEw3"
+				"bzz-raw://62d5cf80b502b2ee2d34b3513808b1ca598558b82db35831dac406d35fc1d3fd",
+				"dweb:/ipfs/QmVP6qP36HAoMMQKfN8nwAGxYP2nmgJAyPVos9Vjg9Cf2c"
 			]
 		}
 	},

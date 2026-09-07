@@ -5,14 +5,15 @@ contract UserRegistry {
     address public owner;
     mapping(address => User) private users;
     mapping(address => bool) private admins;
+    address[] private userList;
 
     constructor() {
         owner = msg.sender;
         admins[msg.sender] = true;
     }
 
-    modifier onlyOwner(){
-        require(owner==msg.sender,"Not owner");
+    modifier onlyOwner() {
+        require(owner == msg.sender, "Not owner");
         _;
     }
 
@@ -29,6 +30,7 @@ contract UserRegistry {
 
     struct User {
         UserRole role;
+        uint256 registeredAt;
     }
 
     enum UserRole {
@@ -45,8 +47,8 @@ contract UserRegistry {
         require(users[user].role == UserRole.None, "User already registered");
         require(role != UserRole.None, "Invalid role");
 
-        users[user] = User({role: role});
-
+        users[user] = User({role: role, registeredAt: block.timestamp});
+        userList.push(user);
         emit UserRegistered(user, role);
 
         return true;
@@ -70,5 +72,27 @@ contract UserRegistry {
 
     function isDeveloper(address user) external view returns (bool) {
         return users[user].role == UserRole.Developer;
+    }
+
+    function getAllUsers()
+        external
+        view
+        returns (
+            address[] memory addresses,
+            UserRole[] memory roles,
+            uint256[] memory registeredAt
+        )
+    {
+        uint256 length = userList.length;
+
+        addresses = new address[](length);
+        roles = new UserRole[](length);
+        registeredAt = new uint256[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            addresses[i] = userList[i];
+            roles[i] = users[userList[i]].role;
+            registeredAt[i] = users[userList[i]].registeredAt;
+        }
     }
 }
