@@ -1,180 +1,203 @@
 let web3;
 let currentAccount;
 
-const USER_REGISTRY_ADDRESS = "0xC65B8dB9C7CD0985083bB42A4bbc421F8DCEC6Ea";
-const PROJECT_REGISTRY_ADDRESS = "0x327d399a187593c7CdD33d166463EA55871E4f74";
-const CARBON_TOKEN_ADDRESS = "0xe48aBBBCBbEef612287da5e91677DcFc886EF4aB";
+const USER_REGISTRY_ADDRESS = "0x58861647814F9651ab46d37cfBe6Dce68Cc1Cc10";
+const PROJECT_REGISTRY_ADDRESS = "0xA72AC32f7e4BDd9c45ae678085d2C4EE517178E5";
+const CARBON_TOKEN_ADDRESS = "0x473E45D683A90d1683e97F9DE16501e83146FD2f";
 
 const USER_REGISTRY_ABI = [
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "addAdmin",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "addAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
-        internalType: "enum UserRegistry.UserRole",
-        name: "role",
-        type: "uint8",
-      },
+        "internalType": "enum UserRegistry.UserRole",
+        "name": "role",
+        "type": "uint8"
+      }
     ],
-    name: "registerUser",
-    outputs: [
+    "name": "registerUser",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "user",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "enum UserRegistry.UserRole",
-        name: "role",
-        type: "uint8",
-      },
+        "indexed": false,
+        "internalType": "enum UserRegistry.UserRole",
+        "name": "role",
+        "type": "uint8"
+      }
     ],
-    name: "UserRegistered",
-    type: "event",
+    "name": "UserRegistered",
+    "type": "event"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "getAllUsers",
+    "outputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
+        "internalType": "address[]",
+        "name": "addresses",
+        "type": "address[]"
       },
-    ],
-    name: "getUserRole",
-    outputs: [
       {
-        internalType: "enum UserRegistry.UserRole",
-        name: "role",
-        type: "uint8",
+        "internalType": "enum UserRegistry.UserRole[]",
+        "name": "roles",
+        "type": "uint8[]"
       },
+      {
+        "internalType": "uint256[]",
+        "name": "registeredAt",
+        "type": "uint256[]"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    name: "isAdmin",
-    outputs: [
+    "name": "getUserRole",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "enum UserRegistry.UserRole",
+        "name": "role",
+        "type": "uint8"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    name: "isBuyer",
-    outputs: [
+    "name": "isAdmin",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    name: "isDeveloper",
-    outputs: [
+    "name": "isBuyer",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    name: "isRegistered",
-    outputs: [
+    "name": "isDeveloper",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "isRegistered",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 const PROJECT_REGISTRY_ABI = [
@@ -1687,6 +1710,7 @@ document.getElementById("submitBtn").onclick = async function () {
   }
 
   try {
+
     const devAddress = await ensureWalletConnected();
     const contracts = await ensureContractsReady();
     const onChainProjectID = Date.now();
@@ -2177,16 +2201,46 @@ let allUsersData = [];
 
 window.loadAllUsers = async function () {
   try {
-    let response = await fetch(`${SERVER_URL}/all-users`);
-    allUsersData = await response.json();
+    const contracts = await ensureContractsReady();
 
-    console.log("🔥 Raw user data from backend: ", allUsersData);
+    // Get all registered users directly from UserRegistry
+    const result = await contracts.userRegistry.methods
+      .getAllUsers()
+      .call();
+
+    const addresses = result.addresses;
+    const roles = result.roles;
+
+    allUsersData = addresses.map((address, index) => {
+      const roleNumber = Number(roles[index]);
+
+      let role = "unknown";
+
+      if (roleNumber === 1) {
+        role = "buyer";
+      } else if (roleNumber === 2) {
+        role = "developer";
+      }
+
+      return {
+        id: index + 1,
+        walletAddress: address,
+        username: shortenAddress(address),
+        role: role,
+        status: "approved",
+        createdAt: ""
+      };
+    });
+
+    console.log("On-chain users:", allUsersData);
 
     applyUserFilters();
+
   } catch (error) {
-    console.error(error);
+    console.error("❌ Failed to load users from blockchain:", error);
   }
 };
+
 
 window.applyUserFilters = function () {
   const roleFilter = document.getElementById("filterRole").value;
@@ -5125,7 +5179,7 @@ window.loadBuyerTransactions = async function () {
   }
 };
 
-const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11654441;
+const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11654579;
 
 async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
   const chainId = Number(await web3.eth.getChainId());
