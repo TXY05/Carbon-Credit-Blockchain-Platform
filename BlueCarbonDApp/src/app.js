@@ -1,9 +1,9 @@
 let web3;
 let currentAccount;
 
-const USER_REGISTRY_ADDRESS = "0x58861647814F9651ab46d37cfBe6Dce68Cc1Cc10";
-const PROJECT_REGISTRY_ADDRESS = "0xA72AC32f7e4BDd9c45ae678085d2C4EE517178E5";
-const CARBON_TOKEN_ADDRESS = "0x473E45D683A90d1683e97F9DE16501e83146FD2f";
+const USER_REGISTRY_ADDRESS = "0xa7226eC81aBE75Ff4C53dFEF05929c74C67807c1";
+const PROJECT_REGISTRY_ADDRESS = "0xd056b8B5c810be3992c3C1668A1123e9fF9fF620";
+const CARBON_TOKEN_ADDRESS = "0xe0B0254FCB483F20710dE85106EcE12E1f4Cc62a";
 
 const USER_REGISTRY_ABI = [
   {
@@ -30,6 +30,11 @@ const USER_REGISTRY_ABI = [
         "internalType": "enum UserRegistry.UserRole",
         "name": "role",
         "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
       }
     ],
     "name": "registerUser",
@@ -62,6 +67,12 @@ const USER_REGISTRY_ABI = [
         "internalType": "enum UserRegistry.UserRole",
         "name": "role",
         "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
       }
     ],
     "name": "UserRegistered",
@@ -75,6 +86,11 @@ const USER_REGISTRY_ABI = [
         "internalType": "address[]",
         "name": "addresses",
         "type": "address[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "usernames",
+        "type": "string[]"
       },
       {
         "internalType": "enum UserRegistry.UserRole[]",
@@ -2097,7 +2113,8 @@ window.approveUser = async function (userId) {
       await contracts.userRegistry.methods
         .registerUser(
           user.walletAddress,
-          blockchainRole
+          blockchainRole,
+          user.username
         )
         .send({
           from: adminWallet
@@ -2203,13 +2220,14 @@ window.loadAllUsers = async function () {
   try {
     const contracts = await ensureContractsReady();
 
-    // Get all registered users directly from UserRegistry
     const result = await contracts.userRegistry.methods
       .getAllUsers()
       .call();
 
     const addresses = result.addresses;
+    const usernames = result.usernames;
     const roles = result.roles;
+    const registeredAt = result.registeredAt;
 
     allUsersData = addresses.map((address, index) => {
       const roleNumber = Number(roles[index]);
@@ -2222,17 +2240,23 @@ window.loadAllUsers = async function () {
         role = "developer";
       }
 
+      const timestamp = Number(registeredAt[index]);
+
+      const date = timestamp
+        ? new Date(timestamp * 1000).toLocaleDateString("en-GB")
+        : "N/A";
+
       return {
         id: index + 1,
         walletAddress: address,
-        username: shortenAddress(address),
+        username: usernames[index],
         role: role,
         status: "approved",
-        createdAt: ""
+        createdAt: date
       };
     });
 
-    console.log("On-chain users:", allUsersData);
+    console.log("🔥 On-chain users:", allUsersData);
 
     applyUserFilters();
 
@@ -5179,7 +5203,7 @@ window.loadBuyerTransactions = async function () {
   }
 };
 
-const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11654579;
+const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11654665;
 
 async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
   const chainId = Number(await web3.eth.getChainId());
