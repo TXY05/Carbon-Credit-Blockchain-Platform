@@ -6,45 +6,21 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_userRegistry",
-						"type": "address"
-					}
-				],
+				"inputs": [],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "purchaseCredits",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
 					{
 						"internalType": "address",
-						"name": "_to",
+						"name": "",
 						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
 					}
 				],
-				"name": "transferCredits",
-				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -89,19 +65,11 @@
 	},
 	"sources": {
 		"contracts/BlueCarbonMarket.sol": {
-			"keccak256": "0xab81130b3d5ed70ee27fafd6191d882030c2f63a6b23a99b70c184bcf486161a",
+			"keccak256": "0x0cca6f9071ece77db6f1f9432252b3524222aeadf20245ede60b852b46ec5a26",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3299368719191eb2325d772e586b7abea017a728b16203833f42f8c805b54b6f",
-				"dweb:/ipfs/QmXc9PKeWPHAmufAjaFYqPUTba8zE6CV1v8oW8yBZKmEBJ"
-			]
-		},
-		"contracts/UserRegistry.sol": {
-			"keccak256": "0x1d464279d9fd3d8e953c9ed9a7a50a45047332efce19a66baa96eac7066d0877",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://a9919f2d5fc3115151ecdc9864b4e1c948491c5278fd0f07339f78f6a9f86748",
-				"dweb:/ipfs/Qme6x6RF8SfYG9EyU8tq6od5jnAr7VW19o4nf5tMp399BF"
+				"bzz-raw://ceb6f4edbc6ce55bf49d6106aaa456c2198673df913b8b9a22f1e3316b1338d8",
+				"dweb:/ipfs/QmSNZQgbNLd5wadH1hpk8Mx9YMHaY8HMFDaPd7BwCDDTqQ"
 			]
 		}
 	},

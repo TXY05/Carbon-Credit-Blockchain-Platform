@@ -18,19 +18,59 @@
 						"internalType": "address",
 						"name": "user",
 						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "username",
+						"type": "string"
 					}
 				],
-				"name": "RegistrationRequested",
+				"name": "UserRegistered",
 				"type": "event"
 			},
 			{
-				"inputs": [],
-				"name": "admin",
-				"outputs": [
+				"inputs": [
 					{
 						"internalType": "address",
-						"name": "",
+						"name": "account",
 						"type": "address"
+					}
+				],
+				"name": "addAdmin",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAllUsers",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "addresses",
+						"type": "address[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "usernames",
+						"type": "string[]"
+					},
+					{
+						"internalType": "enum UserRegistry.UserRole[]",
+						"name": "roles",
+						"type": "uint8[]"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "registeredAt",
+						"type": "uint256[]"
 					}
 				],
 				"stateMutability": "view",
@@ -40,73 +80,15 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_user",
+						"name": "user",
 						"type": "address"
 					}
 				],
-				"name": "approveUser",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"name": "buyers",
+				"name": "getUserRole",
 				"outputs": [
 					{
-						"internalType": "string",
+						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "firstName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "lastName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "email",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "phoneNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "country",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "password",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokens",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "credits",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum UserRegistry.UserStatus",
-						"name": "status",
 						"type": "uint8"
 					}
 				],
@@ -116,100 +98,118 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
 					}
 				],
-				"name": "purchaseCredits",
-				"outputs": [],
-				"stateMutability": "nonpayable",
+				"name": "isAdmin",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
 					}
 				],
-				"name": "purchaseTokens",
-				"outputs": [],
-				"stateMutability": "nonpayable",
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
-						"internalType": "string",
-						"name": "_role",
-						"type": "string"
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isDeveloper",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isRegistered",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"internalType": "enum UserRegistry.UserRole",
+						"name": "role",
+						"type": "uint8"
 					},
 					{
 						"internalType": "string",
-						"name": "_firstName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_lastName",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_email",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_phoneNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_country",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_password",
+						"name": "username",
 						"type": "string"
 					}
 				],
 				"name": "registerUser",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
+				"outputs": [
 					{
-						"internalType": "address",
-						"name": "_user",
-						"type": "address"
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
 					}
 				],
-				"name": "rejectUser",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "_to",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "transferCredits",
-				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			}
@@ -227,7 +227,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/UserRegistry.sol": "UserRegistry"
+			"BlueCarbonDApp/contracts/UserRegistry.sol": "UserRegistry"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -241,12 +241,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/UserRegistry.sol": {
-			"keccak256": "0xef96d2a8514822e5c7ea0ce96419a320e24087e109e5aeafcbdc16e2048256f9",
+		"BlueCarbonDApp/contracts/UserRegistry.sol": {
+			"keccak256": "0xe22d25b85f2a86d45106f5dbb0b5c67f8d3ad61ac62e4b5c4003760f1e7ecb9b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0162de374372b1cf414324a23353029c4922e04c3daf92752a30562f2a678593",
-				"dweb:/ipfs/QmVFrTzHAqGxybdQCL8RgDYe1ytm7wpouVqpX9JAmzw9P6"
+				"bzz-raw://be4e8a2435230ee63f86bd0fc1daa017d237299b51069e4b749cc58aa4d5d410",
+				"dweb:/ipfs/Qmatjvo5yoZ4VvbpyurJBcQR5UWVB2gBJ2DJqSroFTv9F5"
 			]
 		}
 	},

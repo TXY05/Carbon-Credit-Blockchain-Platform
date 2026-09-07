@@ -13,7 +13,26 @@
 						"type": "address"
 					}
 				],
-				"name": "isApprovedUser",
+				"name": "isBuyer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "isDeveloper",
 				"outputs": [
 					{
 						"internalType": "bool",
@@ -38,7 +57,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/BlueCarbonMarket.sol": "IUserRegistry"
+			"BlueCarbonDApp/contracts/CarbonToken.sol": "IUserRegistry"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -52,20 +71,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/BlueCarbonMarket.sol": {
-			"keccak256": "0xab81130b3d5ed70ee27fafd6191d882030c2f63a6b23a99b70c184bcf486161a",
+		"BlueCarbonDApp/contracts/CarbonToken.sol": {
+			"keccak256": "0x491f21cd3d3209ef519997887f5982665538564c8c19f434f201166cc7f20bdf",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3299368719191eb2325d772e586b7abea017a728b16203833f42f8c805b54b6f",
-				"dweb:/ipfs/QmXc9PKeWPHAmufAjaFYqPUTba8zE6CV1v8oW8yBZKmEBJ"
-			]
-		},
-		"contracts/UserRegistry.sol": {
-			"keccak256": "0x1d464279d9fd3d8e953c9ed9a7a50a45047332efce19a66baa96eac7066d0877",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://a9919f2d5fc3115151ecdc9864b4e1c948491c5278fd0f07339f78f6a9f86748",
-				"dweb:/ipfs/Qme6x6RF8SfYG9EyU8tq6od5jnAr7VW19o4nf5tMp399BF"
+				"bzz-raw://669d8558096075f29e8f818f4cf71b34e655036b64c4025edd858528e5ce9435",
+				"dweb:/ipfs/QmagHEX4CyBpeH6gaUq24j2h5YjcwiSiAA3LFUf77hRHqR"
 			]
 		}
 	},

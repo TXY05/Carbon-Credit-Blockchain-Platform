@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Blue Carbon DApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sim-btn {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .sim-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .sim-btn.active-sim {
+            background: #e94560;
+            color: white;
+            border-color: #e94560;
+        }
+
+        .wallet-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .wallet-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .avatar-btn {
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+        }
+
+        .avatar-btn:hover {
+            transform: scale(1.08);
+        }
+
+
+        .dash-section {
+            margin-bottom: 30px;
+        }
+
+        .dash-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2b3674;
+            margin-bottom: 15px;
+        }
+
+        .dash-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .dash-grid-3-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 2fr;
+            gap: 20px;
+        }
+
+        .dash-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .kpi-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .kpi-title {
+            font-size: 13px;
+            color: #a3aed1;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2b3674;
+            margin-top: 5px;
+        }
+
+        .kpi-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .kpi-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f4f7fe;
+            font-size: 12px;
+            color: #a3aed1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .trend-up {
+            color: #05cd99;
+            font-weight: 600;
+        }
+
+        .trend-down {
+            color: #ee5d50;
+            font-weight: 600;
+        }
+
+
+        .dash-grid-2 {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 20px;
+        }
+
+        .gradient-kpi-card {
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .gradient-kpi-title {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .gradient-kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .action-banner {
+            background: linear-gradient(90deg, #fff4e5, #fff9ec);
+            border: 1px solid #ffd591;
+            border-radius: 14px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .action-banner:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-banner.no-action {
+            background: #e6f9f0;
+            border-color: #b7ebd3;
+            cursor: default;
+        }
+
+        .sales-feed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f4f7fe;
+            font-size: 13px;
+        }
+
+        .sales-feed-item:last-child {
+            border-bottom: none;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar-bg {
+            background: #f4f7fe;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+
+        .sidebar {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+            width: 0 !important;
+            padding: 0 !important;
+            opacity: 0;
+        }
+
+        .main-wrapper {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-wrapper.expanded {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+
+        .sidebar-logo {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .sidebar-logo:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .logo-collapse-icon {
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.2s;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar-logo:hover .logo-collapse-icon {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .header-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #2b3674;
+            cursor: pointer;
+            margin-right: 15px;
+            padding: 5px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .header-menu-btn:hover {
+            background: #f4f7fe;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside id="mainSidebar" class="sidebar" style="display: flex; flex-direction: column; overflow-y: auto;">
+
+        <div class="sidebar-logo" onclick="toggleSidebar()" title="Collapse Menu">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span>B</span> BlueCarbon
+            </div>
+            <div class="logo-collapse-icon">☰</div>
+        </div>
+
+
+        <div class="nav-menu">
+            <div class="nav-item menu-guest" id="nav-login" onclick="navTo('loginPage', 'Welcome Back')">🏠 Register /
+                Login</div>
+
+            <div class="nav-item menu-shared" id="nav-market" onclick="navTo('marketPage', 'Carbon Marketplace')">🛒
+                Marketplace</div>
+
+            <div class="nav-item menu-dev" id="nav-devDash" onclick="navTo('devDashPage', 'Developer Dashboard')">📊 Dev
+                Dashboard</div>
+            <div class="nav-item menu-dev" id="nav-devSubmit" onclick="navTo('devSubmitPage', 'Submit Project')">🌱
+                Submit Project</div>
+            <div class="nav-item menu-dev" id="nav-devHistory" onclick="navTo('devHistoryPage', 'My Projects')">📝 My
+                Projects</div>
+
+            <div class="nav-item menu-admin" id="nav-adminDash" onclick="navTo('adminDashPage', 'Admin Dashboard')">📈
+                Admin Dashboard</div>
+            <div class="nav-item menu-admin" id="nav-adminReview" onclick="navTo('adminReviewPage', 'Project Review')">
+                ⚖️ Project Review</div>
+            <div class="nav-item menu-admin" id="nav-adminUsers" onclick="navTo('adminUsersPage', 'User Management')">👥
+                User Management</div>
+
+            <div class="nav-item menu-buyer" id="nav-buyerPortfolio"
+                onclick="navTo('buyerPortfolioPage', 'My Portfolio')">💼 My Portfolio</div>
+            <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="navTo('buyerOffsetPage', 'Offset & Claim')">
+                🔥 Offset & Claim</div>
+            <div class="nav-item menu-buyer" id="nav-buyerOffset" onclick="openBuyerTransfer()">
+                🔥 Transfer BCC</div>
+            <div class="nav-item menu-buyer" id="nav-buyerTx" onclick="navTo('buyerTxPage', 'Transaction History')">📜
+                Tx History</div>
+        </div>
+
+    </aside>
+
+    <main id="mainContent" class="main-wrapper">
+        <header class="header">
+
+            <div style="display: flex; align-items: center;">
+                <button id="headerSidebarBtn" class="header-menu-btn" onclick="toggleSidebar()">☰</button>
+                <h1 id="pageTitle" style="margin: 0;">Welcome Back</h1>
+            </div>
+            <div class="header-actions menu-shared"
+                style="display: none; background: transparent; padding: 0; box-shadow: none;">
+
+                <div class="header-actions menu-shared"
+                    style="display: none; background: transparent; padding: 0; box-shadow: none;">
+                    <button class="header-logout-btn" onclick="handleLogout()" title="Logout">
+                        ⏻️ Logout
+                    </button>
+                </div>
+            </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+
+
+            <div id="loginPage" class="page-layer active-page">
+
+                <div id="form-login">
+
+                    <div class="card" style="max-width: 420px; margin: 0 auto;">
+
+                        <h2 class="card-title" style="text-align: center;">
+                            Welcome to Blue Carbon Credits
+                        </h2>
+
+                        <p style="
+                text-align: center;
+                color: #a3aed1;
+                font-size: 13px;
+                margin-bottom: 25px;
+            ">
+                            Login securely using your MetaMask wallet.
+                        </p>
+
+                        <button id="loginWalletBtn" class="primary-btn" style="
+                    width: 100%;
+                    background: #f6851b;
+                " onclick="connectAndLogin()">
+                            🦊 Login with MetaMask
+                        </button>
+
+                        <div id="loginWalletStatus" style="
+                    display: none;
+                    margin-top: 15px;
+                    padding: 12px;
+                    border-radius: 8px;
+                    background: #e6f9f0;
+                    color: #05cd99;
+                    text-align: center;
+                    font-size: 12px;
+                    word-break: break-all;
+                "></div>
+
+                        <button type="button" onclick="toggleAuthMode('register')" style="
+                    width: 100%;
+                    margin-top: 15px;
+                    padding: 10px;
+                    border: none;
+                    background: transparent;
+                    color: #5640fa;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                            Don't have an account? Register
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div id="form-register" style="display: none;">
+
+                    <div class="card" style="max-width: 420px; margin: 0 auto;">
+
+                        <h2 class="card-title" style="text-align: center;">
+                            Create Account
+                        </h2>
+
+                        <p style="
+                text-align: center;
+                color: #a3aed1;
+                font-size: 13px;
+                margin-bottom: 20px;
+            ">
+                            Enter your information first, then connect MetaMask.
+                        </p>
+
+
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Username
+                            </label>
+
+                            <input type="text" id="regUsername" placeholder="Enter your username" style="width: 100%;">
+
+                        </div>
+
+
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Email
+                            </label>
+
+                            <input type="email" id="regEmail" placeholder="example@email.com" style="width: 100%;">
+
+                        </div>
+
+
+
+                        <div style="margin-bottom: 15px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Contact Number
+                            </label>
+
+                            <input type="text" id="regPhone" placeholder="Enter your contact number"
+                                style="width: 100%;">
+
+                        </div>
+
+
+
+                        <div style="margin-bottom: 20px;">
+
+                            <label style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Account Type
+                            </label>
+
+                            <select id="regRole" style="width: 100%;">
+
+                                <option value="">
+                                    Select account type
+                                </option>
+
+                                <option value="developer">
+                                    Developer
+                                </option>
+
+                                <option value="buyer">
+                                    Buyer
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <div style="
+                    padding: 15px;
+                    background: #f8f9ff;
+                    border-radius: 10px;
+                    margin-bottom: 15px;
+                ">
+
+                            <div style="
+                    font-size: 12px;
+                    color: #64748b;
+                    margin-bottom: 8px;
+                ">
+                                Your MetaMask wallet will be your account identity.
+                            </div>
+
+                            <button id="registerWalletBtn" type="button" class="primary-btn" style="
+                        width: 100%;
+                        background: #f6851b;
+                    " onclick="connectRegisterWallet()">
+                                🦊 Connect MetaMask
+                            </button>
+
+                            <div id="registerWalletStatus" style="
+                        display: none;
+                        margin-top: 10px;
+                        padding: 10px;
+                        border-radius: 8px;
+                        background: #e6f9f0;
+                        color: #05cd99;
+                        font-size: 11px;
+                        word-break: break-all;
+                    "></div>
+
+                        </div>
+
+
+
+                        <button id="registerSubmitBtn" type="button" class="primary-btn" style="
+                    width: 100%;
+                    background: #28a745;
+                " onclick="handleRegister()">
+                            Submit Registration
+                        </button>
+
+
+
+                        <button type="button" onclick="toggleAuthMode('login')" style="
+                    width: 100%;
+                    margin-top: 15px;
+                    padding: 10px;
+                    border: none;
+                    background: transparent;
+                    color: #5640fa;
+                    cursor: pointer;
+                ">
+                            ← Back to Login
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="form-register" style="display: none;">
+
+                <div class="card" style="max-width: 400px; margin: 0 auto;">
+
+                    <h2 class="card-title" style="text-align: center;">
+                        Create Account
+                    </h2>
+
+                    <p style="
+            text-align: center;
+            color: #a3aed1;
+            font-size: 13px;
+            margin-bottom: 20px;
+        ">
+                        Your MetaMask wallet will be your account identity.
+                    </p>
+
+
+                    <button id="registerWalletBtn" class="primary-btn" style="
+                width: 100%;
+                background: #f6851b;
+                margin-bottom: 15px;
+            " onclick="connectRegisterWallet()">
+                        🦊 Connect MetaMask
+                    </button>
+
+
+                    <div id="registerWalletStatus" style="
+                display: none;
+                margin-bottom: 20px;
+                padding: 12px;
+                border-radius: 8px;
+                background: #e6f9f0;
+                color: #05cd99;
+                text-align: center;
+                font-size: 12px;
+                word-break: break-all;
+            ">
+                    </div>
+
+
+                    <select id="regRole">
+
+                        <option value="developer">
+                            Developer
+                        </option>
+
+                        <option value="buyer">
+                            Buyer
+                        </option>
+
+                    </select>
+
+
+                    <button class="primary-btn" style="
+                width: 100%;
+                background: #28a745;
+            " onclick="handleRegister()">
+                        Submit for Admin Review
+                    </button>
+
+
+                    <button type="button" onclick="toggleAuthMode('login')" style="
+                width: 100%;
+                margin-top: 15px;
+                padding: 10px;
+                border: none;
+                background: transparent;
+                color: #5640fa;
+                cursor: pointer;
+            ">
+                        Back to Login
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="marketPage" class="page-layer">
+
+                <div class="card">
+
+                    <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        ">
+
+                        <div>
+                            <h2 class="card-title" style="margin-bottom: 5px;">
+                                Carbon Marketplace
+                            </h2>
+
+                            <p style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    margin: 0;
+                ">
+                                Purchase verified Blue Carbon Credits (BCC)
+                                from approved projects.
+                            </p>
+                        </div>
+
+                        <button class="primary-btn" onclick="loadMarketplace()" style="
+                    background: #4318ff;
+                    padding: 8px 15px;
+                    font-size: 13px;
+                ">
+                            🔄 Refresh
+                        </button>
+
+                    </div>
+
+
+
+                    <div id="marketplaceGrid" style="
+                display: grid;
+                grid-template-columns:
+                    repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            ">
+
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div id="profilePage" class="page-layer">
+                <div class="card">
+                    <h2 class="card-title">My Profile & Settings</h2>
+                    <p>User details, company info, and system preferences.</p>
+                </div>
+            </div>
+
+            <div id="devDashPage" class="page-layer">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 5px;">Developer Dashboard</h2>
+                        <p style="color: #a3aed1; font-size: 13px;">Your projects, tokens and sales at a glance</p>
+                    </div>
+                    <button
+                        style="background: white; border: 1px solid #e0e5f2; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: #2b3674; font-weight: 600; font-size: 13px;"
+                        onclick="loadDevDashboard()">
+                        🔄 Refresh Data
+                    </button>
+                </div>
+
+                <div class="dash-grid-4" style="margin-bottom: 20px;">
+                    <div class="gradient-kpi-card" style="background: linear-gradient(135deg, #c471f5, #fa71cd);">
+                        <div class="gradient-kpi-title">Total Projects</div>
+                        <div class="gradient-kpi-value" id="dev-total-projects">0</div>
+                    </div>
+                    <div class="gradient-kpi-card" style="background: linear-gradient(135deg, #12c2e9, #4318ff);">
+                        <div class="gradient-kpi-title">Total BCC Minted</div>
+                        <div class="gradient-kpi-value" id="dev-total-minted">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div>
+                                <div class="kpi-title">Available Quota (BCC)</div>
+                                <div class="kpi-value" id="dev-available-quota">0</div>
+                            </div>
+                            <div class="kpi-icon" style="background: #e6f9f0; color: #05cd99;">🌊</div>
+                        </div>
+                        <div class="kpi-footer"><span>Listed on Marketplace</span></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div>
+                                <div class="kpi-title">Total BCC Sold / Revenue</div>
+                                <div class="kpi-value" id="dev-total-sold">0</div>
+                            </div>
+                            <div class="kpi-icon" style="background: #fff0d4; color: #ff9800;">💰</div>
+                        </div>
+                        <div class="kpi-footer"><span>Revenue</span><span class="trend-up" id="dev-revenue">0 ETH</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="devActionBanner" class="action-banner no-action"
+                    onclick="navTo('devHistoryPage', 'My Projects')">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 22px;">✅</span>
+                        <span style="font-weight: 600; color: #2b3674;" id="devActionText">Checking for approved
+                            projects awaiting mint...</span>
+                    </div>
+                    <span style="font-weight: 700; color: #4318ff;" id="devActionCta"></span>
+                </div>
+
+                <div class="dash-grid-2">
+                    <div class="chart-card">
+                        <div class="kpi-title" style="margin-bottom: 10px;">Project Pipeline</div>
+                        <div style="display: flex; align-items: center; gap: 25px;">
+                            <div style="width: 150px; height: 150px; position: relative;">
+                                <canvas id="devPipelineChart"></canvas>
+                            </div>
+                            <div style="font-size: 13px; color: #2b3674; line-height: 2.2;">
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#ff9800; border-radius:50%; margin-right:8px;"></span>Pending:
+                                    <strong id="dev-pipe-pending">0</strong>
+                                </div>
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#05cd99; border-radius:50%; margin-right:8px;"></span>Approved:
+                                    <strong id="dev-pipe-approved">0</strong>
+                                </div>
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#ee5d50; border-radius:50%; margin-right:8px;"></span>Rejected:
+                                    <strong id="dev-pipe-rejected">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="kpi-title" style="margin-bottom: 10px;">Recent Sales</div>
+                        <div id="devSalesFeedList">
+                            <div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">Connect
+                                your wallet to view sales.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="devSubmitPage" class="page-layer">
+                <div class="card" style="max-width: 700px;">
+                    <h2 class="card-title">Submit New Project</h2>
+
+                    <div style="margin-bottom: 20px;">
+                        <label
+                            style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Project
+                            Title</label>
+                        <input type="text" id="projName" placeholder="e.g., Johor Seagrass Restoration Phase 1"
+                            style="margin-bottom: 0;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label
+                            style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Receiving
+                            Wallet Address (Auto-filled)</label>
+                        <input type="text" id="devAddress" placeholder="Please connect MetaMask first..." readonly
+                            style="margin-bottom: 0; background-color: #e9edf7; color: #a3aed1; cursor: not-allowed; font-family: monospace;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label
+                            style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Geographical
+                            Location</label>
+                        <input type="text" id="location" placeholder="e.g., Coastal area of Johor / GPS Coordinates"
+                            style="margin-bottom: 0;">
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Ecosystem
+                                Type</label>
+                            <select id="ecosystemType" style="margin-bottom: 0;">
+                                <option value="Mangrove">Mangrove</option>
+                                <option value="Seagrass">Seagrass</option>
+                                <option value="Salt Marsh">Salt Marsh</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Price
+                                per BCC (ETH)</label>
+                            <input type="number" id="pricePerToken" step="0.0001" placeholder="e.g., 0.01"
+                                style="margin-bottom: 0;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Capacity
+                                (Hectares)</label>
+                            <input type="number" id="capacity" placeholder="0" style="margin-bottom: 0;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 14px; font-weight: 600; color: #2b3674; display: block; margin-bottom: 8px;">Expected
+                                Completion Date</label>
+                            <input type="date" id="deadline" style="margin-bottom: 0;">
+                        </div>
+                    </div>
+
+                    <button class="primary-btn" id="submitBtn" style="margin-top: 10px; width: 100%;">Submit for Admin
+                        Review</button>
+                </div>
+            </div>
+            <div id="devHistoryPage" class="page-layer">
+                <div class="card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 class="card-title" style="margin-bottom: 5px;">My Projects History</h2>
+                            <p style="color: #a3aed1; font-size: 13px;">Track your submitted carbon offset projects and
+                                generated BCC tokens.</p>
+                        </div>
+                        <button class="primary-btn" style="background: #4318ff; padding: 8px 15px; font-size: 13px;"
+                            onclick="loadMyProjects()">
+                            🔄 Refresh List
+                        </button>
+                    </div>
+
+                    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #f4f7fe;">
+                                <th style="padding: 12px; color: #a3aed1; font-size: 13px;">Project Info</th>
+                                <th style="padding: 12px; color: #a3aed1; font-size: 13px;">Location & Capacity</th>
+                                <th style="padding: 12px; color: #a3aed1; font-size: 13px;">Est. Quota (BCC)</th>
+                                <th style="padding: 12px; color: #a3aed1; font-size: 13px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myProjectsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <div id="adminDashPage" class="page-layer">
+                <style>
+                    .dash-tab-btn {
+                        flex: 1;
+                        padding: 12px;
+                        font-weight: bold;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        background: #f4f7fe;
+                        color: #2b3674;
+                        font-size: 14px;
+                    }
+
+                    .dash-tab-btn.active {
+                        background: #5640fa;
+                        color: white;
+                        box-shadow: 0 4px 10px rgba(86, 64, 250, 0.2);
+                    }
+                </style>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 5px;">Admin Dashboard</h2>
+                        <p style="color: #a3aed1; font-size: 13px;">Central Console / Global System Overview</p>
+                    </div>
+                    <button
+                        style="background: white; border: 1px solid #e0e5f2; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: #2b3674; font-weight: 600; font-size: 13px;"
+                        onclick="loadAdminDashboard()">
+                        🔄 Refresh Data
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                    <button type="button" id="dash-btn-market" class="dash-tab-btn active"
+                        onclick="switchDashTab('market')">📊 Market Liquidity</button>
+                    <button type="button" id="dash-btn-queue" class="dash-tab-btn" onclick="switchDashTab('queue')">⏳
+                        System Queues</button>
+                    <button type="button" id="dash-btn-eco" class="dash-tab-btn" onclick="switchDashTab('eco')">🌍
+                        Ecosystem Logic</button>
+                </div>
+
+                <div id="dash-section-market" class="dash-section">
+                    <div class="dash-grid-3-1">
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Total BCC Minted</div>
+                                    <div class="kpi-value" id="dash-minted">Loading...</div>
+                                </div>
+                                <div class="kpi-icon" style="background: #e6f9f0; color: #05cd99;">🌱</div>
+                            </div>
+                            <div class="kpi-footer"><span>Cumulative Issuance</span><span class="trend-up">Live
+                                    Data</span></div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Total BCC Offset</div>
+                                    <div class="kpi-value" id="dash-offset">0</div>
+                                </div>
+                                <div class="kpi-icon" style="background: #fce8e6; color: #ee5d50;">🔥</div>
+                            </div>
+                            <div class="kpi-footer"><span>Cumulative Burned</span><span class="trend-up">Pending
+                                    Feature</span></div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Circulating Supply</div>
+                                    <div class="kpi-value" id="dash-circulating">Loading...</div>
+                                </div>
+                                <div class="kpi-icon" style="background: #e9edf7; color: #4318ff;">🌊</div>
+                            </div>
+                            <div class="kpi-footer"><span>Current Market Flow</span><span class="trend-up">Live
+                                    Data</span></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="kpi-title" style="margin-bottom: 10px;">BCC Liquidity Trend</div>
+                            <div style="flex: 1; position: relative;"><canvas id="liquidityChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dash-section-queue" class="dash-section" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px;">
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Pending Projects</div>
+                                    <div class="kpi-value" id="dash-pending-proj">0</div>
+                                </div>
+                                <div class="kpi-icon" style="background: #f4f7fe; color: #4318ff;">📄</div>
+                            </div>
+                            <div class="kpi-footer"><span>Awaiting Approval</span></div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Pending Users</div>
+                                    <div class="kpi-value" id="dash-pending-users">0</div>
+                                </div>
+                                <div class="kpi-icon" style="background: #fff4e5; color: #ff9800;">👥</div>
+                            </div>
+                            <div class="kpi-footer"><span>Awaiting Approval</span></div>
+                        </div>
+                        <div class="chart-card"
+                            style="flex-direction: row; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div class="kpi-title">Pending Tasks Queue</div>
+                                <div style="width: 120px; height: 120px; margin-top: 15px;"><canvas
+                                        id="queueChart"></canvas></div>
+                            </div>
+                            <div style="font-size: 13px; color: #a3aed1; line-height: 2;">
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#4318ff; border-radius:50%; margin-right:5px;"></span>Projects
+                                </div>
+                                <div><span
+                                        style="display:inline-block; width:10px; height:10px; background:#ff9800; border-radius:50%; margin-right:5px;"></span>Users
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dash-section-eco" class="dash-section" style="display: none;">
+                    <div class="dash-grid-3">
+                        <div class="kpi-card">
+                            <div class="kpi-header" style="margin-bottom: 5px;">
+                                <div>
+                                    <div class="kpi-title">Developer to Buyer Ratio</div>
+                                    <div class="kpi-value" id="dash-ratio">0 : 0</div>
+                                </div>
+                                <div
+                                    style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">
+                                    Live Logic</div>
+                            </div>
+                            <div class="progress-bar-bg" style="display: flex;">
+                                <div class="progress-bar-fill" id="bar-dev" style="width: 50%; background: #05cd99;">
+                                </div>
+                                <div class="progress-bar-fill" id="bar-buyer" style="width: 50%; background: #4318ff;">
+                                </div>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 5px; color: #a3aed1; font-weight: bold;">
+                                <span>Developers</span><span>Buyers</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <div class="kpi-title">Recent Transaction Volume</div>
+                                </div>
+                                <div
+                                    style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">
+                                    Live Logic</div>
+                            </div>
+                            <div style="flex: 1; position: relative; margin-top: 10px; height: 80px;"><canvas
+                                    id="txChart"></canvas></div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-title">Admin Node Health</div>
+                                    <div class="kpi-value" style="font-size: 20px;" id="dash-node-health">Checking...
+                                    </div>
+                                </div>
+                                <div class="kpi-icon" style="background: #e9edf7; color: #4318ff;">⚡</div>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="node-health-bar"
+                                    style="width: 0%; background: #05cd99;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="adminReviewPage" class="page-layer">
+                <div class="card">
+                    <h2 class="card-title">Project Review Management</h2>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                        <button type="button" id="tab-pending-projects" onclick="switchProjectTab('pending')"
+                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #5640fa; color: white; border-radius: 8px; cursor: pointer;">⏳
+                            Pending Projects</button>
+                        <button type="button" id="tab-all-projects" onclick="switchProjectTab('overview')"
+                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #f4f7fe; color: #2b3674; border-radius: 8px; cursor: pointer;">📊
+                            All Projects Overview</button>
+                    </div>
+
+                    <div id="panel-pending-projects">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project Title</th>
+                                    <th>Location</th>
+                                    <th>Ecosystem</th>
+                                    <th>Volume (BCC)</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="panel-all-projects" style="display: none;">
+                        <div
+                            style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f4f7fe; padding: 15px; border-radius: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-size: 14px; font-weight: 600;">Status Filter:</label>
+                                <select id="filterProjectStatus" onchange="applyProjectFilters()"
+                                    style="margin: 0; padding: 8px; width: 130px;">
+                                    <option value="all">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Project Title</th>
+                                    <th>Location</th>
+                                    <th>Ecosystem</th>
+                                    <th>Volume</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allProjectsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="adminUsersPage" class="page-layer">
+                <div class="card">
+                    <h2 class="card-title">User Management</h2>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                        <button id="tab-pending-users" onclick="switchUserTab('pending')"
+                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #5640fa; color: white; border-radius: 8px; cursor: pointer;">⏳
+                            Pending Approvals</button>
+                        <button id="tab-all-users" onclick="switchUserTab('overview')"
+                            style="flex: 1; padding: 10px; font-weight: bold; border: none; background: #f4f7fe; color: #2b3674; border-radius: 8px; cursor: pointer;">📊
+                            All Users Overview</button>
+                    </div>
+
+                    <div id="panel-pending-users">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Requested Role</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="panel-all-users" style="display: none;">
+                        <div
+                            style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f4f7fe; padding: 15px; border-radius: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-size: 14px; font-weight: 600;">Role:</label>
+                                <select id="filterRole" onchange="applyUserFilters()"
+                                    style="margin: 0; padding: 8px; width: 130px;">
+                                    <option value="all">All</option>
+                                    <option value="developer">Developer</option>
+                                    <option value="buyer">Buyer</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-size: 14px; font-weight: 600;">Status:</label>
+                                <select id="filterStatus" onchange="applyUserFilters()"
+                                    style="margin: 0; padding: 8px; width: 130px;">
+                                    <option value="all">All</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-size: 14px; font-weight: 600;">Date Range:</label>
+                                <input type="date" id="userDateStart" onchange="applyUserFilters()"
+                                    style="margin: 0; padding: 6px; width: 130px;">
+                                <span style="color: #a3aed1;">to</span>
+                                <input type="date" id="userDateEnd" onchange="applyUserFilters()"
+                                    style="margin: 0; padding: 6px; width: 130px;">
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allUserTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="buyerPortfolioPage" class="page-layer">
+
+                <div class="card">
+
+                    <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        ">
+
+                        <div>
+
+                            <h2 class="card-title" style="margin-bottom: 5px;">
+                                My BCC Portfolio
+                            </h2>
+
+                            <p style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    margin: 0;
+                ">
+                                Your Blue Carbon Credit holdings.
+                            </p>
+
+                        </div>
+
+                        <button class="primary-btn" onclick="loadBuyerPortfolio()" style="
+                    background: #4318ff;
+                    padding: 8px 15px;
+                    font-size: 13px;
+                ">
+                            🔄 Refresh
+                        </button>
+
+                    </div>
+
+
+
+                    <div style="
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        ">
+
+                        <div>
+
+                            <div style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Total BCC Holdings
+                            </div>
+
+                            <div id="totalBccHolding" style="
+                        font-size: 30px;
+                        font-weight: 800;
+                        color: #4318ff;
+                        margin-top: 5px;
+                    ">
+                                0
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">
+                                Total Retired BCC
+                            </div>
+
+                            <div id="totalBccRetired" style="
+                        font-size: 30px;
+                        font-weight: 800;
+                        color: #ee5d50;
+                        margin-top: 5px;
+                    ">
+                                0
+                            </div>
+
+                        </div>
+
+                        <div style="
+                font-size: 40px;
+            ">
+                            🌊
+                        </div>
+
+                    </div>
+
+
+
+                    <div style="overflow-x: auto;">
+
+                        <table style="
+                width: 100%;
+                text-align: left;
+                border-collapse: collapse;
+            ">
+
+                            <thead>
+
+                                <tr style="
+                        border-bottom: 2px solid #f4f7fe;
+                    ">
+
+                                    <th style="padding: 12px;">
+                                        Project
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Location
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Price / BCC
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Transferred Out
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Balance
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Retired
+                                    </th>
+
+                                    <th style="padding: 12px;">
+                                        Value
+                                    </th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="buyerPortfolioBody">
+
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="buyerTransferPage" class="page-layer">
+
+                <div class="card">
+
+                    <h2>Transfer BCC</h2>
+
+                    <p>
+                        Transfer your BCC to another registered buyer.
+                    </p>
+
+                    <label>
+                        Recipient Wallet Address
+                    </label>
+
+                    <input type="text" id="transferRecipient" placeholder="0x...">
+
+                    <label>
+                        Project
+                    </label>
+
+                    <select id="transferProjectSelect">
+                        <option value="">
+                            Select a project
+                        </option>
+                    </select>
+
+                    <label>
+                        Amount
+                    </label>
+
+                    <input type="number" id="transferAmount" min="1" step="1" placeholder="Amount of BCC">
+
+                    <button class="primary-btn" onclick="transferBuyerCredits()">
+                        Transfer BCC
+                    </button>
+
+                </div>
+
+            </div>
+            <div id="buyerOffsetPage" class="page-layer">
+
+                <div class="card">
+
+                    <h2 class="card-title">
+                        Offset & Claim
+                    </h2>
+
+                    <p style="
+            color: #a3aed1;
+            font-size: 13px;
+            margin-bottom: 25px;
+        ">
+                        Retire your BCC to permanently remove it
+                        from circulation.
+                    </p>
+
+
+
+                    <div style="
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+        ">
+
+                        <div style="
+                color: #a3aed1;
+                font-size: 13px;
+                font-weight: 600;
+            ">
+                            Total Retirable BCC
+                        </div>
+
+                        <div id="offsetTotalBalance" style="
+                    font-size: 28px;
+                    font-weight: 800;
+                    color: #4318ff;
+                    margin-top: 5px;
+                ">
+                            0
+                        </div>
+
+                    </div>
+
+
+
+                    <div style="
+            max-width: 500px;
+        ">
+
+                        <div style="margin-bottom: 20px;">
+
+                            <label style="
+                    display: block;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #2b3674;
+                    margin-bottom: 8px;
+                ">
+                                Select Project
+                            </label>
+
+                            <select id="offsetProjectSelect" style="width: 100%;">
+
+                                <option value="">
+                                    Select a project
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div style="margin-bottom: 20px;">
+
+                            <label style="
+                    display: block;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #2b3674;
+                    margin-bottom: 8px;
+                ">
+                                Amount to Retire
+                            </label>
+                            <input type="number" id="offsetAmount" min="1" placeholder="Enter BCC amount">
+
+                        </div>
+
+
+                        <button class="primary-btn" onclick="retireBuyerCredits()"
+                            style="width: 100%;background: #e94560;">
+                            🔥 Retire BCC
+                        </button>
+                    </div>
+                    <div style="margin-top: 35px;">
+                        <h3 style="color: #2b3674;font-size: 15px;margin-bottom: 15px;">
+                            Retirement History
+                        </h3>
+                        <table style="width: 100%;border-collapse: collapse;text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #f4f7fe;">
+                                    <th style="padding: 12px;">
+                                        Project
+                                    </th>
+                                    <th style="padding: 12px;">
+                                        Amount
+                                    </th>
+                                    <th style="padding: 12px;">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="retirementHistoryBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="buyerTxPage" class="page-layer">
+
+                <div class="card">
+
+                    <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        ">
+
+                        <div>
+
+                            <h2 class="card-title" style="margin-bottom: 5px;">
+                                Transaction History
+                            </h2>
+
+                            <p style="
+                    color: #a3aed1;
+                    font-size: 13px;
+                    margin: 0;
+                ">
+                                Your BCC purchases and retirement activities.
+                            </p>
+
+                        </div>
+
+                        <button class="primary-btn" onclick="loadBuyerTransactions()"
+                            style="background: #4318ff;padding: 8px 15px;font-size: 13px;">🔄 Refresh</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%;text-align: left;border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #f4f7fe;">
+                                    <th style="padding: 12px;">Date</th>
+                                    <th style="padding: 12px;">Project</th>
+                                    <th style="padding: 12px;">Type</th>
+                                    <th style="padding: 12px;">Amount</th>
+                                    <th style="padding: 12px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="buyerTxBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script>
+        function navTo(targetPageId, titleText) {
+            document.querySelectorAll('.page-layer').forEach(el => el.classList.remove('active-page'));
+
+            const targetElement = document.getElementById(targetPageId);
+            if (targetElement) {
+                targetElement.classList.add('active-page');
+            }
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navId = 'nav-' + targetPageId.replace('Page', '');
+            if (document.getElementById(navId)) document.getElementById(navId).classList.add('active');
+            document.getElementById('pageTitle').innerText = titleText;
+
+            if (targetPageId === 'adminDashPage') {
+                if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
+            }
+
+
+            if (targetPageId === 'devDashPage') {
+                if (typeof loadDevDashboard === 'function') loadDevDashboard();
+            }
+
+            if (targetPageId === 'adminUsersPage') {
+                if (typeof switchUserTab === 'function') {
+                    switchUserTab('pending');
+                } else if (typeof loadPendingUsers === 'function') {
+                    loadPendingUsers();
+                }
+            }
+
+            if (targetPageId === 'adminReviewPage') {
+                if (typeof switchProjectTab === 'function') {
+                    switchProjectTab('pending');
+                } else if (typeof loadPendingProjects === 'function') {
+                    loadPendingProjects();
+                }
+            }
+
+            if (targetPageId === 'devHistoryPage') {
+                if (typeof loadMyProjects === 'function') loadMyProjects();
+            }
+
+
+            if (targetPageId === 'devSubmitPage') {
+                const savedWallet = localStorage.getItem('loggedInWallet');
+                const devAddrInput = document.getElementById('devAddress');
+                if (devAddrInput && savedWallet) {
+                    devAddrInput.value = savedWallet;
+                    devAddrInput.style.color = '#5640fa';
+                }
+            }
+
+
+            if (targetPageId === 'marketPage') {
+
+                if (
+                    typeof loadMarketplace ===
+                    'function'
+                ) {
+                    loadMarketplace();
+                }
+            }
+
+
+            if (targetPageId === 'buyerPortfolioPage') {
+
+                if (
+                    typeof loadBuyerPortfolio ===
+                    'function'
+                ) {
+                    loadBuyerPortfolio();
+                }
+            }
+
+
+            if (targetPageId === 'buyerOffsetPage') {
+
+                if (
+                    typeof loadOffsetProjects ===
+                    'function'
+                ) {
+                    loadOffsetProjects();
+                }
+
+                if (
+                    typeof loadRetirementHistory ===
+                    'function'
+                ) {
+                    loadRetirementHistory();
+                }
+            }
+
+
+            if (targetPageId === 'buyerTxPage') {
+
+                if (
+                    typeof loadBuyerTransactions ===
+                    'function'
+                ) {
+                    loadBuyerTransactions();
+                }
+            }
+        }
+
+
+        function switchRole(role) {
+
+            document.querySelectorAll(
+                '.nav-item, .header-actions, .sidebar-bottom'
+            ).forEach(el => {
+                el.style.display = 'none';
+            });
+
+            if (role === 'guest') {
+
+                document.querySelectorAll('.menu-guest')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('loginPage', 'Welcome Back');
+
+            }
+            else if (role === 'developer') {
+
+                document.querySelectorAll('.menu-shared, .menu-dev')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('devDashPage', 'Developer Dashboard');
+
+            }
+            else if (role === 'admin') {
+
+                document.querySelectorAll('.menu-shared, .menu-admin')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('adminDashPage', 'Admin Dashboard');
+
+            }
+            else if (role === 'buyer') {
+
+                document.querySelectorAll('.menu-shared, .menu-buyer')
+                    .forEach(el => el.style.display = 'flex');
+
+                navTo('buyerPortfolioPage', 'My Portfolio');
+            }
+        }
+        window.onload = function () {
+            switchRole('guest');
+            navTo('loginPage', 'Welcome Back');
+        };
+    </script>
+    <script src="app.js"></script>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .profile-modal {
+            background: white;
+            width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show .profile-modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f4f7fe;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #a3aed1;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #2b3674;
+        }
+
+        .modal-body {
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        .prof-left {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prof-avatar {
+            width: 80px;
+            height: 80px;
+            background: #e9edf7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            margin: 0 auto 20px auto;
+            color: #4318ff;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .prof-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        .prof-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 13px;
+        }
+
+        .prof-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .prof-val {
+            color: #0f172a;
+            font-weight: 700;
+            text-align: right;
+            word-break: break-all;
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            padding: 12px;
+            background: #dc3545;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 30px;
+        }
+
+        .logout-btn:hover {
+            background: #ea4d5d;
+        }
+
+        .prof-right {
+            flex: 1.5;
+        }
+
+        .prof-tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid #f4f7fe;
+            margin-bottom: 20px;
+        }
+
+        .prof-tab {
+            padding: 10px 5px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .prof-tab.active {
+            color: #4318ff;
+            border-bottom-color: #4318ff;
+        }
+
+        .sub-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sub-tab {
+            padding: 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .sub-tab.active {
+            color: #4318ff;
+            border-bottom-color: #4318ff;
+        }
+
+        .prof-input-group {
+            margin-bottom: 15px;
+        }
+
+        .prof-input-group label {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .prof-input-group input,
+        .prof-input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .prof-input-group input:disabled,
+        .prof-input-group select:disabled {
+            background: #f8fafc;
+            cursor: not-allowed;
+            color: #a3aed1;
+        }
+    </style>
+
+
+    <div id="projectDetailModal" class="modal-overlay">
+        <div class="profile-modal" style="width: 700px;">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #0f172a;">Project Details & Sales</h3>
+                <button class="modal-close" onclick="closeProjectModal()">✕</button>
+            </div>
+            <div class="modal-body" style="flex-direction: column; gap: 20px;">
+
+                <div
+                    style="background: #f8fafc; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between;">
+                    <div>
+                        <h4 id="det-title" style="margin: 0 0 10px 0; color: #2b3674; font-size: 18px;">Loading...</h4>
+                        <div style="font-size: 13px; color: #64748b; margin-bottom: 5px;">📍 Location: <span
+                                id="det-loc" style="color: #0f172a; font-weight: bold;">-</span></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; color: #64748b; font-weight: bold;">Total BCC Generated</div>
+                        <div id="det-total" style="font-size: 24px; font-weight: 800; color: #4318ff;">0</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1; background: #e6f9f0; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 12px; color: #05cd99; font-weight: bold;">Available Quota</div>
+                        <div id="det-avail" style="font-size: 20px; font-weight: 800; color: #05cd99; margin-top: 5px;">
+                            0</div>
+                    </div>
+                    <div style="flex: 1; background: #fff0d4; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 12px; color: #ff9800; font-weight: bold;">Sold Quota</div>
+                        <div id="det-sold" style="font-size: 20px; font-weight: 800; color: #ff9800; margin-top: 5px;">0
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 style="margin: 10px 0; color: #2b3674; font-size: 14px;">Buyer Records (Who bought your BCC)
+                    </h5>
+                    <div style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; font-size: 13px;">
+                            <thead style="background: #f4f7fe; position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 10px;">Date</th>
+                                    <th style="padding: 10px;">Buyer Name</th>
+                                    <th style="padding: 10px; text-align: right;">Amount (BCC)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="det-sales-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
