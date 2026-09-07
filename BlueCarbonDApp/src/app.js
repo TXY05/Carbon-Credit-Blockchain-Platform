@@ -3202,6 +3202,8 @@ let devPipelineChartInstance = null;
 let devDashboardRequestId = 0;
 
 window.loadDevDashboard = async function () {
+  const requestId = ++devDashboardRequestId;
+
   const currentUser = localStorage.getItem("loggedInUser");
   if (!currentUser) return;
 
@@ -3218,6 +3220,8 @@ window.loadDevDashboard = async function () {
   } catch (error) {
     console.error("Failed to load My Projects from DB:", error);
   }
+
+  if (requestId !== devDashboardRequestId) return; // 已经有更新的一次调用了，这次作废
 
   const totalProjects = myDbProjects.length;
   const pendingCount = myDbProjects.filter((p) => p.status === "pending").length;
@@ -3276,6 +3280,8 @@ window.loadDevDashboard = async function () {
       (p) => p.developer && p.developer.toLowerCase() === devAddress.toLowerCase()
     );
 
+    if (requestId !== devDashboardRequestId) return;
+
     const projectNameMap = {};
     myChainProjects.forEach((p) => {
       projectNameMap[p.projectID.toString()] = p.projectName;
@@ -3290,6 +3296,8 @@ window.loadDevDashboard = async function () {
         console.warn("Failed to read project balance:", p.projectID, e);
       }
     }
+
+    if (requestId !== devDashboardRequestId) return;
     document.getElementById("dev-available-quota").innerText = availableQuota.toString();
 
     let totalSold = 0n;
@@ -3325,21 +3333,27 @@ window.loadDevDashboard = async function () {
       salesFetchFailed = true;
     }
 
+    if (requestId !== devDashboardRequestId) return;
+
     document.getElementById("dev-total-sold").innerText = salesFetchFailed ? "-" : totalSold.toString();
     document.getElementById("dev-revenue").innerText = salesFetchFailed
       ? "-"
       : Web3.utils.fromWei(totalRevenueWei.toString(), "ether") + " ETH";
 
-    document.getElementById("dev-total-minted").innerText =
-      (availableQuota + totalSold).toLocaleString();
+    document.getElementById("dev-total-minted").innerText = salesFetchFailed
+      ? "-"
+      : (availableQuota + totalSold).toLocaleString();
 
     salesEvents.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
     const recentSales = salesEvents.slice(0, 5);
 
     if (recentSales.length === 0) {
-      salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">No sales records yet.</div>`;
+      if (requestId !== devDashboardRequestId) return;
+      salesFeedList.innerHTML = salesFetchFailed
+        ? `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">Failed to load sales data, please refresh.</div>`
+        : `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">No sales records yet.</div>`;
     } else {
-      salesFeedList.innerHTML = "";
+      let rowsHtml = "";
       for (const ev of recentSales) {
         let dateDisplay = "";
         try {
@@ -3351,7 +3365,7 @@ window.loadDevDashboard = async function () {
         const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
         const projName = projectNameMap[ev.returnValues.projectID.toString()] || `Project #${ev.returnValues.projectID}`;
 
-        salesFeedList.innerHTML += `
+        rowsHtml += `
           <div class="sales-feed-item">
             <div>
               <div style="font-weight: 700; color: #2b3674;">${buyerShort}</div>
@@ -3361,9 +3375,13 @@ window.loadDevDashboard = async function () {
           </div>
         `;
       }
+
+      if (requestId !== devDashboardRequestId) return; // 拼装过程中被更新的调用超过了，放弃写入
+      salesFeedList.innerHTML = rowsHtml;
     }
   } catch (error) {
     console.warn("Failed to load on-chain data (possibly not connected to a wallet):", error);
+    if (requestId !== devDashboardRequestId) return;
     salesFeedList.innerHTML = `<div style="text-align: center; color: #a3aed1; padding: 30px 0; font-size: 13px;">🦊 Please connect MetaMask first to view real quota and sales data.</div>`;
     document.getElementById("dev-available-quota").innerText = "-";
     document.getElementById("dev-total-sold").innerText = "-";
@@ -3371,7 +3389,6 @@ window.loadDevDashboard = async function () {
     document.getElementById("dev-total-minted").innerText = "-";
   }
 };
-
 // ==========================================
 // Open project details to view quota and buyers (usable by both Developer / Admin)
 // ==========================================
