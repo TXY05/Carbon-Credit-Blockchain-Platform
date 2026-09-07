@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.19+commit.7dd6d404"
+		"version": "0.8.34+commit.80d5c536"
 	},
 	"language": "Solidity",
 	"output": {
@@ -24,6 +24,12 @@
 						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
 						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "username",
+						"type": "string"
 					}
 				],
 				"name": "UserRegistered",
@@ -50,6 +56,11 @@
 						"internalType": "address[]",
 						"name": "addresses",
 						"type": "address[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "usernames",
+						"type": "string[]"
 					},
 					{
 						"internalType": "enum UserRegistry.UserRole[]",
@@ -184,6 +195,11 @@
 						"internalType": "enum UserRegistry.UserRole",
 						"name": "role",
 						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "username",
+						"type": "string"
 					}
 				],
 				"name": "registerUser",
@@ -213,7 +229,7 @@
 		"compilationTarget": {
 			"BlueCarbonDApp/contracts/UserRegistry.sol": "UserRegistry"
 		},
-		"evmVersion": "paris",
+		"evmVersion": "osaka",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -226,11 +242,11 @@
 	},
 	"sources": {
 		"BlueCarbonDApp/contracts/UserRegistry.sol": {
-			"keccak256": "0x1475c5e325578281886765e92c7a6a3e5bc1095fe3756edb86a5115d4ab721d5",
+			"keccak256": "0xe22d25b85f2a86d45106f5dbb0b5c67f8d3ad61ac62e4b5c4003760f1e7ecb9b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://62d5cf80b502b2ee2d34b3513808b1ca598558b82db35831dac406d35fc1d3fd",
-				"dweb:/ipfs/QmVP6qP36HAoMMQKfN8nwAGxYP2nmgJAyPVos9Vjg9Cf2c"
+				"bzz-raw://be4e8a2435230ee63f86bd0fc1daa017d237299b51069e4b749cc58aa4d5d410",
+				"dweb:/ipfs/Qmatjvo5yoZ4VvbpyurJBcQR5UWVB2gBJ2DJqSroFTv9F5"
 			]
 		}
 	},

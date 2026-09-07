@@ -26,11 +26,12 @@ contract UserRegistry {
         admins[account] = true;
     }
 
-    event UserRegistered(address indexed user, UserRole role);
+    event UserRegistered(address indexed user, UserRole role, string username);
 
     struct User {
         UserRole role;
         uint256 registeredAt;
+        string username;
     }
 
     enum UserRole {
@@ -41,15 +42,21 @@ contract UserRegistry {
 
     function registerUser(
         address user,
-        UserRole role
+        UserRole role,
+        string memory username
     ) external onlyAdmin returns (bool) {
         require(user != address(0), "Invalid address");
         require(users[user].role == UserRole.None, "User already registered");
+        require(bytes(username).length > 0, "Invalid username");
         require(role != UserRole.None, "Invalid role");
 
-        users[user] = User({role: role, registeredAt: block.timestamp});
+        users[user] = User({
+            role: role,
+            registeredAt: block.timestamp,
+            username: username
+        });
         userList.push(user);
-        emit UserRegistered(user, role);
+        emit UserRegistered(user, role, username);
 
         return true;
     }
@@ -79,6 +86,7 @@ contract UserRegistry {
         view
         returns (
             address[] memory addresses,
+            string[] memory usernames,
             UserRole[] memory roles,
             uint256[] memory registeredAt
         )
@@ -86,11 +94,13 @@ contract UserRegistry {
         uint256 length = userList.length;
 
         addresses = new address[](length);
+        usernames = new string[](length);
         roles = new UserRole[](length);
         registeredAt = new uint256[](length);
 
         for (uint256 i = 0; i < length; i++) {
             addresses[i] = userList[i];
+            usernames[i] = users[userList[i]].username;
             roles[i] = users[userList[i]].role;
             registeredAt[i] = users[userList[i]].registeredAt;
         }

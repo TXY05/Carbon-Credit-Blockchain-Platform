@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.19+commit.7dd6d404"
+		"version": "0.8.34+commit.80d5c536"
 	},
 	"language": "Solidity",
 	"output": {
@@ -13,7 +13,7 @@
 						"type": "address"
 					}
 				],
-				"name": "isAdmin",
+				"name": "isBuyer",
 				"outputs": [
 					{
 						"internalType": "bool",
@@ -57,9 +57,9 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"BlueCarbonDApp/contracts/ProjectRegistry.sol": "IUserRegistry"
+			"BlueCarbonDApp/contracts/CarbonToken.sol": "IUserRegistry"
 		},
-		"evmVersion": "paris",
+		"evmVersion": "osaka",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -71,12 +71,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"BlueCarbonDApp/contracts/ProjectRegistry.sol": {
-			"keccak256": "0x1f745f939a7a91699320feb0d4320d5f3e623453729f08ff7b532f3d4114105a",
+		"BlueCarbonDApp/contracts/CarbonToken.sol": {
+			"keccak256": "0x491f21cd3d3209ef519997887f5982665538564c8c19f434f201166cc7f20bdf",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://206aa0343214ea24a7a34d385ae0bd8daa1e69483540b9208deb59104bbbb7d1",
-				"dweb:/ipfs/QmRKXTyLNk1C3m2tTNMYyhEgvibq6qDUYU4d6qHjQXxoCE"
+				"bzz-raw://669d8558096075f29e8f818f4cf71b34e655036b64c4025edd858528e5ce9435",
+				"dweb:/ipfs/QmagHEX4CyBpeH6gaUq24j2h5YjcwiSiAA3LFUf77hRHqR"
 			]
 		}
 	},
