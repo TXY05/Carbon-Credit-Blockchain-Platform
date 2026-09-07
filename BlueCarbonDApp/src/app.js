@@ -2,8 +2,8 @@ let web3;
 let currentAccount;
 
 const USER_REGISTRY_ADDRESS = "0xC65B8dB9C7CD0985083bB42A4bbc421F8DCEC6Ea";
-const PROJECT_REGISTRY_ADDRESS = "0x5C492a7b9bd479d39B42581a53bf0B87A510Aff8";
-const CARBON_TOKEN_ADDRESS = "0x219fC63D622421BE06fe30ad8982beF5E6C536c1";
+const PROJECT_REGISTRY_ADDRESS = "0x327d399a187593c7CdD33d166463EA55871E4f74";
+const CARBON_TOKEN_ADDRESS = "0xe48aBBBCBbEef612287da5e91677DcFc886EF4aB";
 
 const USER_REGISTRY_ABI = [
   {
@@ -184,19 +184,6 @@ const PROJECT_REGISTRY_ABI = [
         "internalType": "uint256",
         "name": "projectID",
         "type": "uint256"
-      }
-    ],
-    "name": "approveProject",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "projectID",
-        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -254,19 +241,6 @@ const PROJECT_REGISTRY_ABI = [
         "internalType": "uint256",
         "name": "projectID",
         "type": "uint256"
-      }
-    ],
-    "name": "ProjectApproved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "projectID",
-        "type": "uint256"
       },
       {
         "indexed": true,
@@ -298,19 +272,6 @@ const PROJECT_REGISTRY_ABI = [
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "projectID",
-        "type": "uint256"
-      }
-    ],
-    "name": "ProjectRejected",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -324,19 +285,6 @@ const PROJECT_REGISTRY_ABI = [
       }
     ],
     "name": "reduceAvailableCapacity",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "projectID",
-        "type": "uint256"
-      }
-    ],
-    "name": "rejectProject",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -653,6 +601,7 @@ const PROJECT_REGISTRY_ABI = [
     "type": "function"
   }
 ];
+
 
 const CARBON_TOKEN_ABI = [
   {
@@ -1170,6 +1119,7 @@ const CARBON_TOKEN_ABI = [
   }
 ];
 
+
 let userRegistryContract = null;
 let projectRegistryContract = null;
 let carbonTokenContract = null;
@@ -1206,8 +1156,6 @@ function initializeBlockchainContracts() {
 }
 
 async function ensureContractsReady() {
-  // If Web3 is not initialized yet,
-  // try to connect to MetaMask.
   if (!web3) {
     if (typeof window.ethereum === "undefined") {
       throw new Error("MetaMask is not installed.");
@@ -1222,8 +1170,6 @@ async function ensureContractsReady() {
     currentAccount = accounts[0];
   }
 
-  // Initialize contracts if they haven't
-  // been initialized yet.
   if (
     !projectRegistryContract ||
     !userRegistryContract ||
@@ -1243,20 +1189,11 @@ async function ensureContractsReady() {
   };
 }
 
-// Node.js backend server URL
 const SERVER_URL = "http://localhost:3000";
-
-// ==========================================
-// AUTHENTICATION
-// MetaMask is the ONLY login method
-// ==========================================
 
 let connectedWallet = null;
 
 
-// ==========================================
-// Toggle Login / Register
-// ==========================================
 
 window.toggleAuthMode = function (mode) {
 
@@ -1281,9 +1218,6 @@ window.toggleAuthMode = function (mode) {
 };
 
 
-// ==========================================
-// Connect MetaMask
-// ==========================================
 
 window.connectMetaMask = async function () {
 
@@ -1298,7 +1232,6 @@ window.connectMetaMask = async function () {
 
   try {
 
-    // Ask MetaMask for account
     const accounts =
       await window.ethereum.request({
         method: "eth_requestAccounts"
@@ -1329,9 +1262,6 @@ window.connectMetaMask = async function () {
 
 };
 
-// ==========================================
-// Get already connected wallet
-// ==========================================
 
 async function getConnectedWallet() {
 
@@ -1359,10 +1289,6 @@ async function getConnectedWallet() {
 };
 
 
-// ==========================================
-// Shorten wallet address
-// ==========================================
-
 function shortenAddress(address) {
 
   if (!address) return "";
@@ -1375,20 +1301,9 @@ function shortenAddress(address) {
 
 }
 
-
-// ==========================================
-// LOGIN
-//
-// MetaMask ONLY
-// ==========================================
-
 window.connectAndLogin = async function () {
 
   try {
-
-    // ==================================
-    // 1. Connect MetaMask (with network check)
-    // ==================================
 
     const walletAddress =
       await ensureWalletConnected();
@@ -1404,8 +1319,6 @@ window.connectAndLogin = async function () {
       walletAddress
     );
 
-    // Also cache the username back to loggedInUser,
-    // so old logic in My Projects / Submit Project etc. can still work
     try {
       const profRes = await fetch(`${SERVER_URL}/user-profile?walletAddress=${walletAddress}`);
       const profData = await profRes.json();
@@ -1417,17 +1330,11 @@ window.connectAndLogin = async function () {
     }
 
 
-    // ==================================
-    // 2. Load contracts
-    // ==================================
 
     const contracts =
       await ensureContractsReady();
 
 
-    // ==================================
-    // 3. Check Owner
-    // ==================================
 
     const owner =
       await contracts.userRegistry.methods
@@ -1439,9 +1346,6 @@ window.connectAndLogin = async function () {
       walletAddress.toLowerCase();
 
 
-    // ==================================
-    // 4. Check Admin
-    // ==================================
 
     const isAdmin =
       await contracts.userRegistry.methods
@@ -1454,9 +1358,6 @@ window.connectAndLogin = async function () {
     console.log("Is admin:", isAdmin);
 
 
-    // ==================================
-    // 5. ADMIN / OWNER LOGIN
-    // ==================================
 
     if (isOwner || isAdmin) {
 
@@ -1471,11 +1372,6 @@ window.connectAndLogin = async function () {
       return;
     }
 
-
-    // ==================================
-    // 6. NORMAL USER
-    // ==================================
-
     const role =
       await contracts.userRegistry.methods
         .getUserRole(walletAddress)
@@ -1486,11 +1382,6 @@ window.connectAndLogin = async function () {
       "Blockchain role:",
       role
     );
-
-
-    // ==================================
-    // 7. Not registered on blockchain
-    // ==================================
 
     if (Number(role) === 0) {
 
@@ -1505,20 +1396,11 @@ window.connectAndLogin = async function () {
     }
 
 
-    // ==================================
-    // 8. Buyer
-    // ==================================
-
     if (Number(role) === 1) {
 
       switchRole("buyer");
       navTo("marketPage", "Marketplace");
     }
-
-
-    // ==================================
-    // 9. Developer
-    // ==================================
 
     else if (Number(role) === 2) {
 
@@ -1526,11 +1408,6 @@ window.connectAndLogin = async function () {
       navTo("devDashPage", "Developer Dashboard");
 
     }
-
-
-    // ==================================
-    // 10. Unknown role
-    // ==================================
 
     else {
 
@@ -1563,10 +1440,6 @@ window.connectAndLogin = async function () {
   }
 
 };
-
-// ==========================================
-// REGISTER - CONNECT WALLET
-// ==========================================
 
 window.connectRegisterWallet = async function () {
 
@@ -1613,20 +1486,11 @@ window.connectRegisterWallet = async function () {
 };
 
 
-// ==========================================
-// REGISTER
-//
-// User fills information FIRST.
-// MetaMask wallet becomes identity.
-// ==========================================
 
 window.handleRegister = async function () {
 
   try {
 
-    // ----------------------------------
-    // 1. Get form information
-    // ----------------------------------
 
     const username =
       document.getElementById(
@@ -1647,11 +1511,6 @@ window.handleRegister = async function () {
       document.getElementById(
         "regRole"
       ).value;
-
-
-    // ----------------------------------
-    // 2. Validate form
-    // ----------------------------------
 
     if (!username) {
 
@@ -1685,11 +1544,6 @@ window.handleRegister = async function () {
       return;
     }
 
-
-    // ----------------------------------
-    // 3. Connect MetaMask
-    // ----------------------------------
-
     let walletAddress =
       connectedWallet;
 
@@ -1711,18 +1565,9 @@ window.handleRegister = async function () {
       return;
     }
 
-
-    // ----------------------------------
-    // 4. Initialize blockchain
-    // ----------------------------------
-
     const contracts =
       await ensureContractsReady();
 
-
-    // ----------------------------------
-    // 5. Check if wallet already exists
-    // ----------------------------------
 
     const alreadyRegistered =
       await contracts.userRegistry.methods
@@ -1742,10 +1587,6 @@ window.handleRegister = async function () {
       return;
     }
 
-
-    // ----------------------------------
-    // 6. Send registration to backend
-    // ----------------------------------
 
     const response =
       await fetch(
@@ -1794,17 +1635,11 @@ window.handleRegister = async function () {
     }
 
 
-    // ----------------------------------
-    // 7. Registration successful
-    // ----------------------------------
-
     alert(
       "✅ Registration submitted!\n\n" +
       "Your account is now waiting for Admin approval."
     );
 
-
-    // Clear form
 
     document.getElementById(
       "regUsername"
@@ -1821,13 +1656,7 @@ window.handleRegister = async function () {
     document.getElementById(
       "regRole"
     ).value = "";
-
-
-    // Return login page
-
     toggleAuthMode("login");
-
-
   } catch (error) {
 
     console.error(
@@ -1844,9 +1673,6 @@ window.handleRegister = async function () {
 
 };
 
-// ==========================================
-// Developer: Submit new project (identity-binding fix version)
-// ==========================================
 document.getElementById("submitBtn").onclick = async function () {
   let projName = document.getElementById("projName").value.trim();
   let location = document.getElementById("location").value.trim();
@@ -1861,20 +1687,14 @@ document.getElementById("submitBtn").onclick = async function () {
   }
 
   try {
-    // 1. Make sure wallet is connected
     const devAddress = await ensureWalletConnected();
     const contracts = await ensureContractsReady();
-
-    // 2. Generate a unique on-chain project ID
     const onChainProjectID = Date.now();
 
-    // 3. Calculate total carbon volume (same logic as before: capacity x 5)
     const carbonVolume = capacity * 5;
 
-    // 4. Convert price to wei
     const priceInWei = web3.utils.toWei(String(pricePerToken), "ether");
 
-    // 5. Directly call on-chain createProject, status defaults to Pending
     await contracts.projectRegistry.methods
       .createProject(
         onChainProjectID,
@@ -1886,7 +1706,6 @@ document.getElementById("submitBtn").onclick = async function () {
       )
       .send({ from: devAddress });
 
-    // 5.5 Sync to backend so Admin can approve without gas
     await fetch(`${SERVER_URL}/submit-project`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1900,7 +1719,6 @@ document.getElementById("submitBtn").onclick = async function () {
 
     alert("✅ Project submitted successfully! It's on-chain, waiting for Admin review.");
 
-    // Clear form
     document.getElementById("projName").value = "";
     document.getElementById("location").value = "";
     document.getElementById("capacity").value = "";
@@ -1914,9 +1732,6 @@ document.getElementById("submitBtn").onclick = async function () {
   }
 };
 
-// ==========================================
-// Admin: Project management (tab switching logic)
-// ==========================================
 window.switchProjectTab = function (tab) {
   if (tab === "pending") {
     document.getElementById("panel-pending-projects").style.display = "block";
@@ -1939,9 +1754,6 @@ window.switchProjectTab = function (tab) {
   }
 };
 
-// ==========================================
-// Admin: Load pending projects from chain (status = Pending)
-// ==========================================
 window.loadPendingProjects = async function () {
   const tbody = document.getElementById("tableBody");
   if (!tbody) return;
@@ -1985,9 +1797,6 @@ window.loadPendingProjects = async function () {
   }
 };
 
-// ==========================================
-// Approve and reject (absolute anti-flicker)
-// ==========================================
 window.approveProject = async function (id) {
   try {
     const res = await fetch(`${SERVER_URL}/approve-project`, {
@@ -2025,9 +1834,6 @@ window.rejectProject = async function (id) {
   }
 };
 
-// ==========================================
-// Render all projects overview - with robust error handling
-// ==========================================
 let allProjectsData = [];
 
 window.loadAllProjects = async function () {
@@ -2080,9 +1886,6 @@ window.applyProjectFilters = function () {
   });
 };
 
-// ==========================================
-// Admin: User management (tab switching logic)
-// ==========================================
 window.switchUserTab = function (tab) {
   if (tab === "pending") {
     document.getElementById("panel-pending-users").style.display = "block";
@@ -2091,7 +1894,7 @@ window.switchUserTab = function (tab) {
     document.getElementById("tab-pending-users").style.color = "white";
     document.getElementById("tab-all-users").style.background = "#f4f7fe";
     document.getElementById("tab-all-users").style.color = "#2b3674";
-    loadPendingUsers(); // Fetch pending data when switching
+    loadPendingUsers();
   } else {
     document.getElementById("panel-pending-users").style.display = "none";
     document.getElementById("panel-all-users").style.display = "block";
@@ -2099,13 +1902,10 @@ window.switchUserTab = function (tab) {
     document.getElementById("tab-all-users").style.color = "white";
     document.getElementById("tab-pending-users").style.background = "#f4f7fe";
     document.getElementById("tab-pending-users").style.color = "#2b3674";
-    loadAllUsers(); // Fetch overview data when switching
+    loadAllUsers();
   }
 };
 
-// ==========================================
-// Render pending users (added type="button" to prevent form refresh)
-// ==========================================
 window.loadPendingUsers = async function () {
   try {
     let response = await fetch(`${SERVER_URL}/pending-users`);
@@ -2126,10 +1926,8 @@ window.loadPendingUsers = async function () {
                 <td style="text-transform: capitalize;">${u.role}</td>
                 <td><span style="background: #fff0d4; color: #ff9800; padding: 5px 10px; border-radius: 8px; font-size: 13px;">Pending</span></td>
                 <td>
-                    <!-- Added type="button" here -->
                     <button type="button" class="primary-btn" onclick="approveUser(${u.id})" style="padding: 6px 12px; font-size: 13px; background-color: #28a745; margin-right: 5px;">Approve</button>
                     
-                    <!-- Added type="button" here -->
                     <button type="button" class="primary-btn" onclick="rejectUser(${u.id})" style="padding: 6px 12px; font-size: 13px; background-color: #dc3545;">Reject</button>
                 </td>
             </tr>`;
@@ -2140,19 +1938,10 @@ window.loadPendingUsers = async function () {
   }
 };
 
-// ==========================================
-// Admin approves user
-// 1. Register wallet on blockchain
-// 2. Only after success, approve in SQLite
-// ==========================================
-
 window.approveUser = async function (userId) {
 
   try {
 
-    // ==================================
-    // 1. Find user information
-    // ==================================
 
     const response =
       await fetch(`${SERVER_URL}/all-users`);
@@ -2180,10 +1969,6 @@ window.approveUser = async function (userId) {
     );
 
 
-    // ==================================
-    // 2. Check wallet
-    // ==================================
-
     if (!user.walletAddress) {
 
       alert(
@@ -2193,10 +1978,6 @@ window.approveUser = async function (userId) {
       return;
     }
 
-
-    // ==================================
-    // 3. Convert role
-    // ==================================
 
     let blockchainRole;
 
@@ -2219,18 +2000,11 @@ window.approveUser = async function (userId) {
     }
 
 
-    // ==================================
-    // 4. Make sure Admin MetaMask
-    // is connected
-    // ==================================
 
     const adminWallet =
       await ensureWalletConnected();
 
 
-    // ==================================
-    // 5. Verify Admin
-    // ==================================
 
     const contracts =
       await ensureContractsReady();
@@ -2263,10 +2037,6 @@ window.approveUser = async function (userId) {
     }
 
 
-    // ==================================
-    // 6. Check if already registered
-    // ==================================
-
     const alreadyRegistered =
       await contracts.userRegistry.methods
         .isRegistered(user.walletAddress)
@@ -2283,9 +2053,6 @@ window.approveUser = async function (userId) {
     }
 
 
-    // ==================================
-    // 7. Blockchain registration
-    // ==================================
 
     console.log(
       "Registering user on blockchain..."
@@ -2319,10 +2086,6 @@ window.approveUser = async function (userId) {
     );
 
 
-    // ==================================
-    // 8. ONLY NOW approve SQLite user
-    // ==================================
-
     const approveResponse =
       await fetch(
         `${SERVER_URL}/approve-user`,
@@ -2354,17 +2117,12 @@ window.approveUser = async function (userId) {
     }
 
 
-    // ==================================
-    // 9. Success
-    // ==================================
-
     alert(
       "✅ User approved successfully!\n\n" +
       "Wallet has been registered on blockchain."
     );
 
 
-    // Refresh pending users
 
     loadPendingUsers();
 
@@ -2377,7 +2135,6 @@ window.approveUser = async function (userId) {
     );
 
 
-    // MetaMask rejection
     if (
       error.code === 4001
     ) {
@@ -2409,25 +2166,20 @@ window.rejectUser = async function (userId) {
     });
 
     if ((await response.json()).success) {
-      // alert("🚫 User has been rejected.");
-      loadPendingUsers(); // Refresh current table in place
+      loadPendingUsers();
     }
   } catch (error) {
     console.error(error);
   }
 };
 
-// ==========================================
-// Admin: Panel B - Global data and filters
-// ==========================================
-let allUsersData = []; // Frontend data cache
+let allUsersData = [];
 
 window.loadAllUsers = async function () {
   try {
     let response = await fetch(`${SERVER_URL}/all-users`);
     allUsersData = await response.json();
 
-    // Print all raw data to browser console for debugging
     console.log("🔥 Raw user data from backend: ", allUsersData);
 
     applyUserFilters();
@@ -2446,14 +2198,13 @@ window.applyUserFilters = function () {
     let matchRole = roleFilter === "all" || u.role === roleFilter;
     let matchStatus = statusFilter === "all" || u.status === statusFilter;
 
-    // Date comparison logic
     let matchDate = true;
     if (u.createdAt) {
-      let rowDate = u.createdAt.split(" ")[0]; // Extract date from "YYYY-MM-DD HH:MM:SS"
+      let rowDate = u.createdAt.split(" ")[0];
       if (startDate && rowDate < startDate) matchDate = false;
       if (endDate && rowDate > endDate) matchDate = false;
     } else {
-      if (startDate || endDate) matchDate = false; // Old data has no date, hide it if a filter is applied
+      if (startDate || endDate) matchDate = false;
     }
 
     return matchRole && matchStatus && matchDate;
@@ -2492,10 +2243,6 @@ window.applyUserFilters = function () {
     tbody.innerHTML += row;
   });
 };
-
-// ==========================================
-// Admin: Permanently delete user
-// ==========================================
 window.deleteUser = async function (userId) {
   if (
     !confirm(
@@ -2514,23 +2261,16 @@ window.deleteUser = async function (userId) {
     let result = await response.json();
 
     if (result.success) {
-      // alert("🗑️ Account deleted! This Username is now free.");
-      loadAllUsers(); // Instantly refresh table
-    } else {
-      // alert("❌ Deletion failed: " + result.message);
+      loadAllUsers();
     }
   } catch (error) {
     console.error("Deletion request error:", error);
-    // alert("🚨 Request failed! Please check your VS Code terminal:\n1. Have you stopped the old server with Ctrl+C?\n2. Have you re-run node server.js with the latest code?");
   }
 };
 
-// ==========================================
-// Admin Dashboard real data fetch and chart rendering
-// ==========================================
-let dashChartQueue = null; // Stores the doughnut chart instance to prevent duplicate-creation errors
-let dashChartLiquidity = null; // Stores the liquidity trend line chart instance
-let dashChartTx = null; // Stores the recent transaction volume bar chart instance
+let dashChartQueue = null;
+let dashChartLiquidity = null;
+let dashChartTx = null;
 
 window.loadAdminDashboard = async function () {
   try {
@@ -2566,7 +2306,6 @@ window.loadAdminDashboard = async function () {
       }
     }
 
-    // Read on-chain Total BCC Minted, Total BCC Offset (totalRetired), Circulating Supply, and Pending Projects
     let contracts;
     try {
       contracts = await ensureContractsReady();
@@ -2594,7 +2333,6 @@ window.loadAdminDashboard = async function () {
         pendingProjEl.innerText = stats.pendingProjects + " ";
       }
 
-            // Developer/Buyer counts should reflect the whole team's on-chain registrations, not just local SQLite
       try {
         const userCurrentBlock = Number(await web3.eth.getBlockNumber());
         const CHUNK_SIZE = 9000;
@@ -2640,7 +2378,6 @@ window.loadAdminDashboard = async function () {
         console.warn("Failed to read on-chain user registrations:", e);
       }
 
-      // Queue doughnut chart should also reflect real on-chain pending count
       const ctxQueueLive = document.getElementById("queueChart");
       if (ctxQueueLive && stats.success) {
         if (dashChartQueue) dashChartQueue.destroy();
@@ -2668,7 +2405,6 @@ window.loadAdminDashboard = async function () {
       console.warn("Failed to read on-chain admin data:", e);
     }
 
-    // Build the BCC Liquidity Trend chart from real mint/retire events
     try {
       if (!contracts) contracts = await ensureContractsReady();
 
@@ -2740,7 +2476,6 @@ window.loadAdminDashboard = async function () {
         if (dashChartLiquidity) dashChartLiquidity.destroy();
 
         if (labels.length === 0) {
-          // No mint/retire history yet — nothing to plot
         } else {
           dashChartLiquidity = new Chart(ctxLiquidity, {
             type: "line",
@@ -2770,7 +2505,7 @@ window.loadAdminDashboard = async function () {
       }
     } catch (e) {
       console.warn("Failed to load liquidity trend:", e);
-    }    // Build the Recent Transaction Volume chart from real purchase events
+    }
     try {
       if (!contracts) contracts = await ensureContractsReady();
 
@@ -2839,7 +2574,6 @@ window.loadAdminDashboard = async function () {
       console.warn("Failed to load recent transaction volume:", e);
     }
 
-    // Admin Node Health: real check based on whether the blockchain is reachable
     try {
       if (!contracts) contracts = await ensureContractsReady();
       await web3.eth.getBlockNumber();
@@ -2865,28 +2599,19 @@ window.loadAdminDashboard = async function () {
   }
 };
 
-// ==========================================
-// Admin Dashboard tab switching logic
-// ==========================================
 window.switchDashTab = function (tabName) {
-  // 1. Hide all Dashboard modules
   document.getElementById("dash-section-market").style.display = "none";
   document.getElementById("dash-section-queue").style.display = "none";
   document.getElementById("dash-section-eco").style.display = "none";
 
-  // 2. Remove active state from all buttons (turn them back to light color)
   document.getElementById("dash-btn-market").classList.remove("active");
   document.getElementById("dash-btn-queue").classList.remove("active");
   document.getElementById("dash-btn-eco").classList.remove("active");
 
-  // 3. Show the clicked module and turn its button dark purple / active
   document.getElementById(`dash-section-${tabName}`).style.display = "block";
   document.getElementById(`dash-btn-${tabName}`).classList.add("active");
 };
 
-// ==========================================
-// Profile Modal - final logic
-// ==========================================
 window.openProfileModal = async function () {
   document.getElementById("profileModal").classList.add("show");
 
@@ -2947,7 +2672,6 @@ window.openProfileModal = async function () {
         document.getElementById("avatarPreview").style.backgroundImage = "none";
       }
     } else {
-      // Not found - likely an Admin/Owner wallet (not in the users table by design, this is normal)
       document.getElementById("prof-val-user").innerText = "Admin (Owner)";
       document.getElementById("prof-val-role").innerText = "admin";
       document.getElementById("prof-val-status").innerText = "-";
@@ -2963,35 +2687,32 @@ window.closeProfileModal = function () {
   document.getElementById("profileModal").classList.remove("show");
 };
 
-// ==========================================
-// Logout logic (full reset version)
-// ==========================================
-window.handleLogout = function () {
-  if (confirm("Confirm Logout?")) {
-    // 1. Completely clear the account memory in local cache
-    localStorage.removeItem("loggedInUser");
-    localStorage.removeItem("loggedInWallet");
-    if (typeof closeProfileModal === "function") closeProfileModal();
 
-    // 2. Ultimate move: force refresh the current page
-    // After refreshing, the system won't detect any cache and will automatically reset all UI and state back to the initial Login screen
-    window.location.reload();
+window.handleLogout = function () {
+  if (!confirm("Confirm Logout?")) {
+    return;
   }
+
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("loggedInWallet");
+
+  currentAccount = null;
+
+  switchRole("guest");
+  navTo("loginPage", "Welcome Back");
 };
 
-// Actually save regular profile info and new avatar
+
 window.handleUpdateProfile = async function () {
   let email = document.getElementById("prof-input-email").value;
   let phone = document.getElementById("prof-input-phone").value;
   const currentUser = localStorage.getItem("loggedInUser");
 
   if (!currentUser) {
-    // alert("❌ Please log in properly first!");
     return;
   }
 
   try {
-    // 1. Send real data to backend to save
     let response = await fetch(`${SERVER_URL}/update-profile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -3005,7 +2726,6 @@ window.handleUpdateProfile = async function () {
     let result = await response.json();
 
     if (result.success) {
-      // 2. If backend save succeeded, also save avatar locally
       if (window.pendingAvatarUpdate) {
         localStorage.setItem(
           `avatar_${currentUser}`,
@@ -3015,43 +2735,31 @@ window.handleUpdateProfile = async function () {
       }
       syncGlobalAvatar();
 
-      // alert("✅ Profile saved successfully!");
 
-      // 3. Refresh the modal so you can immediately see the updated card on the left
       closeProfileModal();
       setTimeout(() => openProfileModal(), 300);
-    } else {
-      // If email/phone conflicts with someone else's, an error popup will show here
-      // alert("❌ " + result.message);
     }
   } catch (error) {
     console.error(error);
-    // alert("🚨 Network request failed, please check if the backend is running.");
   }
 };
 
-// Handle avatar upload and instant preview
 window.previewAvatar = function (event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e) {
       const avatarBase64 = e.target.result;
-      // Hide the default 👤 icon, set the background image
       document.getElementById("avatarIcon").style.display = "none";
       document.getElementById("avatarPreview").style.backgroundImage =
         `url(${avatarBase64})`;
 
-      // Temporarily store the image data in a global variable, waiting for the user to click Update Profile to save
       window.pendingAvatarUpdate = avatarBase64;
     };
-    reader.readAsDataURL(file); // Convert the image to Base64
+    reader.readAsDataURL(file);
   }
 };
 
-// ==========================================
-// Global avatar sync logic
-// ==========================================
 window.syncGlobalAvatar = function () {
   const currentUser = localStorage.getItem("loggedInUser");
   const globalBtn = document.getElementById("globalAvatarBtn");
@@ -3060,38 +2768,30 @@ window.syncGlobalAvatar = function () {
   if (!globalBtn || !globalIcon) return;
 
   if (currentUser) {
-    // Look up the current user's avatar in the cache
     const savedAvatar = localStorage.getItem(`avatar_${currentUser}`);
     if (savedAvatar) {
       globalBtn.style.backgroundImage = `url(${savedAvatar})`;
-      globalIcon.style.display = "none"; // Hide the default text figure
+      globalIcon.style.display = "none";
       return;
     }
   }
 
-  // If no photo found, or not logged in, restore the default figure
   globalBtn.style.backgroundImage = "none";
   globalIcon.style.display = "block";
 };
 
-// Quietly run this once when the page loads, to prevent the avatar from being lost after a refresh
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(syncGlobalAvatar, 500);
 });
 
-// ==========================================
-// Sidebar collapse and expand logic
-// ==========================================
 window.toggleSidebar = function () {
   const sidebar = document.getElementById("mainSidebar");
   const mainContent = document.getElementById("mainContent");
   const headerBtn = document.getElementById("headerSidebarBtn");
 
-  // Toggle the collapsed CSS class
   sidebar.classList.toggle("collapsed");
   mainContent.classList.toggle("expanded");
 
-  // If the sidebar has been collapsed, show that little button in the top-left corner
   if (sidebar.classList.contains("collapsed")) {
     headerBtn.style.display = "block";
   } else {
@@ -3099,112 +2799,314 @@ window.toggleSidebar = function () {
   }
 };
 
-// ==========================================
-// Developer: Load all my projects from the chain
-// ==========================================
 window.loadMyProjects = async function () {
   const tbody = document.getElementById("myProjectsTableBody");
   if (!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">Loading...</td></tr>`;
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">
+        Loading...
+      </td>
+    </tr>
+  `;
 
   try {
-    const username = localStorage.getItem("loggedInUser");
-    const res = await fetch(`${SERVER_URL}/my-projects?username=${username}`);
+    const devAddress = await ensureWalletConnected();
+
+    if (!devAddress) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 30px; color: #ee5d50;">
+            Please connect MetaMask first.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const res = await fetch(
+      `${SERVER_URL}/my-projects?devAddress=${encodeURIComponent(devAddress)}`
+    );
+
     const result = await res.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Failed to load projects.");
+    }
+
     let myProjects = result.data || [];
 
-    // ==========================================
-    // Self-heal: fix legacy rows missing onChainProjectID
-    // ==========================================
-    const needsFix = myProjects.filter((p) => !p.onChainProjectID);
-    if (needsFix.length > 0) {
-      try {
-        const devAddress = await ensureWalletConnected();
-        const contracts = await ensureContractsReady();
-        const chainProjects = await contracts.projectRegistry.methods.getAllProjects().call();
+    const contracts = await ensureContractsReady();
+    const registry = contracts.projectRegistry;
 
-        needsFix.forEach((p) => {
-          const match = chainProjects.find(
-            (cp) =>
-              cp.developer &&
-              cp.developer.toLowerCase() === devAddress.toLowerCase() &&
-              cp.projectName === p.projName
-          );
-          if (match) {
-            p.onChainProjectID = String(match.projectID); // fix in-memory so this render works right away
-            fetch(`${SERVER_URL}/sync-onchain-id`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: p.id, onChainProjectID: String(match.projectID) }),
-            }).catch(() => {});
-          }
-        });
-      } catch (e) {
-        console.warn("Auto-fix onChainProjectID failed:", e);
+    const allChainProjects =
+      await registry.methods.getAllProjects().call();
+
+    const myChainProjects = allChainProjects.filter(
+      (p) =>
+        p.developer &&
+        p.developer.toLowerCase() === devAddress.toLowerCase()
+    );
+
+    console.log("📦 DB projects:", myProjects);
+    console.log("⛓️ My on-chain projects:", myChainProjects);
+
+    myProjects = myProjects.map((dbProject) => {
+      const chainProject = myChainProjects.find(
+        (cp) =>
+          String(cp.projectID) ===
+          String(dbProject.onChainProjectID)
+      );
+
+      if (!chainProject) {
+        return dbProject;
       }
+
+      return {
+        ...dbProject,
+
+        onChainProjectID: String(chainProject.projectID),
+        projName: chainProject.projectName || dbProject.projName,
+        location: chainProject.location || dbProject.location,
+        ecosystemType:
+          chainProject.ecosystemType || dbProject.ecosystemType,
+
+        carbonVolume:
+          chainProject.carbonVolume?.toString() ||
+          dbProject.carbonVolume,
+
+        status: dbProject.status,
+
+        minted: dbProject.minted
+      };
+    });
+
+    const needsFix = myProjects.filter(
+      (p) => !p.onChainProjectID
+    );
+
+    if (needsFix.length > 0) {
+      needsFix.forEach((dbProject) => {
+        const match = myChainProjects.find(
+          (cp) =>
+            cp.projectName === dbProject.projName &&
+            cp.developer &&
+            cp.developer.toLowerCase() === devAddress.toLowerCase()
+        );
+
+        if (match) {
+          dbProject.onChainProjectID =
+            String(match.projectID);
+
+          fetch(`${SERVER_URL}/sync-onchain-id`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              id: dbProject.id,
+              onChainProjectID: String(match.projectID)
+            })
+          }).catch((e) => {
+            console.warn(
+              "Failed to sync on-chain project ID:",
+              e
+            );
+          });
+        }
+      });
     }
 
     tbody.innerHTML = "";
 
     if (myProjects.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #a3aed1;">No projects found. Go to "Submit Project" to create one! 🌱</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4"
+              style="text-align: center; padding: 30px; color: #a3aed1;">
+            No projects found. Go to "Submit Project" to create one! 🌱
+          </td>
+        </tr>
+      `;
       return;
     }
 
     myProjects.forEach((p) => {
       let statusHtml = "";
+
       if (p.status === "approved" && !p.minted) {
-        statusHtml = `<span style="background: #e6f9f0; color: #05cd99; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">✅ Approved</span>
-                      <button type="button" class="primary-btn" style="padding: 4px 10px; font-size: 11px; background-color: #4318ff; margin-left: 5px;" ${!p.onChainProjectID ? "disabled title='Still syncing on-chain ID, refresh in a moment'" : ""} onclick="event.stopPropagation(); mintProjectToken(${p.id}, ${p.onChainProjectID})">⛏️ Mint</button>`;
+        statusHtml = `
+          <span style="
+            background: #e6f9f0;
+            color: #05cd99;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+          ">
+            ✅ Approved
+          </span>
+
+          <button
+            type="button"
+            class="primary-btn"
+            style="
+              padding: 4px 10px;
+              font-size: 11px;
+              background-color: #4318ff;
+              margin-left: 5px;
+            "
+            ${!p.onChainProjectID
+            ? "disabled title='Still syncing on-chain ID, refresh in a moment'"
+            : ""
+          }
+            onclick="
+              event.stopPropagation();
+              mintProjectToken(${p.id}, ${p.onChainProjectID})
+            "
+          >
+            ⛏️ Mint
+          </button>
+        `;
       } else if (p.status === "approved" && p.minted) {
-        statusHtml = `<span style="background: #e9edf7; color: #4318ff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">🌊 Minted</span>`;
+        statusHtml = `
+          <span style="
+            background: #e9edf7;
+            color: #4318ff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+          ">
+            🌊 Minted
+          </span>
+        `;
       } else if (p.status === "rejected") {
-        statusHtml = `<span style="background: #fce8e6; color: #ee5d50; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">❌ Rejected</span>`;
+        statusHtml = `
+          <span style="
+            background: #fce8e6;
+            color: #ee5d50;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+          ">
+            ❌ Rejected
+          </span>
+        `;
       } else {
-        statusHtml = `<span style="background: #fff0d4; color: #ff9800; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">⏳ Pending</span>`;
+        statusHtml = `
+          <span style="
+            background: #fff0d4;
+            color: #ff9800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+          ">
+            ⏳ Pending
+          </span>
+        `;
       }
 
-      let tr = document.createElement("tr");
+      const tr = document.createElement("tr");
+
       tr.style.borderBottom = "1px solid #f4f7fe";
       tr.style.cursor = "pointer";
-      tr.onmouseover = () => (tr.style.background = "#f8fafc");
-      tr.onmouseout = () => (tr.style.background = "transparent");
-      tr.onclick = () => openProjectModal(p.onChainProjectID);
+
+      tr.onmouseover = () => {
+        tr.style.background = "#f8fafc";
+      };
+
+      tr.onmouseout = () => {
+        tr.style.background = "transparent";
+      };
+
+      tr.onclick = () => {
+        if (p.onChainProjectID) {
+          openProjectModal(p.onChainProjectID);
+        }
+      };
+
       tr.innerHTML = `
         <td style="padding: 15px 12px;">
-          <div style="font-weight: 700; color: #2b3674; font-size: 14px;">${p.projName || "Unnamed Project"}</div>
-          <div style="font-size: 12px; color: #a3aed1; margin-top: 4px;">ID: #${p.onChainProjectID || p.id}</div>
+          <div style="
+            font-weight: 700;
+            color: #2b3674;
+            font-size: 14px;
+          ">
+            ${p.projName || "Unnamed Project"}
+          </div>
+
+          <div style="
+            font-size: 12px;
+            color: #a3aed1;
+            margin-top: 4px;
+          ">
+            ID: #${p.onChainProjectID || p.id}
+          </div>
         </td>
+
         <td style="padding: 15px 12px;">
-          <div style="font-size: 13px; color: #2b3674;">${p.location || "Unknown"}</div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 4px;">${p.ecosystemType || "Unknown"}</div>
+          <div style="
+            font-size: 13px;
+            color: #2b3674;
+          ">
+            ${p.location || "Unknown"}
+          </div>
+
+          <div style="
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+          ">
+            ${p.ecosystemType || "Unknown"}
+          </div>
         </td>
-        <td style="padding: 15px 12px; font-weight: bold; color: #4318ff; font-size: 15px;">
-          ${p.carbonVolume}
+
+        <td style="
+          padding: 15px 12px;
+          font-weight: bold;
+          color: #4318ff;
+          font-size: 15px;
+        ">
+          ${p.carbonVolume || 0}
         </td>
+
         <td style="padding: 15px 12px;">
           ${statusHtml}
         </td>
       `;
+
       tbody.appendChild(tr);
     });
+
   } catch (error) {
-    console.error("Failed to load my projects:", error);
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ee5d50;">Loading failed: ${error.message || error}</td></tr>`;
+    console.error(
+      "Failed to load my projects:",
+      error
+    );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4"
+            style="text-align: center; padding: 30px; color: #ee5d50;">
+          Loading failed: ${error.message || error}
+        </td>
+      </tr>
+    `;
   }
 };
 
-// ==========================================
-// Developer Dashboard: Core data loading
-// ==========================================
+
 let devPipelineChartInstance = null;
 let devDashboardRequestId = 0;
 
 window.loadDevDashboard = async function () {
   const requestId = ++devDashboardRequestId;
 
-  const currentUser = localStorage.getItem("loggedInUser");
+  const currentUser = localStorage.getItem("loggedInWallet");
   if (!currentUser) return;
 
   const banner = document.getElementById("devActionBanner");
@@ -3214,14 +3116,16 @@ window.loadDevDashboard = async function () {
 
   let myDbProjects = [];
   try {
-    const res = await fetch(`${SERVER_URL}/my-projects?username=${currentUser}`);
+    const res = await fetch(
+      `${SERVER_URL}/my-projects?devAddress=${encodeURIComponent(currentUser)}`
+    );
     const result = await res.json();
     if (result.success) myDbProjects = result.data;
   } catch (error) {
     console.error("Failed to load My Projects from DB:", error);
   }
 
-  if (requestId !== devDashboardRequestId) return; // 已经有更新的一次调用了，这次作废
+  if (requestId !== devDashboardRequestId) return;
 
   const totalProjects = myDbProjects.length;
   const pendingCount = myDbProjects.filter((p) => p.status === "pending").length;
@@ -3376,7 +3280,7 @@ window.loadDevDashboard = async function () {
         `;
       }
 
-      if (requestId !== devDashboardRequestId) return; // 拼装过程中被更新的调用超过了，放弃写入
+      if (requestId !== devDashboardRequestId) return;
       salesFeedList.innerHTML = rowsHtml;
     }
   } catch (error) {
@@ -3389,9 +3293,7 @@ window.loadDevDashboard = async function () {
     document.getElementById("dev-total-minted").innerText = "-";
   }
 };
-// ==========================================
-// Open project details to view quota and buyers (usable by both Developer / Admin)
-// ==========================================
+
 let projectModalRequestId = 0;
 
 window.openProjectModal = async function (onChainProjectID) {
@@ -3400,7 +3302,6 @@ window.openProjectModal = async function (onChainProjectID) {
   try {
     const contracts = await ensureContractsReady();
 
-    // 1. Get basic project info
     const p = await contracts.projectRegistry.methods.projects(onChainProjectID).call();
 
     if (requestId !== projectModalRequestId) return;
@@ -3412,7 +3313,6 @@ window.openProjectModal = async function (onChainProjectID) {
     const tbody = document.getElementById("det-sales-body");
     tbody.innerHTML = "";
 
-    // 2. Not minted yet, no sales data to query
     if (!p.minted) {
       document.getElementById("det-total").innerText = "-";
       document.getElementById("det-avail").innerText = "-";
@@ -3422,7 +3322,6 @@ window.openProjectModal = async function (onChainProjectID) {
       return;
     }
 
-    // 3. Already minted: query real on-chain data
     const devAddress = p.developer;
     const devBalance = await contracts.carbonToken.methods.balanceOf(devAddress, onChainProjectID).call();
 
@@ -3457,7 +3356,6 @@ window.openProjectModal = async function (onChainProjectID) {
     document.getElementById("det-avail").innerText = devBalance;
     document.getElementById("det-sold").innerText = totalSold.toString();
 
-    // 4. Render buyer records
     if (purchaseEvents.length === 0) {
       tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 15px; color: #a3aed1;">No purchases yet.</td></tr>`;
     } else {
@@ -3467,7 +3365,7 @@ window.openProjectModal = async function (onChainProjectID) {
         try {
           const block = await web3.eth.getBlock(ev.blockNumber);
           dateDisplay = new Date(Number(block.timestamp) * 1000).toLocaleDateString();
-        } catch (e) {}
+        } catch (e) { }
 
         const buyerShort = `${ev.returnValues.buyer.substring(0, 6)}...${ev.returnValues.buyer.substring(38)}`;
 
@@ -3495,10 +3393,6 @@ window.closeProjectModal = function () {
   document.getElementById("projectDetailModal").classList.remove("show");
 };
 
-
-// ==========================================
-// Developer: Click the Mint button to pay gas and mint on-chain
-// ==========================================
 window.mintProjectToken = async function (dbId, onChainProjectID) {
   try {
     const devAddress = await ensureWalletConnected();
@@ -3510,12 +3404,10 @@ window.mintProjectToken = async function (dbId, onChainProjectID) {
       return;
     }
 
-    // Directly call on-chain mintTokens (developer pays gas here)
     await contracts.carbonToken.methods
       .mintTokens(onChainProjectID)
       .send({ from: devAddress, gas: 500000 });
 
-    // Sync mint status back to backend
     await fetch(`${SERVER_URL}/mark-project-minted`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -3523,7 +3415,7 @@ window.mintProjectToken = async function (dbId, onChainProjectID) {
     });
 
     alert("✅ Mint successful!");
-    loadMyProjects(); // Refresh the table
+    loadMyProjects();
   } catch (error) {
     console.error("Mint failed:", error);
     alert("❌ Mint failed: " + (error.message || error));
@@ -3539,7 +3431,6 @@ async function ensureWalletConnected() {
     throw new Error("MetaMask is not installed.");
   }
 
-  // Make sure we are on Sepolia
   const chainId = await window.ethereum.request({
     method: "eth_chainId",
   });
@@ -3548,12 +3439,10 @@ async function ensureWalletConnected() {
     throw new Error("Please switch MetaMask to Sepolia Test Network.");
   }
 
-  // Get currently connected accounts
   let accounts = await window.ethereum.request({
     method: "eth_accounts",
   });
 
-  // No wallet connected
   if (!accounts || accounts.length === 0) {
     accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
@@ -3564,15 +3453,12 @@ async function ensureWalletConnected() {
     throw new Error("No wallet connected.");
   }
 
-  // Keep your existing global variable updated
   currentAccount = accounts[0];
 
-  // Make sure Web3 exists
   if (!web3) {
     web3 = new Web3(window.ethereum);
   }
 
-  // Make sure contracts exist
   if (
     !projectRegistryContract ||
     !userRegistryContract ||
@@ -3622,9 +3508,7 @@ window.loadMarketplace = async function () {
     `;
 
   try {
-    // ==========================================
-    // Make sure Web3 + contracts are ready
-    // ==========================================
+
 
     const contracts = await ensureContractsReady();
 
@@ -3632,9 +3516,6 @@ window.loadMarketplace = async function () {
 
     console.log("ProjectRegistry address:", PROJECT_REGISTRY_ADDRESS);
 
-    // ==========================================
-    // Check that contract actually exists
-    // ==========================================
 
     const code = await web3.eth.getCode(PROJECT_REGISTRY_ADDRESS);
 
@@ -3646,18 +3527,15 @@ window.loadMarketplace = async function () {
       );
     }
 
-    // projectIDs is a mapping-like getter,
-    // so we need to discover IDs another way.
-    //
-    // The contract does NOT expose projectIDs.length.
-    // Therefore we use getAllProjects as a fallback
-    // only if we don't have a known project count.
 
     let projects = [];
 
     try {
       projects = await registry.methods.getAllProjects().call();
 
+      projects = projects.filter(
+        (project) => Number(project.status) === 1
+      );
       console.log("getAllProjects() result:", projects);
     } catch (error) {
       console.warn("getAllProjects() failed:", error);
@@ -3667,9 +3545,6 @@ window.loadMarketplace = async function () {
       );
     }
 
-    // ==========================================
-    // No projects
-    // ==========================================
 
     if (!projects || projects.length === 0) {
       grid.innerHTML = `
@@ -3688,9 +3563,6 @@ window.loadMarketplace = async function () {
 
     grid.innerHTML = "";
 
-    // ==========================================
-    // Render every project
-    // ==========================================
 
     for (const project of projects) {
       const projectID = Number(project.projectID);
@@ -3786,9 +3658,6 @@ window.loadMarketplace = async function () {
                         🌱 ${ecosystemType}
                     </div>
 
-                    <div>
-                        📐 ${capacity} Hectares
-                    </div>
 
                 </div>
 
@@ -3922,9 +3791,7 @@ function formatEthPrice(weiPrice) {
 
 window.purchaseMarketplaceCredits = async function (projectID) {
   try {
-    // ==========================================
-    // 1. Get amount
-    // ==========================================
+
 
     const amountInput = document.getElementById(`marketAmount-${projectID}`);
 
@@ -3938,15 +3805,10 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       throw new Error("Please enter a valid whole number of BCC.");
     }
 
-    // ==========================================
-    // 2. Make sure wallet is connected
-    // ==========================================
 
     const buyerAddress = await ensureBuyerWallet();
 
-    // ==========================================
-    // 3. Make sure contracts are ready
-    // ==========================================
+
 
     const contracts = await ensureContractsReady();
 
@@ -3954,9 +3816,7 @@ window.purchaseMarketplaceCredits = async function (projectID) {
 
     const carbonToken = contracts.carbonToken;
 
-    // ==========================================
-    // 4. Check project exists
-    // ==========================================
+
 
     const project = await registry.methods.projects(projectID).call();
 
@@ -3964,9 +3824,6 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       throw new Error("Project does not exist.");
     }
 
-    // ==========================================
-    // 5. Check project is minted
-    // ==========================================
 
     const minted = await registry.methods.isMinted(projectID).call();
 
@@ -3974,9 +3831,6 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       throw new Error("This project has not been minted yet.");
     }
 
-    // ==========================================
-    // 6. Check available capacity
-    // ==========================================
 
     const capacity = await registry.methods.getCapacity(projectID).call();
 
@@ -3984,17 +3838,10 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       throw new Error(`Only ${capacity} BCC are available.`);
     }
 
-    // ==========================================
-    // 7. Get price
-    // ==========================================
 
     const pricePerToken = await registry.methods
       .getPricePerToken(projectID)
       .call();
-
-    // ==========================================
-    // 8. Calculate total price
-    // ==========================================
 
     const totalPrice = BigInt(amount) * BigInt(pricePerToken);
 
@@ -4018,9 +3865,7 @@ window.purchaseMarketplaceCredits = async function (projectID) {
 
     console.log("Total:", totalEth, "ETH");
 
-    // ==========================================
-    // 9. Confirm purchase
-    // ==========================================
+
 
     const confirmed = window.confirm(
       `Buy ${amount} BCC from "${project.projectName}" for ${totalEth} ETH?`,
@@ -4030,9 +3875,7 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       return;
     }
 
-    // ==========================================
-    // 10. Send transaction
-    // ==========================================
+
 
     console.log("Waiting for MetaMask confirmation...");
 
@@ -4042,10 +3885,6 @@ window.purchaseMarketplaceCredits = async function (projectID) {
         from: buyerAddress,
         value: totalPrice.toString(),
       });
-
-    // ==========================================
-    // 11. Success
-    // ==========================================
 
     console.log("========== PURCHASE SUCCESS ==========");
 
@@ -4057,23 +3896,14 @@ window.purchaseMarketplaceCredits = async function (projectID) {
       `Total paid: ${totalEth} ETH`,
     );
 
-    // ==========================================
-    // 12. Refresh marketplace
-    // ==========================================
 
     await loadMarketplace();
 
-    // ==========================================
-    // 13. Refresh buyer portfolio
-    // ==========================================
 
     if (typeof loadBuyerPortfolio === "function") {
       await loadBuyerPortfolio();
     }
 
-    // ==========================================
-    // 14. Refresh transaction history
-    // ==========================================
 
     if (typeof loadBuyerTransactions === "function") {
       await loadBuyerTransactions();
@@ -4085,7 +3915,6 @@ window.purchaseMarketplaceCredits = async function (projectID) {
 
     let message = error?.message || String(error);
 
-    // User rejected MetaMask
     if (
       message.includes("User denied") ||
       message.includes("User rejected") ||
@@ -4098,9 +3927,6 @@ window.purchaseMarketplaceCredits = async function (projectID) {
   }
 };
 
-// ==========================================
-// BUYER PORTFOLIO
-// ==========================================
 window.loadBuyerPortfolio = async function () {
   const tbody = document.getElementById("buyerPortfolioBody");
 
@@ -4124,15 +3950,9 @@ window.loadBuyerPortfolio = async function () {
     `;
 
   try {
-    // ==========================================
-    // Wallet
-    // ==========================================
+
 
     const buyerAddress = await ensureBuyerWallet();
-
-    // ==========================================
-    // Contracts
-    // ==========================================
 
     const contracts = await ensureContractsReady();
 
@@ -4142,23 +3962,24 @@ window.loadBuyerPortfolio = async function () {
 
     console.log("Loading portfolio for:", buyerAddress);
 
-    // ==========================================
-    // Get all blockchain projects
-    // ==========================================
 
     const projects = await registry.methods.getAllProjects().call();
+
+    const transactions = await syncBuyerTransactionEvents(
+      carbonToken,
+      buyerAddress
+    );
 
     console.log("Portfolio blockchain projects:", projects);
 
     tbody.innerHTML = "";
     let totalBalance = 0n;
+    let totalTransferredOut = 0n;
     let totalRetired = 0n;
     let totalValueWei = 0n;
     let ownedProjects = 0;
 
-    // ==========================================
-    // Check every project
-    // ==========================================
+
 
     for (const project of projects) {
       const projectID = project.projectID;
@@ -4167,9 +3988,6 @@ window.loadBuyerPortfolio = async function () {
         continue;
       }
 
-      // ======================================
-      // Get buyer balance
-      // ======================================
 
       let balance;
 
@@ -4200,17 +4018,27 @@ window.loadBuyerPortfolio = async function () {
 
         retired = "0";
       }
+      const projectTransferredOut = transactions
+        .filter(
+          tx =>
+            tx.type === "Transfer Sent" &&
+            tx.projectID.toString() === projectID.toString()
+        )
+        .reduce(
+          (total, tx) => total + BigInt(tx.amount),
+          0n
+        );
 
-      // Skip projects the buyer doesn't own
-      if (BigInt(balance) === 0n) {
+      if (
+        BigInt(balance) === 0n &&
+        BigInt(retired) === 0n &&
+        projectTransferredOut === 0n
+      ) {
         continue;
       }
 
       ownedProjects++;
 
-      // ======================================
-      // Project information
-      // ======================================
 
       const projectName = project.projectName || `Project #${projectID}`;
 
@@ -4227,7 +4055,9 @@ window.loadBuyerPortfolio = async function () {
       const buyerRetired = BigInt(retired);
 
       totalBalance += buyerBalance;
+      totalTransferredOut += projectTransferredOut;
       totalRetired += buyerRetired;
+
 
 
       totalValueWei += projectValue;
@@ -4238,9 +4068,6 @@ window.loadBuyerPortfolio = async function () {
         totalElement.textContent = totalBalance.toString();
       }
 
-      // ======================================
-      // Create row
-      // ======================================
 
       const row = document.createElement("tr");
 
@@ -4296,6 +4123,14 @@ window.loadBuyerPortfolio = async function () {
 
                 </td>
 
+                <td style="
+    padding: 15px 12px;
+    font-weight: 800;
+    color: #ff9f43;
+">
+    ${projectTransferredOut.toString()}
+    BCC
+</td>
 
                 <td style="
                     padding: 15px 12px;
@@ -4343,9 +4178,6 @@ window.loadBuyerPortfolio = async function () {
         totalRetired.toString();
     }
 
-    // ==========================================
-    // No holdings
-    // ==========================================
 
     if (ownedProjects === 0) {
       tbody.innerHTML = `
@@ -4358,7 +4190,7 @@ window.loadBuyerPortfolio = async function () {
                             color: #a3aed1;
                         "
                     >
-                        🌱 You don't own any BCC yet.
+                        🌱 No BCC holdings or retirement history yet..
                         <br><br>
 
                     </td>
@@ -4368,9 +4200,6 @@ window.loadBuyerPortfolio = async function () {
       return;
     }
 
-    // ==========================================
-    // Portfolio summary
-    // ==========================================
 
     console.log("========== PORTFOLIO ==========");
 
@@ -4509,9 +4338,6 @@ window.transferBuyerCredits = async function () {
 
   try {
 
-    // ==========================================
-    // 1. Get form values
-    // ==========================================
 
     const recipientInput =
       document.getElementById(
@@ -4548,9 +4374,6 @@ window.transferBuyerCredits = async function () {
       amountInput.value.trim();
 
 
-    // ==========================================
-    // 2. Validate recipient
-    // ==========================================
 
     if (!recipient) {
 
@@ -4567,21 +4390,12 @@ window.transferBuyerCredits = async function () {
     }
 
 
-    // ==========================================
-    // 3. Validate project
-    // ==========================================
-
     if (!projectID) {
 
       throw new Error(
         "Please select a project."
       );
     }
-
-
-    // ==========================================
-    // 4. Validate amount
-    // ==========================================
 
     if (
       !amount ||
@@ -4595,17 +4409,11 @@ window.transferBuyerCredits = async function () {
     }
 
 
-    // ==========================================
-    // 5. Get buyer wallet
-    // ==========================================
 
     const buyerAddress =
       await ensureBuyerWallet();
 
 
-    // ==========================================
-    // 6. Prevent sending to yourself
-    // ==========================================
 
     if (
       recipient.toLowerCase() ===
@@ -4618,9 +4426,6 @@ window.transferBuyerCredits = async function () {
     }
 
 
-    // ==========================================
-    // 7. Load contracts
-    // ==========================================
 
     const contracts =
       await ensureContractsReady();
@@ -4632,9 +4437,6 @@ window.transferBuyerCredits = async function () {
       contracts.userRegistry;
 
 
-    // ==========================================
-    // 8. Check recipient is registered
-    // ==========================================
 
     const recipientRole =
       await userRegistry.methods
@@ -4649,9 +4451,6 @@ window.transferBuyerCredits = async function () {
     }
 
 
-    // ==========================================
-    // 9. Check sender balance
-    // ==========================================
 
     const balance =
       await carbonToken.methods
@@ -4669,10 +4468,6 @@ window.transferBuyerCredits = async function () {
     }
 
 
-    // ==========================================
-    // 10. Confirm transfer
-    // ==========================================
-
     const confirmed =
       window.confirm(
         `Transfer ${amount} BCC?\n\n` +
@@ -4685,10 +4480,6 @@ window.transferBuyerCredits = async function () {
       return;
     }
 
-
-    // ==========================================
-    // 11. Send blockchain transaction
-    // ==========================================
 
     console.log(
       "Transferring BCC:",
@@ -4712,9 +4503,6 @@ window.transferBuyerCredits = async function () {
         });
 
 
-    // ==========================================
-    // 12. Success
-    // ==========================================
 
     console.log(
       "BCC transfer successful:",
@@ -4727,17 +4515,10 @@ window.transferBuyerCredits = async function () {
     );
 
 
-    // ==========================================
-    // 13. Clear form
-    // ==========================================
-
     recipientInput.value = "";
     amountInput.value = "";
 
 
-    // ==========================================
-    // 14. Refresh portfolio
-    // ==========================================
 
     if (
       typeof loadBuyerPortfolio ===
@@ -4747,10 +4528,6 @@ window.transferBuyerCredits = async function () {
       await loadBuyerPortfolio();
     }
 
-
-    // ==========================================
-    // 15. Refresh transfer projects
-    // ==========================================
 
     await loadTransferProjects();
 
@@ -4777,10 +4554,6 @@ window.transferBuyerCredits = async function () {
   }
 };
 
-// ==========================================
-// Load projects into Offset dropdown
-// ==========================================
-
 window.loadOffsetProjects = async function () {
   let totalRetirableBCC = 0n;
 
@@ -4791,15 +4564,9 @@ window.loadOffsetProjects = async function () {
   }
 
   try {
-    // ==========================================
-    // Wallet
-    // ==========================================
 
     const buyerAddress = await ensureBuyerWallet();
 
-    // ==========================================
-    // Contracts
-    // ==========================================
 
     const contracts = await ensureContractsReady();
 
@@ -4807,9 +4574,7 @@ window.loadOffsetProjects = async function () {
 
     const carbonToken = contracts.carbonToken;
 
-    // ==========================================
-    // Load blockchain projects
-    // ==========================================
+
 
     const projects = await registry.methods.getAllProjects().call();
 
@@ -4819,9 +4584,7 @@ window.loadOffsetProjects = async function () {
             </option>
         `;
 
-    // ==========================================
-    // Only show projects the buyer owns
-    // ==========================================
+
 
     for (const project of projects) {
       const projectID = project.projectID;
@@ -4853,13 +4616,11 @@ window.loadOffsetProjects = async function () {
     const totalBalanceEl = document.getElementById("offsetTotalBalance");
 
     if (totalBalanceEl) {
-        totalBalanceEl.innerText =
-            totalRetirableBCC.toLocaleString();
+      totalBalanceEl.innerText =
+        totalRetirableBCC.toLocaleString();
     }
 
-    // ==========================================
-    // Nothing available
-    // ==========================================
+
 
     if (select.options.length === 1) {
       const option = document.createElement("option");
@@ -4883,14 +4644,14 @@ window.loadOffsetProjects = async function () {
 
 window.loadRetirementHistory = async function () {
 
-    const tbody =
-        document.getElementById("retirementHistoryBody");
+  const tbody =
+    document.getElementById("retirementHistoryBody");
 
-    if (!tbody) {
-        return;
-    }
+  if (!tbody) {
+    return;
+  }
 
-    tbody.innerHTML = `
+  tbody.innerHTML = `
         <tr>
             <td colspan="3"
                 style="
@@ -4903,97 +4664,84 @@ window.loadRetirementHistory = async function () {
         </tr>
     `;
 
-    try {
+  try {
 
-        // ==========================================
-        // Wallet
-        // ==========================================
 
-        const buyerAddress =
-            await ensureBuyerWallet();
 
-        // ==========================================
-        // Contracts
-        // ==========================================
+    const buyerAddress =
+      await ensureBuyerWallet();
 
-        const contracts =
-            await ensureContractsReady();
 
-        const carbonToken =
-            contracts.carbonToken;
 
-        const registry =
-            contracts.projectRegistry;
+    const contracts =
+      await ensureContractsReady();
 
-        // ==========================================
-        // Get projects
-        // ==========================================
+    const carbonToken =
+      contracts.carbonToken;
 
-        const projects =
-            await registry.methods
-                .getAllProjects()
-                .call();
+    const registry =
+      contracts.projectRegistry;
 
-        tbody.innerHTML = "";
 
-        let hasHistory = false;
+    const projects =
+      await registry.methods
+        .getAllProjects()
+        .call();
 
-        // ==========================================
-        // Check retirement for every project
-        // ==========================================
+    tbody.innerHTML = "";
 
-        for (const project of projects) {
+    let hasHistory = false;
 
-            const projectID =
-                project.projectID;
+    for (const project of projects) {
 
-            if (!projectID || Number(projectID) === 0) {
-                continue;
-            }
+      const projectID =
+        project.projectID;
 
-            let retiredAmount;
+      if (!projectID || Number(projectID) === 0) {
+        continue;
+      }
 
-            try {
+      let retiredAmount;
 
-                retiredAmount =
-                    await carbonToken.methods
-                        .retired(
-                            buyerAddress,
-                            projectID
-                        )
-                        .call();
+      try {
 
-            } catch (error) {
+        retiredAmount =
+          await carbonToken.methods
+            .retired(
+              buyerAddress,
+              projectID
+            )
+            .call();
 
-                console.error(
-                    `Unable to read retired amount for project #${projectID}`,
-                    error
-                );
+      } catch (error) {
 
-                continue;
-            }
+        console.error(
+          `Unable to read retired amount for project #${projectID}`,
+          error
+        );
 
-            if (BigInt(retiredAmount) === 0n) {
-                continue;
-            }
+        continue;
+      }
 
-            hasHistory = true;
+      if (BigInt(retiredAmount) === 0n) {
+        continue;
+      }
 
-            const projectName =
-                project.projectName ||
-                `Project #${projectID}`;
+      hasHistory = true;
 
-            // ==========================================
-            // Create row
-            // ==========================================
+      const projectName =
+        project.projectName ||
+        `Project #${projectID}`;
 
-            const row =
-                document.createElement("tr");
 
-            row.style.borderBottom =
-                "1px solid #f4f7fe";
 
-            row.innerHTML = `
+      const row =
+        document.createElement("tr");
+
+      row.style.borderBottom =
+        "1px solid #f4f7fe";
+
+      row.innerHTML = `
                 <td style="
                     padding: 12px;
                     color: #2b3674;
@@ -5030,16 +4778,14 @@ window.loadRetirementHistory = async function () {
                 </td>
             `;
 
-            tbody.appendChild(row);
-        }
+      tbody.appendChild(row);
+    }
 
-        // ==========================================
-        // No history
-        // ==========================================
 
-        if (!hasHistory) {
 
-            tbody.innerHTML = `
+    if (!hasHistory) {
+
+      tbody.innerHTML = `
                 <tr>
                     <td colspan="3"
                         style="
@@ -5051,16 +4797,16 @@ window.loadRetirementHistory = async function () {
                     </td>
                 </tr>
             `;
-        }
+    }
 
-    } catch (error) {
+  } catch (error) {
 
-        console.error(
-            "Error loading retirement history:",
-            error
-        );
+    console.error(
+      "Error loading retirement history:",
+      error
+    );
 
-        tbody.innerHTML = `
+    tbody.innerHTML = `
             <tr>
                 <td colspan="3"
                     style="
@@ -5076,7 +4822,7 @@ window.loadRetirementHistory = async function () {
                 </td>
             </tr>
         `;
-    }
+  }
 };
 
 window.openBuyerTransfer = function () {
@@ -5114,14 +4860,8 @@ window.openOffsetForProject = function (projectID, balance) {
   }, 100);
 };
 
-// ==========================================
-// Retire BCC
-// ==========================================
 window.retireBuyerCredits = async function () {
   try {
-    // ==========================================
-    // Get selected project
-    // ==========================================
 
     const select = document.getElementById("offsetProjectSelect");
 
@@ -5143,15 +4883,11 @@ window.retireBuyerCredits = async function () {
       throw new Error("Please enter a valid whole number of BCC.");
     }
 
-    // ==========================================
-    // Wallet
-    // ==========================================
+
 
     const buyerAddress = await ensureBuyerWallet();
 
-    // ==========================================
-    // Contracts
-    // ==========================================
+
 
     const contracts = await ensureContractsReady();
 
@@ -5159,19 +4895,12 @@ window.retireBuyerCredits = async function () {
 
     const registry = contracts.projectRegistry;
 
-    // ==========================================
-    // Get project
-    // ==========================================
 
     const project = await registry.methods.projects(projectID).call();
 
     if (!project || Number(project.projectID) === 0) {
       throw new Error("Project does not exist.");
     }
-
-    // ==========================================
-    // Check BCC balance
-    // ==========================================
 
     const balance = await carbonToken.methods
       .balanceOf(buyerAddress, projectID)
@@ -5181,9 +4910,6 @@ window.retireBuyerCredits = async function () {
       throw new Error(`You only own ${balance} BCC from this project.`);
     }
 
-    // ==========================================
-    // Confirm
-    // ==========================================
 
     const confirmed = window.confirm(
       `Offset ${amount} BCC from "${project.projectName}"?\n\n` +
@@ -5200,10 +4926,6 @@ window.retireBuyerCredits = async function () {
       amount,
     });
 
-    // ==========================================
-    // Send transaction
-    // ==========================================
-
     const receipt = await carbonToken.methods.retire(projectID, amount).send({
       from: buyerAddress,
     });
@@ -5215,15 +4937,9 @@ window.retireBuyerCredits = async function () {
       `${amount} BCC retired from "${project.projectName}".`,
     );
 
-    // ==========================================
-    // Clear amount
-    // ==========================================
 
     amountInput.value = "";
 
-    // ==========================================
-    // Refresh everything
-    // ==========================================
 
     await loadBuyerPortfolio();
 
@@ -5239,14 +4955,7 @@ window.retireBuyerCredits = async function () {
   }
 };
 
-// ==========================================
-// Buyer Transaction History
-//
-// Reads CarbonToken events directly.
-//
-// TokensPurchased
-// TokensRetired
-// ==========================================
+
 
 window.loadBuyerTransactions = async function () {
   const tbody = document.getElementById("buyerTxBody");
@@ -5271,25 +4980,13 @@ window.loadBuyerTransactions = async function () {
     `;
 
   try {
-    // ==========================================
-    // Wallet
-    // ==========================================
 
     const buyerAddress = await ensureBuyerWallet();
-
-    // ==========================================
-    // Contracts
-    // ==========================================
-
     const contracts = await ensureContractsReady();
-
     const carbonToken = contracts.carbonToken;
-
     const registry = contracts.projectRegistry;
 
-    // ==========================================
-    // Get blockchain projects
-    // ==========================================
+
 
     const projects = await registry.methods.getAllProjects().call();
 
@@ -5305,9 +5002,7 @@ window.loadBuyerTransactions = async function () {
     );
 
     transactions.sort((a, b) => b.blockNumber - a.blockNumber);
-    // ==========================================
-    // No transactions
-    // ==========================================
+
     if (transactions.length === 0) {
       tbody.innerHTML = `<tr> <td colspan="5" 
             style=" text-align: center; padding: 30px; 
@@ -5317,9 +5012,6 @@ window.loadBuyerTransactions = async function () {
       return;
     }
 
-    // ==========================================
-    // Render transactions
-    // ==========================================
 
     tbody.innerHTML = "";
 
@@ -5381,12 +5073,10 @@ window.loadBuyerTransactions = async function () {
       const row = document.createElement("tr");
       row.style.borderBottom = "1px solid #f4f7fe";
       row.innerHTML = ` 
-          <!-- DATE -->
           <td style=" padding: 15px 12px; 
                 color: #64748b; font-size: 12px; white-space: nowrap; ">
               ${dateDisplay}
           </td>
-          <!-- PROJECT -->
           <td style=" padding: 15px 12px; ">
               <strong style=" color: #2b3674; ">
                   ${projectName}
@@ -5394,12 +5084,11 @@ window.loadBuyerTransactions = async function () {
               <div style=" color: #a3aed1; font-size: 11px; margin-top: 3px; "> Project #${tx.projectID}
               </div>
           </td>
-          <!-- TYPE -->
           <td style=" padding: 15px 12px; "> <span
                   style=" display: inline-block; padding: 5px 9px; border-radius: 6px; background: ${isPurchase ? " #eef2ff"
           : "#fff4e5"}; color: ${isPurchase ? "#4318ff" : "#ff9f43"}; font-size: 11px; font-weight:
-                  700; "> ${transactionLabel} </span> </td> <!-- AMOUNT -->
-          <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? " #4318ff" : "#e94560"}; "> ${amountPrefix}${amount.toString()} BCC </td> <!-- STATUS -->
+                  700; "> ${transactionLabel} </span> </td>
+          <td style=" padding: 15px 12px; font-weight: 800; color: ${isPurchase ? " #4318ff" : "#e94560"}; "> ${amountPrefix}${amount.toString()} BCC </td> 
           <td style=" padding: 15px 12px; "> <span style=" color: #05cd99; font-weight: 700; font-size: 12px; "> ✓ Completed
               </span>
               <div style=" margin-top: 5px; "> <a href="https://sepolia.etherscan.io/tx/${tx.transactionHash}" target="_blank"
@@ -5436,8 +5125,7 @@ window.loadBuyerTransactions = async function () {
   }
 };
 
-const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11606852;
-// ↑ Replace with your REAL CarbonToken deployment block.
+const CARBON_TOKEN_DEPLOYMENT_BLOCK = 11654441;
 
 async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
   const chainId = Number(await web3.eth.getChainId());
@@ -5447,9 +5135,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
   const TX_SYNC_KEY =
     `bcc_transaction_sync_v2_${chainId}_${CARBON_TOKEN_ADDRESS.toLowerCase()}_${buyerAddress.toLowerCase()}`;
 
-  // ==========================================
-  // Load saved state
-  // ==========================================
 
   let savedState = null;
 
@@ -5465,10 +5150,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
     savedState = null;
   }
 
-  // ==========================================
-  // Verify saved state belongs to this
-  // contract/network/buyer
-  // ==========================================
 
   const validState =
     savedState &&
@@ -5492,21 +5173,11 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       events: [],
     };
   }
-
-  // ==========================================
-  // Nothing new to scan
-  // ==========================================
-
   if (savedState.lastSyncedBlock >= currentBlock) {
     console.log("Transaction history already synced.");
 
     return savedState.events;
   }
-
-  // ==========================================
-  // Scan in chunks
-  // ==========================================
-
   const CHUNK_SIZE = 9000;
 
   let fromBlock = Math.max(
@@ -5519,9 +5190,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
 
     console.log(`Syncing transaction events: ${fromBlock} → ${toBlock}`);
 
-    // ======================================
-    // Purchases
-    // ======================================
 
     const purchaseEvents = await carbonToken.getPastEvents("TokensPurchased", {
       filter: {
@@ -5540,7 +5208,7 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
     );
 
     const retiredEvents = await carbonToken.getPastEvents("TokensRetired", {
-      filter: {buyer: buyerAddress,},
+      filter: { buyer: buyerAddress, },
       fromBlock,
       toBlock,
     });
@@ -5551,15 +5219,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       )
     );
 
-    // ======================================
-    // Retirements
-    // ======================================
-
-
-
-    // ======================================
-    // Transfers sent by buyer
-    // ======================================
 
     const transferSentEvents =
       await carbonToken.getPastEvents("Transfer", {
@@ -5570,11 +5229,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
         fromBlock,
         toBlock,
       });
-
-
-    // ======================================
-    // Transfers received by buyer
-    // ======================================
 
     const transferReceivedEvents =
       await carbonToken.getPastEvents("Transfer", {
@@ -5604,9 +5258,7 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       }
     }
 
-    // ======================================
-    // Convert purchase events
-    // ======================================
+
 
     for (const event of purchaseEvents) {
       newEvents.push({
@@ -5631,10 +5283,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       });
     }
 
-    // ======================================
-    // Convert retirement events
-    // ======================================
-
     for (const event of retiredEvents) {
       newEvents.push({
         id: `${event.transactionHash}-${event.logIndex}`,
@@ -5657,10 +5305,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
         timestamp: blockTimestamps.get(Number(event.blockNumber)),
       });
     }
-
-    // ======================================
-    // Transfer Sent
-    // ======================================
 
     for (const event of transferSentEvents) {
 
@@ -5718,13 +5362,9 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
     }
 
 
-    // ======================================
-    // Transfer Received
-    // ======================================
 
     for (const event of transferReceivedEvents) {
 
-      // Don't add the same transfer twice
       if (
         event.returnValues.from.toLowerCase() ===
         buyerAddress.toLowerCase()
@@ -5743,7 +5383,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
         continue;
       }
 
-      // Ignore our own outgoing transfer
       if (
         event.returnValues.from.toLowerCase() ===
         buyerAddress.toLowerCase()
@@ -5793,9 +5432,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
       });
     }
 
-    // ======================================
-    // Prevent duplicates
-    // ======================================
 
     const existingIDs = new Set(savedState.events.map((event) => event.id));
 
@@ -5806,12 +5442,6 @@ async function syncBuyerTransactionEvents(carbonToken, buyerAddress) {
         existingIDs.add(event.id);
       }
     }
-
-    // ======================================
-    // IMPORTANT:
-    // Save checkpoint after every successful
-    // chunk.
-    // ======================================
 
     savedState.lastSyncedBlock = toBlock;
 

@@ -17,9 +17,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
 
 
 
-// ==========================================
-// Initialize database tables
-// ==========================================
 db.serialize(() => {
     db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -53,7 +50,7 @@ db.serialize(() => {
     db.run(`ALTER TABLE projects ADD COLUMN pricePerToken TEXT`, () => { });
     db.run(`ALTER TABLE projects ADD COLUMN minted INTEGER DEFAULT 0`, () => { });
     db.run(`ALTER TABLE projects ADD COLUMN onChainProjectID TEXT`, () => { });
-    
+
     db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,10 +62,6 @@ db.serialize(() => {
     `);
 });
 
-// ==========================================
-// User API: Register
-// ==========================================
-
 app.post('/register', (req, res) => {
 
     const {
@@ -79,9 +72,6 @@ app.post('/register', (req, res) => {
         role
     } = req.body;
 
-    // ----------------------------------
-    // Validate
-    // ----------------------------------
     if (
         !walletAddress ||
         !username ||
@@ -95,9 +85,6 @@ app.post('/register', (req, res) => {
         });
     }
 
-    // ----------------------------------
-    // Validate role
-    // ----------------------------------
     if (
         role !== "buyer" &&
         role !== "developer"
@@ -107,10 +94,6 @@ app.post('/register', (req, res) => {
             message: "Invalid account type."
         });
     }
-
-    // ----------------------------------
-    // Validate wallet
-    // ----------------------------------
     if (
         !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)
     ) {
@@ -119,19 +102,12 @@ app.post('/register', (req, res) => {
             message: "Invalid MetaMask wallet address."
         });
     }
-
-    // ----------------------------------
-    // Timestamp
-    // ----------------------------------
     const createdAt =
         new Date()
             .toISOString()
             .replace('T', ' ')
             .substring(0, 19);
 
-    // ----------------------------------
-    // Check whether wallet already exists
-    // ----------------------------------
     db.get(
         `SELECT * FROM users WHERE walletAddress = ?`,
         [walletAddress],
@@ -152,9 +128,6 @@ app.post('/register', (req, res) => {
                 });
             }
 
-            // ----------------------------------
-            // Insert user
-            // ----------------------------------
             const sql = `
                 INSERT INTO users
                 (
@@ -225,9 +198,7 @@ app.post('/register', (req, res) => {
     );
 });
 
-// ================= Admin API =================
 
-// Get all registered users awaiting approval
 app.get('/pending-users', (req, res) => {
     const sql = `SELECT id, username, role FROM users WHERE status = 'pending'`;
     db.all(sql, [], (err, rows) => {
@@ -236,7 +207,6 @@ app.get('/pending-users', (req, res) => {
     });
 });
 
-// Admin Approved User
 app.post('/approve-user', (req, res) => {
     const { userId } = req.body;
     const sql = `UPDATE users SET status = 'approved' WHERE id = ?`;
@@ -247,7 +217,6 @@ app.post('/approve-user', (req, res) => {
     });
 });
 
-// Admin Rejeected User
 app.post('/reject-user', (req, res) => {
     const { userId } = req.body;
     const sql = `UPDATE users SET status = 'rejected' WHERE id = ?`;
@@ -258,7 +227,6 @@ app.post('/reject-user', (req, res) => {
     });
 });
 
-// Admin Get all user lists
 app.get('/all-users', (req, res) => {
     db.all(`SELECT * FROM users`, [], (err, rows) => {
         if (err) return res.status(500).json({ success: false });
@@ -266,7 +234,6 @@ app.get('/all-users', (req, res) => {
     });
 });
 
-// Admin Logout (Permanent Deletion) Username
 app.post('/delete-user', (req, res) => {
     const { userId } = req.body;
     const sql = `DELETE FROM users WHERE id = ?`;
@@ -277,9 +244,6 @@ app.post('/delete-user', (req, res) => {
     });
 });
 
-// ================= Developer & Project API =================
-
-// 1. Developer Submit a new project
 app.post('/submit-project', (req, res) => {
     const { username, projName, devAddress, location, capacity, deadline, ecosystemType, pricePerToken, onChainProjectID } = req.body;
 
@@ -297,7 +261,6 @@ app.post('/submit-project', (req, res) => {
     });
 });
 
-// 2. Admin retrieves projects awaiting review
 app.get('/pending-projects', (req, res) => {
     const sql = `SELECT * FROM projects WHERE status = 'pending'`;
     db.all(sql, [], (err, rows) => {
@@ -306,7 +269,6 @@ app.get('/pending-projects', (req, res) => {
     });
 });
 
-// 3. Admin approves the project (called after token issuance on the blockchain)
 app.post('/approve-project', (req, res) => {
     const { id } = req.body;
     const sql = `UPDATE projects SET status = 'approved' WHERE id = ?`;
@@ -316,7 +278,6 @@ app.post('/approve-project', (req, res) => {
     });
 });
 
-// 4. Admin rejected the project
 app.post('/reject-project', (req, res) => {
     const { id } = req.body;
     const sql = `UPDATE projects SET status = 'rejected' WHERE id = ?`;
@@ -328,7 +289,6 @@ app.post('/reject-project', (req, res) => {
 });
 
 
-// 5. After Dev completes the on-chain mint, it marks the database state.
 app.post('/mark-project-minted', (req, res) => {
     const { id, onChainProjectID } = req.body;
     const sql = `UPDATE projects SET minted = 1, onChainProjectID = ? WHERE id = ?`;
@@ -339,7 +299,6 @@ app.post('/mark-project-minted', (req, res) => {
     });
 });
 
-// Auto-heal: backfill onChainProjectID for legacy rows that don't have it yet
 app.post('/sync-onchain-id', (req, res) => {
     const { id, onChainProjectID } = req.body;
     if (!id || !onChainProjectID) {
@@ -360,7 +319,6 @@ app.get('/all-projects', (req, res) => {
     });
 });
 
-// ================= Admin Dashboard 真实数据 API =================
 app.get('/admin-stats', (req, res) => {
     const getStat = (sql) => new Promise((resolve, reject) => {
         db.get(sql, [], (err, row) => {
@@ -418,9 +376,6 @@ app.post('/update-profile', (req, res) => {
     });
 });
 
-// ==========================================
-// Get current user profile
-// ==========================================
 app.get('/user-profile', (req, res) => {
     const {
         walletAddress
@@ -540,24 +495,33 @@ app.get('/user-profile', (req, res) => {
 
 });
 
-// ==========================================
-// Developer API: Get all my historical projects submitted
-// ==========================================
 app.get('/my-projects', (req, res) => {
-    const { username } = req.query;
-    if (!username) return res.json({ success: false });
+    const { devAddress } = req.query;
 
-    const sql = `SELECT * FROM projects WHERE username = ? ORDER BY id DESC`;
+    if (!devAddress) {
+        return res.json({
+            success: false, message: "Developer wallet address is required."
+        });
+    }
 
-    db.all(sql, [username], (err, rows) => {
-        if (err) return res.status(500).json({ success: false });
-        res.json({ success: true, data: rows });
+    const sql = `SELECT * FROM projects WHERE LOWER(devAddress) = LOWER(?) ORDER BY id DESC`;
+
+    db.all(sql, [devAddress], (err, rows) => {
+        if (err) {
+            console.error("Error loading developer projects:", err);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to load projects."
+            });
+        }
+
+        res.json({
+            success: true,
+            data: rows
+        });
     });
 });
 
-// ==========================================
-// Developer API: View project details and sales records
-// ==========================================
 app.get('/project-details', (req, res) => {
     const { id } = req.query;
     if (!id) return res.json({ success: false, message: "Missing ID" });
